@@ -10,3 +10,9 @@ coverage/
 .DS_Store
 Thumbs.db
 supabase/.temp/
+
+# next.js / typescript
+/.next/
+*.tsbuildinfo
+next-env.d.ts
+*.pem

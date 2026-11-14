@@ -56,12 +56,20 @@ Cada um cadastra o que quer ganhar, e o outro monta o presente dentro do orçame
 
 ## 🚀 Rodando localmente
 
-> Projeto em fase de design. Os passos abaixo valem a partir da Fase 1 do [roadmap](docs/roadmap.md).
-
 ```bash
 cp .env.example .env.local     # preencha as variáveis
 npm install
+npm run phone:hash             # cadastra um telefone (pergunta perfil e número; salva só o hash)
 npm run dev                    # http://localhost:3000
+```
+
+Verificações:
+
+```bash
+npm test                       # testes (vitest)
+npm run typecheck              # tipos
+npm run lint                   # eslint
+npm run build                  # build de produção
 ```
 
 ### Banco (Supabase CLI v3)

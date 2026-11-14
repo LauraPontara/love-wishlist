@@ -1,6 +1,6 @@
 # Roadmap
 
-## Fase 0: Descoberta e design ✍️ *(em andamento)*
+## Fase 0: Descoberta e design ✅
 - [x] Levantamento de requisitos (fechado em 14/11/2026)
 - [x] Arquitetura, modelo de dados e ADRs
 - [x] Repositório, projeto Supabase em São Paulo e schema
@@ -17,10 +17,14 @@
 - [x] Protótipo das telas: [`design/telas.html`](design/telas.html) (claro e escuro)
 - [x] Telas aprovadas (com cabeçalho Aurora)
 
-## Fase 1: Fundação
-- [ ] Next.js + Tailwind + Motion, deploy na Vercel (`gru1`)
-- [ ] Auth por telefone (HMAC, JWT, rate limit, middleware)
-- [ ] `/api/cron/daily` (keep-alive) + workflow de reserva
+## Fase 1: Fundação 🔨 *(em andamento)*
+- [x] Next.js 16 + Tailwind 4 com os tokens, a fonte e a Aurora
+- [x] Auth por telefone (HMAC + pepper, JWT em cookie, rate limit, proxy) com 16 testes
+- [x] Tela de login (coração pulsante) e página inicial protegida
+- [x] `/api/health` e `/api/cron/daily` (keep-alive + limpeza), `vercel.json` em `gru1`
+- [ ] Cadastrar os telefones reais (`npm run phone:hash`, na máquina da Laura)
+- [ ] Deploy na Vercel com as variáveis de ambiente
+- [ ] Workflow de reserva do keep-alive (GitHub Actions)
 
 ## Fase 2: Listas
 - [ ] Cadastro manual, edição (com link editável) e exclusão com desfazer

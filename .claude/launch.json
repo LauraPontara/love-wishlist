@@ -2,9 +2,26 @@
   "version": "0.0.1",
   "configurations": [
     {
+      "name": "app",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": [
+        "run",
+        "dev"
+      ],
+      "port": 3000
+    },
+    {
       "name": "design-docs",
       "runtimeExecutable": "python",
-      "runtimeArgs": ["-m", "http.server", "5178", "--bind", "127.0.0.1", "--directory", "."],
+      "runtimeArgs": [
+        "-m",
+        "http.server",
+        "5178",
+        "--bind",
+        "127.0.0.1",
+        "--directory",
+        "."
+      ],
       "port": 5178
     }
   ]
