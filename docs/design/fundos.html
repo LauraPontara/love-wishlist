@@ -1,0 +1,295 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Opções de fundo</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wdth,wght@12..96,75..100,400..800&display=swap" rel="stylesheet">
+<style>
+/* =============================================================================
+   Love Wishlist: design tokens (paleta "Papel de presente")
+   Fonte da verdade das cores, tipografia, espaços e movimento.
+   Na Fase 1 este arquivo vira src/styles/tokens.css do Next.js.
+   Contraste AA verificado em todas as combinações texto/fundo (ver design-system.md).
+   ============================================================================= */
+
+:root,
+[data-theme="light"] {
+  /* superfícies */
+  --bg: #FFF0F6;            /* rosa papel */
+  --surface: #FFFFFF;
+  --surface-sunk: #FFE8F1;
+  --line: #FFE1EE;
+
+  /* texto */
+  --ink: #1C1A4A;           /* azul-noite */
+  --ink-2: #5C5A86;
+
+  /* ação */
+  --primary: #D61F69;       /* magenta */
+  --on-primary: #FFFFFF;
+  --primary-edge: #A8124F;
+  --secondary: #3053E3;     /* cobalto */
+  --on-secondary: #FFFFFF;
+  --ribbon: #FFC22E;        /* fita */
+  --on-ribbon: #1C1A4A;
+  --ribbon-edge: #D99A00;
+
+  /* papel de embrulho (cabeçalhos) */
+  --wrap: #D61F69;
+  --wrap-ink: #FFFFFF;
+
+  /* estados do item */
+  --tag-sempre: #FFFBEE;
+  --tag-comprado: #F4F6FF;
+  --badge-sempre: #FFF2CC;
+  --badge-info: #E1E7FF;
+
+  /* avisos da extração */
+  --warn-bg: #FFF2CC;  --warn-ink: #6B4A00;   /* bloqueado / parcial */
+  --error-bg: #FFE0E6; --error-ink: #9B0F3B;  /* link quebrado */
+  --ok-bg: #DDF6EA;    --ok-ink: #0D5C36;
+
+  --stripe-a: #D61F69; --stripe-b: #E8457F;
+  --heart-echo: .32;
+  --shadow: 0 18px 40px -24px rgba(28, 26, 74, .35);
+}
+
+[data-theme="dark"] {
+  --bg: #14123A;            /* noite profunda */
+  --surface: #221F55;
+  --surface-sunk: #1A1846;
+  --line: #2F2B6B;
+
+  --ink: #FFF0F6;
+  --ink-2: #B9B4E6;
+
+  --primary: #FF6AA3;       /* magenta aceso */
+  --on-primary: #14123A;
+  --primary-edge: #C93A75;
+  --secondary: #8EA2FF;
+  --on-secondary: #14123A;
+  --ribbon: #FFC22E;
+  --on-ribbon: #14123A;
+  --ribbon-edge: #C48A00;
+
+  --wrap: #8E1450;          /* embrulho vinho */
+  --wrap-ink: #FFF0F6;
+
+  --tag-sempre: #2B2650;
+  --tag-comprado: #1D1B49;
+  --badge-sempre: #4A3A12;
+  --badge-info: #2A3170;
+
+  --warn-bg: #4A3A12;  --warn-ink: #FFE7A8;
+  --error-bg: #5A1430; --error-ink: #FFD0DD;
+  --ok-bg: #123F2E;    --ok-ink: #BFF2D8;
+
+  --stripe-a: #FF6AA3; --stripe-b: #E0337A;
+  --heart-echo: .45;
+  --shadow: 0 18px 40px -24px rgba(0, 0, 0, .6);
+}
+
+:root {
+  /* tipografia: Bricolage Grotesque (Google Fonts), uma família só */
+  --font: 'Bricolage Grotesque', system-ui, sans-serif;
+  --display: 'wdth' 78, 'opsz' 96;   /* títulos: estreita e encorpada */
+  --numeric: 'wdth' 82;               /* preços */
+
+  /* escala (razão ~1.2, base 16px) */
+  --t-xs: .75rem;   /* 12 badges */
+  --t-sm: .875rem;  /* 14 metadados */
+  --t-md: 1rem;     /* 16 corpo */
+  --t-lg: 1.25rem;  /* 20 títulos de seção */
+  --t-xl: 2rem;     /* 32 título de tela */
+  --t-2xl: 2.6rem;  /* 42 login */
+
+  /* espaço (grade de 4px) */
+  --s1: 4px; --s2: 8px; --s3: 12px; --s4: 16px; --s5: 20px; --s6: 24px; --s8: 32px;
+
+  /* raios: cada um tem um papel */
+  --r-chip: 999px;   /* chips e pílulas */
+  --r-field: 16px;   /* campos */
+  --r-btn: 18px;     /* botões */
+  --r-panel: 28px;   /* folha sobre o papel de embrulho */
+  --r-tag: 0 16px 16px 0; /* etiqueta: ponta cortada à esquerda */
+
+  /* movimento */
+  --beat: 1.4s;                         /* ciclo do coração */
+  --ease-out: cubic-bezier(.2, .8, .2, 1);
+  --ease-beat: cubic-bezier(.3, 0, .2, 1);
+  --spring: cubic-bezier(.34, 1.56, .64, 1);
+  --t-fast: 120ms; --t-base: 220ms; --t-slow: 420ms;
+}
+
+</style>
+<style>
+  * { box-sizing: border-box; }
+  body { margin: 0; font-family: var(--font); background: #ECE6F2; color: #1C1A4A; }
+  .intro { max-width: 1200px; margin: 0 auto; padding: 40px 16px 0; }
+  .intro h1 { margin: 0 0 6px; font-size: clamp(1.8rem, 3.4vw, 2.6rem); line-height: 1; font-weight: 800; letter-spacing: -0.02em; font-variation-settings: var(--display); }
+  .intro p { margin: 0; max-width: 64ch; line-height: 1.5; color: #5C5A86; }
+  .grid { max-width: 1250px; margin: 0 auto; padding: 28px 16px 64px; display: grid; grid-template-columns: repeat(auto-fit, minmax(560px, 1fr)); gap: 44px 28px; }
+  .opt h2 { margin: 0; font-size: 1.5rem; font-weight: 800; font-variation-settings: 'wdth' 85; letter-spacing: -0.01em; }
+  .opt > p { margin: 4px 0 14px; color: #5C5A86; line-height: 1.45; min-height: 3em; }
+  .pair { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .frame { height: 560px; border-radius: 32px; overflow: hidden; border: 7px solid #0E0C26; background: var(--bg); color: var(--ink); display: flex; flex-direction: column; position: relative; }
+  .tlabel { text-align: center; font-size: .82rem; color: #5C5A86; margin-top: 8px; }
+
+  /* conteúdo comum, escala reduzida */
+  .hdr { position: relative; padding: 26px 18px 92px; overflow: hidden; isolation: isolate; flex: none; }
+  .who { display: flex; align-items: center; gap: 10px; position: relative; }
+  .who svg { width: 42px; height: 42px; flex: none; }
+  .who h3 { margin: 0; font-size: 1.45rem; line-height: .95; font-weight: 800; letter-spacing: -0.02em; font-variation-settings: var(--display); }
+  .who small { font-size: .78rem; }
+  .sheet { background: var(--bg); flex: 1; margin-top: -26px; border-radius: 24px 24px 0 0; padding: 14px 12px; display: flex; flex-direction: column; gap: 9px; position: relative; }
+  .tabs { display: grid; grid-template-columns: repeat(3, 1fr); padding: 3px; border-radius: 999px; background: var(--surface-sunk); }
+  .tabs b { text-align: center; padding: 7px 2px; border-radius: 999px; font-size: .72rem; font-weight: 700; color: var(--ink-2); }
+  .tabs b.on { background: var(--surface); color: var(--ink); box-shadow: 0 2px 6px rgba(28,26,74,.12); }
+  .tag { --tag-bg: var(--surface); position: relative; display: grid; grid-template-columns: 40px 1fr auto; align-items: center; gap: 9px; padding: 7px 10px 7px 24px; background: var(--tag-bg); clip-path: polygon(14px 0, 100% 0, 100% 100%, 14px 100%, 0 50%); border-radius: 0 12px 12px 0; }
+  .tag::before { content: ''; position: absolute; left: 8px; top: 50%; width: 7px; height: 7px; translate: 0 -50%; border-radius: 50%; background: var(--bg); box-shadow: inset 0 0 0 2px var(--line); }
+  .tag.sempre { --tag-bg: var(--tag-sempre); }
+  .thumb { width: 40px; height: 40px; border-radius: 10px; display: grid; place-items: center; font-size: 20px; background: var(--bg); }
+  .tag h4 { margin: 0; font-size: .78rem; line-height: 1.2; font-weight: 700; }
+  .price { font-weight: 800; font-size: .82rem; font-variation-settings: 'wdth' 80; white-space: nowrap; }
+
+  /* grão sutil para não ficar "chapado" */
+  .grain::after {
+    content: ''; position: absolute; inset: 0; z-index: -1; pointer-events: none; mix-blend-mode: overlay; opacity: .35;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 .55 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  }
+
+  /* ============ A. Aurora ============ */
+  .a-aurora .hdr { color: #fff; }
+  [data-theme="light"].a-aurora .hdr {
+    background:
+      radial-gradient(120% 90% at 0% 0%, #FF5EA0 0%, transparent 55%),
+      radial-gradient(90% 120% at 100% 10%, #3053E3 0%, transparent 60%),
+      radial-gradient(80% 80% at 70% 100%, #FFC22E 0%, transparent 55%),
+      #D61F69;
+  }
+  [data-theme="dark"].a-aurora .hdr {
+    background:
+      radial-gradient(120% 90% at 0% 0%, #C21E63 0%, transparent 55%),
+      radial-gradient(90% 120% at 100% 10%, #2A3BB0 0%, transparent 60%),
+      radial-gradient(80% 80% at 70% 100%, #8E5A00 0%, transparent 55%),
+      #4A1240;
+  }
+
+  /* ============ B. Seda ============ */
+  .b-seda .hdr { color: #fff; }
+  .b-seda .hdr::before {
+    content: ''; position: absolute; inset: -40% -20%; z-index: -1;
+    background: linear-gradient(115deg, transparent 38%, rgba(255,255,255,.28) 47%, rgba(255,255,255,.06) 53%, transparent 62%);
+  }
+  [data-theme="light"].b-seda .hdr { background: linear-gradient(135deg, #B0125A 0%, #D61F69 38%, #E8457F 62%, #7A3BDB 100%); }
+  [data-theme="dark"].b-seda .hdr { background: linear-gradient(135deg, #3A0E36 0%, #7A1450 42%, #A0205E 64%, #2C2A8A 100%); }
+
+  /* ============ C. Algodão-doce ============ */
+  [data-theme="light"].c-algodao .hdr {
+    color: var(--ink);
+    background:
+      radial-gradient(70% 90% at 15% 20%, #FFC6DD 0%, transparent 70%),
+      radial-gradient(60% 80% at 85% 0%, #D9DEFF 0%, transparent 70%),
+      radial-gradient(70% 70% at 60% 100%, #FFE6B3 0%, transparent 70%),
+      #FFE1EE;
+  }
+  [data-theme="dark"].c-algodao .hdr {
+    color: var(--ink);
+    background:
+      radial-gradient(70% 90% at 15% 20%, rgba(255,106,163,.45) 0%, transparent 70%),
+      radial-gradient(60% 80% at 85% 0%, rgba(142,162,255,.40) 0%, transparent 70%),
+      radial-gradient(70% 70% at 60% 100%, rgba(255,194,46,.22) 0%, transparent 70%),
+      #1E1A4E;
+  }
+  .c-algodao .heartmark { position: absolute; right: -18px; top: -10px; width: 140px; height: 133px; z-index: -1; opacity: .5; filter: blur(2px); }
+  [data-theme="dark"].c-algodao .heartmark { opacity: .35; }
+</style>
+</head>
+<body>
+<section class="intro">
+  <h1>Três fundos para o cabeçalho</h1>
+  <p>Sai o papel estampado com a fita amarela; entram degradês da paleta. Cada opção aparece no tema claro e no escuro, aplicada na Minha lista.</p>
+</section>
+<div class="grid" id="grid"></div>
+
+<template id="screen">
+  <div class="hdr grain">
+    <svg class="heartmark" viewBox="0 0 200 190" aria-hidden="true" style="display:none"><use href="#heart"/></svg>
+    <div class="who"><svg viewBox="0 0 200 200" aria-hidden="true"><use href="#bunny-chocolate"/></svg><div><h3>Minha lista</h3><small>Laura, 9 desejos</small></div></div>
+  </div>
+  <div class="sheet">
+    <div class="tabs"><b class="on">Desejos 9</b><b>Já tenho 4</b><b>Recebidos 2</b></div>
+    <div class="tag"><div class="thumb">👗</div><h4>Vestido midi linho, verde, M</h4><div class="price">R$ 129,90</div></div>
+    <div class="tag sempre"><div class="thumb">🧼</div><h4>Sabonete Nativa SPA Ameixa</h4><div class="price">R$ 54,90</div></div>
+    <div class="tag"><div class="thumb">🎨</div><h4>Paleta de sombras 16 cores</h4><div class="price">R$ 39,90</div></div>
+    <div class="tag sempre"><div class="thumb">🍬</div><h4>Bala Fini Dentaduras</h4><div class="price">R$ 9,99</div></div>
+  </div>
+</template>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <radialGradient id="heartfill" cx="50%" cy="45%" r="65%">
+      <stop offset="0" stop-color="#FFC22E"/><stop offset=".28" stop-color="#FF5EA0"/><stop offset=".62" stop-color="#D61F69"/><stop offset="1" stop-color="#3053E3"/>
+    </radialGradient>
+    <path id="heart" fill="url(#heartfill)" d="M100 182C42 136 8 100 8 64 8 34 31 12 58 12c19 0 34 10 42 26 8-16 23-26 42-26 27 0 50 22 50 52 0 36-34 72-92 118z"/>
+    <clipPath id="cc"><circle cx="100" cy="100" r="100"/></clipPath>
+    <radialGradient id="cfur" cx="45%" cy="38%" r="70%"><stop offset="0" stop-color="#8A5233"/><stop offset="1" stop-color="#5E341E"/></radialGradient>
+    <g id="bunny-chocolate"><g clip-path="url(#cc)">
+      <circle cx="100" cy="100" r="100" fill="#FFD3E0"/>
+      <g transform="rotate(-12 72 80)"><ellipse cx="72" cy="46" rx="19" ry="46" fill="#5E341E"/><ellipse cx="72" cy="50" rx="10" ry="34" fill="#F6A3B8"/></g>
+      <g transform="rotate(12 128 80)"><ellipse cx="128" cy="46" rx="19" ry="46" fill="#5E341E"/><ellipse cx="128" cy="50" rx="10" ry="34" fill="#F6A3B8"/></g>
+      <ellipse cx="100" cy="128" rx="64" ry="56" fill="url(#cfur)"/>
+      <path d="M88 76c4-10 12-12 12-12s2 8-2 14c6-6 14-5 14-5s-3 9-12 11z" fill="#8A5233"/>
+      <ellipse cx="62" cy="142" rx="13" ry="8" fill="#FF8FAB" opacity=".75"/><ellipse cx="138" cy="142" rx="13" ry="8" fill="#FF8FAB" opacity=".75"/>
+      <ellipse cx="76" cy="120" rx="8" ry="10" fill="#22130B"/><ellipse cx="124" cy="120" rx="8" ry="10" fill="#22130B"/>
+      <circle cx="79" cy="116" r="3" fill="#FFF"/><circle cx="127" cy="116" r="3" fill="#FFF"/>
+      <ellipse cx="91" cy="148" rx="13" ry="10" fill="#F2DCC6"/><ellipse cx="109" cy="148" rx="13" ry="10" fill="#F2DCC6"/>
+      <path d="M93 136h14c2 0 3 2 2 3.5l-6 6c-1.6 1.6-4.4 1.6-6 0l-6-6c-1-1.5 0-3.5 2-3.5z" fill="#F46F93"/>
+      <path d="M100 146v5M100 151c-3 4-7 4-9 2M100 151c3 4 7 4 9 2" fill="none" stroke="#5E341E" stroke-width="2.4" stroke-linecap="round"/>
+    </g></g>
+    <clipPath id="bc"><circle cx="100" cy="100" r="100"/></clipPath>
+    <radialGradient id="bfur" cx="45%" cy="38%" r="70%"><stop offset="0" stop-color="#F4A458"/><stop offset="1" stop-color="#D97A2B"/></radialGradient>
+    <g id="bunny-caramelo"><g clip-path="url(#bc)">
+      <circle cx="100" cy="100" r="100" fill="#C9F2E3"/>
+      <g transform="rotate(-14 72 80)"><ellipse cx="72" cy="46" rx="19" ry="46" fill="#D97A2B"/><ellipse cx="72" cy="50" rx="10" ry="34" fill="#F6A3B8"/></g>
+      <g transform="rotate(38 128 84)"><ellipse cx="128" cy="50" rx="19" ry="40" fill="#C96D22"/><ellipse cx="128" cy="54" rx="10" ry="28" fill="#F6A3B8"/></g>
+      <ellipse cx="100" cy="128" rx="64" ry="56" fill="url(#bfur)"/>
+      <path d="M100 80c-7 0-11 8-9 20 1 7 5 12 9 12s8-5 9-12c2-12-2-20-9-20z" fill="#FFE6C4"/>
+      <ellipse cx="62" cy="142" rx="13" ry="8" fill="#FF8FAB" opacity=".7"/><ellipse cx="138" cy="142" rx="13" ry="8" fill="#FF8FAB" opacity=".7"/>
+      <ellipse cx="76" cy="120" rx="8" ry="10" fill="#2A170C"/><ellipse cx="124" cy="120" rx="8" ry="10" fill="#2A170C"/>
+      <circle cx="79" cy="116" r="3" fill="#FFF"/><circle cx="127" cy="116" r="3" fill="#FFF"/>
+      <ellipse cx="91" cy="148" rx="13" ry="10" fill="#FFE6C4"/><ellipse cx="109" cy="148" rx="13" ry="10" fill="#FFE6C4"/>
+      <path d="M93 136h14c2 0 3 2 2 3.5l-6 6c-1.6 1.6-4.4 1.6-6 0l-6-6c-1-1.5 0-3.5 2-3.5z" fill="#F46F93"/>
+      <path d="M100 146v5M100 151c-3 4-7 4-9 2M100 151c3 4 7 4 9 2" fill="none" stroke="#8A4313" stroke-width="2.4" stroke-linecap="round"/>
+    </g></g>
+  </defs>
+</svg>
+
+<script>
+  const opts = [
+    ['a-aurora', 'A. Aurora', 'Três luzes da paleta (rosa, cobalto, fita) se misturando sobre o magenta, com um grão fininho. Viva e moderna.'],
+    ['b-seda', 'B. Seda', 'Degradê diagonal do magenta ao violeta com um brilho atravessando, como fita de cetim. Elegante.'],
+    ['c-algodao', 'C. Algodão-doce', 'Tons claros de rosa, lavanda e pêssego, com um coração bem suave no canto. Delicada; o texto fica azul-noite.'],
+  ];
+  const grid = document.getElementById('grid');
+  const tpl = document.getElementById('screen');
+  for (const [cls, name, about] of opts) {
+    const sec = document.createElement('section'); sec.className = 'opt';
+    sec.innerHTML = `<h2>${name}</h2><p>${about}</p>`;
+    const pair = document.createElement('div'); pair.className = 'pair';
+    for (const th of ['light', 'dark']) {
+      const w = document.createElement('div');
+      const f = document.createElement('div'); f.className = `frame ${cls}`; f.dataset.theme = th;
+      f.appendChild(tpl.content.cloneNode(true));
+      if (cls === 'c-algodao') f.querySelector('.heartmark').style.display = '';
+      const l = document.createElement('div'); l.className = 'tlabel'; l.textContent = th === 'light' ? 'Claro' : 'Escuro';
+      w.append(f, l); pair.appendChild(w);
+    }
+    sec.appendChild(pair); grid.appendChild(sec);
+  }
+</script>
+</body>
+</html>
