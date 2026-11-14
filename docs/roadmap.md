@@ -17,7 +17,7 @@
 - [x] Protótipo das telas: [`design/telas.html`](design/telas.html) (claro e escuro)
 - [x] Telas aprovadas (com cabeçalho Aurora)
 
-## Fase 1: Fundação 🔨 *(em andamento)*
+## Fase 1: Fundação ✅
 - [x] Next.js 16 + Tailwind 4 com os tokens, a fonte e a Aurora
 - [x] Auth por telefone (HMAC + pepper, JWT em cookie, rate limit, proxy) com 16 testes
 - [x] Tela de login (coração pulsante) e página inicial protegida
@@ -27,10 +27,11 @@
 - [x] Workflow de reserva do keep-alive (GitHub Actions)
 - [ ] Ligar o GitHub à Vercel (deploy automático a cada push)
 
-## Fase 2: Listas
-- [ ] Cadastro manual, edição (com link editável) e exclusão com desfazer
-- [ ] Minha lista, Já tenho, Recebidos, lista do outro
-- [ ] Busca por texto + filtros + ordenação
+## Fase 2: Listas ✅
+- [x] Cadastro manual com prévia da etiqueta, edição (link editável, nunca vazio) e exclusão com desfazer
+- [x] Minha lista (abas Desejos, Já tenho, Recebidos), "Já tenho" com desfazer, lista do outro (só disponíveis)
+- [x] Busca por texto sem acento + orçamento máximo + tipo + categoria + ordenação
+- [x] Responsivo: barra inferior no celular/tablet, lateral no desktop, grade de 1 a 3 colunas
 
 ## Fase 3: Extração
 - [ ] Colar vários links → extração em paralelo → revisão em cartões → Salvar todos

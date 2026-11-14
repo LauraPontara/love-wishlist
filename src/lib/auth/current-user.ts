@@ -12,6 +12,14 @@ export type CurrentUser = {
   partner: { id: string; displayName: string; avatar: string | null } | null;
 };
 
+/** Para Server Actions: devolve o perfil da sessão ou lança erro (sem redirecionar). */
+export async function requireProfileId(): Promise<string> {
+  const token = (await cookies()).get(SESSION_COOKIE)?.value;
+  const profileId = await verifySessionToken(token, env().SESSION_SECRET);
+  if (!profileId) throw new Error("Sessão expirada. Entre de novo.");
+  return profileId;
+}
+
 /** Data Access Layer: lê a sessão e devolve só o que a interface precisa. */
 export async function getCurrentUser(): Promise<CurrentUser> {
   const token = (await cookies()).get(SESSION_COOKIE)?.value;
