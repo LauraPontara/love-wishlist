@@ -8,7 +8,7 @@ O app é **um presente embrulhado**. Tudo vem desse universo, sem enfeite gratui
 
 | Elemento | Metáfora | Onde |
 |---|---|---|
-| Cabeçalho | **Papel de embrulho** estampado (corações e laços, 14% de opacidade) cortado por uma **fita** amarela | Topo de todas as telas |
+| Cabeçalho | **Aurora**: luzes de cobalto, rosa e fita se misturando sobre o magenta, com grão fino | Topo de todas as telas |
 | Item da lista | **Etiqueta de presente**: ponta cortada, furinho, preço como numa tag | Listas, combos, busca |
 | Orçamento | **Fita listrada** que enche até o laço | Montar presente, combos |
 | Combo | **Caixa** com fita cruzada no canto | Meus combos |
@@ -29,7 +29,9 @@ Dois temas da mesma paleta (RF49): **Automático** (padrão), **Claro** e **Escu
 | `--primary` | `#D61F69` magenta | `#FF6AA3` magenta aceso | Ação principal (1 por tela) |
 | `--secondary` | `#3053E3` cobalto | `#8EA2FF` | Seleção (chips, abas) |
 | `--ribbon` | `#FFC22E` fita | `#FFC22E` | Adicionar, destaque de data, fita |
-| `--wrap` | `#D61F69` | `#8E1450` vinho | Papel de embrulho |
+| `--aurora` | Cobalto (canto do título), rosa e fita sobre magenta | Mesmas luzes, mais profundas, sobre vinho `#4A1240` | Fundo do cabeçalho |
+
+O título fica sempre no canto superior esquerdo, sobre a luz cobalto. Branco sobre cobalto dá 6,0:1, e sobre magenta 4,9:1. A luz rosa (2,9:1 com branco) fica no canto oposto, longe do texto.
 
 **Contraste verificado** (mínimo AA 4,5:1):
 
@@ -65,13 +67,13 @@ Uma família só, **Bricolage Grotesque**, explorando os eixos de largura e tama
 
 - **Grade de 4px.** Margem lateral das telas: 16px.
 - **Raios com papel**: chip 999px · campo 16px · botão 18px · painel 28px · etiqueta 0/16px (ponta cortada).
-- **Camadas**: papel de embrulho → painel arredondado que "sobe" 30px sobre ele → conteúdo. Sombra só em botões (borda inferior sólida, efeito de tecla) e no frame da tela.
+- **Camadas**: aurora → painel arredondado que "sobe" 30px sobre ele → conteúdo. Sombra só em botões (borda inferior sólida, efeito de tecla) e no frame da tela.
 
 ## 5. Componentes
 
 | Componente | Anatomia | Estados |
 |---|---|---|
-| **Cabeçalho embrulho** | Papel estampado + fita vertical + avatar + título + subtítulo | Claro/escuro |
+| **Cabeçalho aurora** | Degradê `--aurora` + grão (`--grain`, overlay 35%) + avatar + título + subtítulo | Claro/escuro |
 | **Etiqueta (item)** | Furinho · miniatura 58px · nome · loja ou badge · preço | Padrão, sempre bem-vindo (creme), comprado (azulado, 60%), recebido |
 | **Fita de orçamento** | Valor somado / limite · fita listrada · laço no fim | Cabe (magenta), passou (listras cobalto + "passou R$ X") |
 | **Botão principal** | Magenta, borda inferior escura (tecla) | Pressionado: desce 3px e a borda some |

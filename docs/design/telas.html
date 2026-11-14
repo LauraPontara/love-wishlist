@@ -37,9 +37,14 @@
   --on-ribbon: #1C1A4A;
   --ribbon-edge: #D99A00;
 
-  /* papel de embrulho (cabeçalhos) */
+  /* cabeçalho "Aurora": luzes da paleta sobre o magenta */
   --wrap: #D61F69;
   --wrap-ink: #FFFFFF;
+  --aurora:
+    radial-gradient(120% 90% at 0% 0%, #3053E3 0%, transparent 55%),
+    radial-gradient(90% 120% at 100% 10%, #FF5EA0 0%, transparent 60%),
+    radial-gradient(80% 80% at 70% 100%, #FFC22E 0%, transparent 55%),
+    #D61F69;
 
   /* estados do item */
   --tag-sempre: #FFFBEE;
@@ -75,8 +80,13 @@
   --on-ribbon: #14123A;
   --ribbon-edge: #C48A00;
 
-  --wrap: #8E1450;          /* embrulho vinho */
+  --wrap: #4A1240;          /* base vinho da aurora */
   --wrap-ink: #FFF0F6;
+  --aurora:
+    radial-gradient(120% 90% at 0% 0%, #2A3BB0 0%, transparent 55%),
+    radial-gradient(90% 120% at 100% 10%, #C21E63 0%, transparent 60%),
+    radial-gradient(80% 80% at 70% 100%, #8E5A00 0%, transparent 55%),
+    #4A1240;
 
   --tag-sempre: #2B2650;
   --tag-comprado: #1D1B49;
@@ -90,6 +100,11 @@
   --stripe-a: #FF6AA3; --stripe-b: #E0337A;
   --heart-echo: .45;
   --shadow: 0 18px 40px -24px rgba(0, 0, 0, .6);
+}
+
+/* grão sutil sobre a aurora (aplicar como ::after com mix-blend-mode: overlay; opacity: .35) */
+:root {
+  --grain: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 .55 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
 }
 
 :root {
@@ -143,9 +158,8 @@
   .scroll { flex: 1; overflow: hidden; display: flex; flex-direction: column; }
 
   /* cabeçalho embrulho */
-  .wrap { background-color: var(--wrap); color: var(--wrap-ink); padding: 20px 20px 50px; position: relative; flex: none;
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='56' height='56' viewBox='0 0 56 56'%3E%3Cg fill='%23FFFFFF' fill-opacity='.14'%3E%3Cpath d='M14 18c-2.5-3-7-1.6-7 1.8 0 3 3.6 5 7 7.6 3.4-2.6 7-4.6 7-7.6 0-3.4-4.5-4.8-7-1.8z'/%3E%3Cpath d='M42 44l-6-3.4v6.8zM42 44l6-3.4v6.8z'/%3E%3Ccircle cx='42' cy='44' r='1.6'/%3E%3C/g%3E%3C/svg%3E"); }
-  .wrap .ribbon-v { position: absolute; right: 58px; top: 0; bottom: 0; width: 18px; background: var(--ribbon); box-shadow: inset 3px 0 0 rgba(0,0,0,.1); }
+  .wrap { background: var(--aurora); color: var(--wrap-ink); padding: 20px 20px 50px; position: relative; flex: none; isolation: isolate; overflow: hidden; }
+  .wrap::after { content: ''; position: absolute; inset: 0; z-index: -1; pointer-events: none; background-image: var(--grain); mix-blend-mode: overlay; opacity: .35; }
   .who { display: flex; align-items: center; gap: 12px; position: relative; }
   .who svg { width: 52px; height: 52px; flex: none; }
   .who h2 { margin: 0; font-size: var(--t-xl); line-height: .95; letter-spacing: -0.02em; font-weight: 800; font-variation-settings: var(--display); }
@@ -296,8 +310,7 @@
 <!-- ======================= 1. Minha lista ======================= -->
 <template id="minha" data-nav="minha" data-cap="Minha lista">
   <div class="scroll">
-    <header class="wrap"><div class="ribbon-v"></div>
-      <div class="who"><svg viewBox="0 0 200 200"><use href="#bunny-chocolate"/></svg><div><h2>Minha lista</h2><small>Laura, 9 desejos</small></div></div>
+    <header class="wrap"><div class="who"><svg viewBox="0 0 200 200"><use href="#bunny-chocolate"/></svg><div><h2>Minha lista</h2><small>Laura, 9 desejos</small></div></div>
     </header>
     <div class="sheet">
       <div class="tabs"><b class="on">Desejos 9</b><b>Já tenho 4</b><b>Recebidos 2</b></div>
@@ -317,8 +330,7 @@
 <!-- ======================= 2. Adicionar ======================= -->
 <template id="adicionar" data-nav="minha" data-cap="Adicionar links">
   <div class="scroll">
-    <header class="wrap"><div class="ribbon-v"></div>
-      <div class="back">‹ Minha lista</div>
+    <header class="wrap"><div class="back">‹ Minha lista</div>
       <div class="who"><div><h2>Adicionar</h2><small>Cole um ou vários links, um por linha</small></div></div>
     </header>
     <div class="sheet">
@@ -340,8 +352,7 @@ https://www.boticario.com.br/produto/creme-maos-nativa-spa-ameixa-75g</textarea>
 <!-- ======================= 3. Revisão ======================= -->
 <template id="revisao" data-nav="minha" data-cap="Revisão em cartões (RF07 e RF09)">
   <div class="scroll">
-    <header class="wrap"><div class="ribbon-v"></div>
-      <div class="back">‹ Adicionar</div>
+    <header class="wrap"><div class="back">‹ Adicionar</div>
       <div class="who"><div><h2>Confira antes de salvar</h2><small>4 itens, 2 precisam de você</small></div></div>
     </header>
     <div class="sheet" style="gap:10px">
@@ -373,8 +384,7 @@ https://www.boticario.com.br/produto/creme-maos-nativa-spa-ameixa-75g</textarea>
 <!-- ======================= 4. Montar presente ======================= -->
 <template id="montar" data-nav="vitor" data-cap="Montar presente">
   <div class="scroll">
-    <header class="wrap"><div class="ribbon-v"></div>
-      <div class="back">‹ Lista do Vítor</div>
+    <header class="wrap"><div class="back">‹ Lista do Vítor</div>
       <div class="who"><svg viewBox="0 0 200 200"><use href="#bunny-caramelo"/></svg><div><h2>Presente do Vítor</h2><small>Aniversário, 14 de janeiro</small></div></div>
     </header>
     <div class="sheet">
@@ -400,8 +410,7 @@ https://www.boticario.com.br/produto/creme-maos-nativa-spa-ameixa-75g</textarea>
 <!-- ======================= 5. Meus combos ======================= -->
 <template id="combos" data-nav="combos" data-cap="Meus combos (visíveis só para quem montou)">
   <div class="scroll">
-    <header class="wrap"><div class="ribbon-v"></div>
-      <div class="who"><div><h2>Meus combos</h2><small>Só você vê os seus presentes</small></div></div>
+    <header class="wrap"><div class="who"><div><h2>Meus combos</h2><small>Só você vê os seus presentes</small></div></div>
     </header>
     <div class="sheet">
       <div class="box">
@@ -428,8 +437,7 @@ https://www.boticario.com.br/produto/creme-maos-nativa-spa-ameixa-75g</textarea>
 <!-- ======================= 6. Calendário ======================= -->
 <template id="datas" data-nav="datas" data-cap="Calendário do casal">
   <div class="scroll">
-    <header class="wrap"><div class="ribbon-v"></div>
-      <div class="who"><div><h2>Nossas datas</h2><small>Lembrete 7 dias antes de cada uma</small></div></div>
+    <header class="wrap"><div class="who"><div><h2>Nossas datas</h2><small>Lembrete 7 dias antes de cada uma</small></div></div>
     </header>
     <div class="sheet">
       <div class="next">

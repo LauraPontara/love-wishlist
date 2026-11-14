@@ -22,8 +22,8 @@
     --on-secondary: #FFFFFF;
     --ribbon: #FFC22E;      /* fita */
     --on-ribbon: #1C1A4A;
-    --wrap: #D61F69;        /* papel de embrulho */
     --wrap-ink: #FFFFFF;
+    --aurora: radial-gradient(120% 90% at 0% 0%, #3053E3 0%, transparent 55%), radial-gradient(90% 120% at 100% 10%, #FF5EA0 0%, transparent 60%), radial-gradient(80% 80% at 70% 100%, #FFC22E 0%, transparent 55%), #D61F69;
     --tag-sempre: #FFFBEE;
     --tag-comprado: #F4F6FF;
     --badge-sempre: #FFF2CC;
@@ -46,8 +46,8 @@
     --on-secondary: #14123A;
     --ribbon: #FFC22E;
     --on-ribbon: #14123A;
-    --wrap: #8E1450;        /* embrulho vinho */
     --wrap-ink: #FFF0F6;
+    --aurora: radial-gradient(120% 90% at 0% 0%, #2A3BB0 0%, transparent 55%), radial-gradient(90% 120% at 100% 10%, #C21E63 0%, transparent 60%), radial-gradient(80% 80% at 70% 100%, #8E5A00 0%, transparent 55%), #4A1240;
     --tag-sempre: #2B2650;
     --tag-comprado: #1D1B49;
     --badge-sempre: #4A3A12;
@@ -102,15 +102,12 @@
 
   /* ============ LISTA ============ */
   .lista { height: 100%; display: flex; flex-direction: column; }
-  .wrap-paper {
-    background-color: var(--wrap); color: var(--wrap-ink); padding: 22px 20px 54px; position: relative;
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='56' height='56' viewBox='0 0 56 56'%3E%3Cg fill='%23FFFFFF' fill-opacity='.14'%3E%3Cpath d='M14 18c-2.5-3-7-1.6-7 1.8 0 3 3.6 5 7 7.6 3.4-2.6 7-4.6 7-7.6 0-3.4-4.5-4.8-7-1.8z'/%3E%3Cpath d='M42 44l-6-3.4v6.8zM42 44l6-3.4v6.8z'/%3E%3Ccircle cx='42' cy='44' r='1.6'/%3E%3C/g%3E%3C/svg%3E");
-  }
+  .wrap-paper { background: var(--aurora); color: var(--wrap-ink); padding: 22px 20px 54px; position: relative; isolation: isolate; overflow: hidden; }
+  .wrap-paper::after { content: ''; position: absolute; inset: 0; z-index: -1; pointer-events: none; mix-blend-mode: overlay; opacity: .35; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 .55 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E"); }
   .who { display: flex; align-items: center; gap: 12px; position: relative; }
   .who svg { width: 54px; height: 54px; flex: none; }
   .wrap-paper h2 { margin: 0; font-size: 2rem; line-height: .95; letter-spacing: -0.02em; font-weight: 800; font-variation-settings: 'wdth' 78, 'opsz' 72; }
   .wrap-paper small { opacity: .85; font-size: .9rem; }
-  .ribbon-v { position: absolute; right: 58px; top: 0; bottom: 0; width: 18px; background: var(--ribbon); box-shadow: inset 3px 0 0 rgba(0,0,0,.1); }
   .body { background: var(--bg); flex: 1; margin-top: -30px; border-radius: 28px 28px 0 0; padding: 18px 16px 0; position: relative; display: flex; flex-direction: column; gap: 12px; }
   .search { background: var(--surface); border: 2px solid var(--line); border-radius: 16px; padding: 13px 16px; color: var(--ink-2); font-size: .95rem; }
   .chips { display: flex; gap: 8px; }
@@ -198,7 +195,6 @@
 <template id="lista">
   <section class="lista">
     <header class="wrap-paper">
-      <div class="ribbon-v" aria-hidden="true"></div>
       <div class="who">
         <svg viewBox="0 0 200 200" aria-hidden="true"><use href="#bunny-caramelo"/></svg>
         <div><h2>Lista do Vítor</h2><small>12 desejos</small></div>

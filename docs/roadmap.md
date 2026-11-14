@@ -9,7 +9,7 @@
 - [ ] Repetir o teste com mais links reais do casal
 - [x] Paletas *playful vibrante*: 3 propostas em [`design/paletas.html`](design/paletas.html)
 - [x] Paleta escolhida: **Papel de presente** (magenta, cobalto, amarelo-fita, azul-noite)
-- [x] Direção visual aprovada ([`design/direcao-visual.html`](design/direcao-visual.html)): etiquetas de presente, papel de embrulho, fita de orçamento e coração pulsante, nos temas claro e escuro (RF49)
+- [x] Direção visual aprovada ([`design/direcao-visual.html`](design/direcao-visual.html)): etiquetas de presente, cabeçalho Aurora (escolhido em [`design/fundos.html`](design/fundos.html)), fita de orçamento e coração pulsante, nos temas claro e escuro (RF49)
 - [x] Requisitos dos coelhinhos no site (RF40–RF48)
 - [ ] Sprite sheet dos coelhos em pixel art + protótipo do comportamento
 - [x] Design system: [`design/design-system.md`](design/design-system.md) + [`design/tokens.css`](design/tokens.css)
