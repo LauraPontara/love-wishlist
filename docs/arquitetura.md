@@ -142,7 +142,7 @@ Tabelas auxiliares:
 |---|---|
 | O item está reservado? | Existe `combo_items` dele em combo `comprado` |
 | "Ganhou 3x · última em 14/nov" | `count` e `max(given_at)` dos combos `dado` com o item |
-| "Presente de Vitor em 14/nov" (Recebidos) | O combo `dado` que levou o item a `recebido` |
+| "Presente de Vítor em 14/nov" (Recebidos) | O combo `dado` que levou o item a `recebido` |
 | Alerta "ela já comprou" (RF33) | Item `ja_tenho` dentro de combo `comprado` |
 | Aviso vago (RF15) | O servidor só devolve `true/false`: o item está em algum combo `comprado`? |
 
