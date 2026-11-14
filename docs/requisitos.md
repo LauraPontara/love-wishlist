@@ -142,6 +142,9 @@ Dois coelhos em **pixel art** passeiam pelo site o tempo todo: o **chocolate** (
 - **RF47**: **No celular**, ficam mais calmos: sentados ou dando pulinhos perto da borda de baixo, reagindo ao toque, sem passear por cima do conteúdo.
 - **RF48**: **Ajustes** tem um liga/desliga dos coelhos, salvo por pessoa.
 
+### 4.10 Tema
+- **RF49**: O site tem **tema claro e tema escuro**, os dois derivados da paleta Papel de presente. Em Ajustes: **Automático** (segue o celular, padrão), **Claro** ou **Escuro**, salvo por pessoa.
+
 ## 5. Regras de negócio
 
 - **RN01**: O dono **nunca vê** combos do outro nem reservas. A única pista é o aviso vago do RF15. A regra é aplicada no servidor.

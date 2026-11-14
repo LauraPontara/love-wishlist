@@ -31,7 +31,7 @@ Cada um cadastra o que quer ganhar, e o outro monta o presente dentro do orçame
 
 | Documento | Conteúdo |
 |---|---|
-| [`docs/requisitos.md`](docs/requisitos.md) | Dores, glossário, 48 requisitos funcionais, regras de negócio, não funcionais |
+| [`docs/requisitos.md`](docs/requisitos.md) | Dores, glossário, 49 requisitos funcionais, regras de negócio, não funcionais |
 | [`docs/arquitetura.md`](docs/arquitetura.md) | Stack, modelo de dados, extração, auth, push, cron |
 | [`docs/decisoes.md`](docs/decisoes.md) | Decisões de arquitetura (ADRs) e por que cada uma foi tomada |
 | [`docs/pesquisa-extracao.md`](docs/pesquisa-extracao.md) | Teste de extração em 13 lojas: o que funciona sem IA e o que não |
