@@ -9,6 +9,8 @@ Cada um cadastra o que quer ganhar, e o outro monta o presente dentro do orçame
 
 `Next.js` · `Supabase` · `Vercel` · `PWA` · custo **R$ 0** · sem IA
 
+**[nossa-wishlist.vercel.app](https://nossa-wishlist.vercel.app)**
+
 </div>
 
 ---

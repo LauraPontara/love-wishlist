@@ -22,9 +22,10 @@
 - [x] Auth por telefone (HMAC + pepper, JWT em cookie, rate limit, proxy) com 16 testes
 - [x] Tela de login (coração pulsante) e página inicial protegida
 - [x] `/api/health` e `/api/cron/daily` (keep-alive + limpeza), `vercel.json` em `gru1`
-- [ ] Cadastrar os telefones reais (`npm run phone:hash`, na máquina da Laura)
-- [ ] Deploy na Vercel com as variáveis de ambiente
-- [ ] Workflow de reserva do keep-alive (GitHub Actions)
+- [x] Telefones cadastrados (`npm run phone:hash`, na máquina da Laura; só os hashes)
+- [x] Deploy na Vercel: https://nossa-wishlist.vercel.app (gru1)
+- [x] Workflow de reserva do keep-alive (GitHub Actions)
+- [ ] Ligar o GitHub à Vercel (deploy automático a cada push)
 
 ## Fase 2: Listas
 - [ ] Cadastro manual, edição (com link editável) e exclusão com desfazer
