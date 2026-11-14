@@ -1,0 +1,234 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Paletas da Love Wishlist</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wdth,wght@12..96,75..100,400..800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --page-bg: #FFFFFF;
+    --page-ink: #262033;
+    --page-muted: #6A6478;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--page-bg);
+    color: var(--page-ink);
+    font-family: 'Bricolage Grotesque', system-ui, sans-serif;
+    font-variation-settings: 'wdth' 100;
+  }
+  .intro { max-width: 1180px; margin: 0 auto; padding: 48px 24px 8px; }
+  .intro h1 {
+    font-size: clamp(2rem, 4vw, 3.2rem); line-height: 1.02; margin: 0 0 12px;
+    font-weight: 800; font-variation-settings: 'wdth' 80, 'opsz' 96; letter-spacing: -0.02em;
+  }
+  .intro p { margin: 0; max-width: 60ch; color: var(--page-muted); font-size: 1.05rem; line-height: 1.5; }
+
+  .grid {
+    max-width: 1180px; margin: 0 auto; padding: 32px 24px 64px;
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(330px, 1fr)); gap: 40px 28px;
+  }
+
+  /* ---------- paletas ---------- */
+  .p-horta {
+    --bg: #ECF9F1; --surface: #FFFFFF; --ink: #2E1A10; --muted: #6D5A4E;
+    --primary: #FF7A1A; --on-primary: #2E1A10;
+    --secondary: #127F4B; --on-secondary: #FFFFFF; --secondary-soft: #D3F3E1;
+    --accent: #FF5C8A; --accent-soft: #FFE0E9;
+    --line: #CDEBD9;
+  }
+  .p-presente {
+    --bg: #FFF0F6; --surface: #FFFFFF; --ink: #1C1A4A; --muted: #5C5A86;
+    --primary: #D61F69; --on-primary: #FFFFFF;
+    --secondary: #3053E3; --on-secondary: #FFFFFF; --secondary-soft: #E1E7FF;
+    --accent: #FFC22E; --accent-soft: #FFF2CC;
+    --line: #F7D4E3;
+  }
+  .p-doceria {
+    --bg: #F6F1FF; --surface: #FFFFFF; --ink: #2A1B4A; --muted: #6B5B8C;
+    --primary: #FF6FB5; --on-primary: #2A1B4A;
+    --secondary: #14BF95; --on-secondary: #2A1B4A; --secondary-soft: #D2F6EC;
+    --accent: #FFE14D; --accent-soft: #FFF7C7;
+    --line: #E4DAFA;
+  }
+
+  .option { display: flex; flex-direction: column; gap: 18px; }
+  .option header h2 {
+    margin: 0; font-size: 1.6rem; font-weight: 800; letter-spacing: -0.01em;
+    font-variation-settings: 'wdth' 85, 'opsz' 48;
+  }
+  .option header p { margin: 4px 0 0; color: var(--page-muted); line-height: 1.45; }
+
+  .swatches { display: grid; grid-template-columns: repeat(6, 1fr); gap: 6px; }
+  .sw { border-radius: 12px; aspect-ratio: 1; position: relative; border: 1px solid rgba(0,0,0,.06); }
+  .sw span {
+    position: absolute; left: 0; right: 0; bottom: -20px; text-align: center;
+    font-size: .68rem; color: var(--page-muted);
+  }
+  .swatches-wrap { padding-bottom: 20px; }
+
+  /* ---------- tela de exemplo ---------- */
+  .phone {
+    background: var(--bg); color: var(--ink);
+    border-radius: 34px; padding: 22px 18px 18px;
+    border: 8px solid #1F1B2A;
+    max-width: 380px; width: 100%; margin: 0 auto;
+    display: flex; flex-direction: column; gap: 14px;
+  }
+  .top { display: flex; align-items: center; gap: 12px; }
+  .top svg { width: 48px; height: 48px; flex: none; }
+  .top h3 {
+    margin: 0; font-size: 1.45rem; line-height: 1.05; font-weight: 800;
+    font-variation-settings: 'wdth' 80, 'opsz' 40; letter-spacing: -0.01em;
+  }
+  .top small { color: var(--muted); font-size: .85rem; }
+
+  .search {
+    background: var(--surface); border: 2px solid var(--line); border-radius: 16px;
+    padding: 11px 14px; color: var(--muted); font-size: .95rem;
+  }
+  .chips { display: flex; gap: 8px; flex-wrap: wrap; }
+  .chip {
+    padding: 7px 12px; border-radius: 999px; font-size: .85rem; font-weight: 600;
+    background: var(--surface); border: 2px solid var(--line); color: var(--ink);
+  }
+  .chip.on { background: var(--secondary); border-color: var(--secondary); color: var(--on-secondary); }
+
+  .budget {
+    background: var(--surface); border-radius: 20px; padding: 14px 16px;
+    border: 2px solid var(--line);
+  }
+  .budget .row { display: flex; justify-content: space-between; align-items: baseline; font-size: .9rem; }
+  .budget strong { font-size: 1.3rem; font-variation-settings: 'wdth' 85; }
+  .bar { height: 12px; border-radius: 999px; background: var(--secondary-soft); margin-top: 10px; overflow: hidden; }
+  .bar i { display: block; height: 100%; width: 72%; background: var(--primary); border-radius: 999px; }
+  .budget .left { margin-top: 8px; font-size: .85rem; color: var(--muted); }
+
+  .item {
+    display: grid; grid-template-columns: 64px 1fr; gap: 12px; align-items: center;
+    background: var(--surface); border-radius: 20px; padding: 10px; border: 2px solid var(--line);
+  }
+  .thumb {
+    width: 64px; height: 64px; border-radius: 16px; display: grid; place-items: center; font-size: 30px;
+  }
+  .item h4 { margin: 0; font-size: 1rem; font-weight: 700; line-height: 1.2; }
+  .item .meta { display: flex; gap: 8px; align-items: center; margin-top: 4px; flex-wrap: wrap; }
+  .price { font-weight: 800; font-size: 1.05rem; font-variation-settings: 'wdth' 85; }
+  .tag { font-size: .75rem; font-weight: 600; padding: 3px 8px; border-radius: 999px; }
+  .tag.sempre { background: var(--accent-soft); color: var(--ink); }
+  .tag.comprei { background: var(--secondary-soft); color: var(--ink); }
+  .item small { color: var(--muted); font-size: .8rem; }
+  .item.bought { opacity: .72; }
+
+  .cta {
+    margin-top: 4px; border: 0; border-radius: 18px; padding: 15px;
+    background: var(--primary); color: var(--on-primary);
+    font: inherit; font-weight: 800; font-size: 1.05rem; cursor: pointer;
+    box-shadow: 0 4px 0 color-mix(in srgb, var(--primary) 60%, #000);
+  }
+  .cta:focus-visible { outline: 3px solid var(--ink); outline-offset: 3px; }
+
+  .contrast { font-size: .82rem; color: var(--page-muted); line-height: 1.5; margin: 0; }
+
+  @media (prefers-reduced-motion: no-preference) {
+    .bar i { animation: fill 900ms cubic-bezier(.2,.8,.2,1) 300ms both; }
+    @keyframes fill { from { width: 0; } }
+  }
+</style>
+</head>
+<body>
+  <section class="intro">
+    <h1>Qual combina com vocês?</h1>
+    <p>As três paletas aplicadas na mesma tela, a lista do Vítor vista pela Laura montando um presente. A fonte e o layout são iguais nas três para comparar só a cor.</p>
+  </section>
+
+  <main class="grid">
+    <!-- template repetido via JS abaixo -->
+  </main>
+
+  <template id="screen">
+    <div class="phone">
+      <div class="top">
+        <svg viewBox="0 0 200 200" aria-hidden="true"><use href="#bunny-caramelo"/></svg>
+        <div><h3>Lista do Vítor</h3><small>12 desejos</small></div>
+      </div>
+      <div class="search">Buscar por nome, loja ou cor</div>
+      <div class="chips">
+        <span class="chip on">Até R$ 300</span><span class="chip">Tecnologia</span><span class="chip">Comida &amp; doces</span>
+      </div>
+      <div class="budget">
+        <div class="row"><span>Presente de aniversário</span><strong>R$ 214,70</strong></div>
+        <div class="bar"><i></i></div>
+        <div class="left">Faltam R$ 85,30 para o orçamento</div>
+      </div>
+      <div class="item">
+        <div class="thumb" style="background: var(--secondary-soft)">🎧</div>
+        <div><h4>Fone JBL Tune 520BT, preto</h4>
+          <div class="meta"><span class="price">R$ 189,90</span><small>Amazon</small></div></div>
+      </div>
+      <div class="item">
+        <div class="thumb" style="background: var(--accent-soft)">🍫</div>
+        <div><h4>Chocolate Lacta Ao Leite</h4>
+          <div class="meta"><span class="price">R$ 8,49</span><span class="tag sempre">Sempre bem-vindo</span><small>ganhou 3x</small></div></div>
+      </div>
+      <div class="item bought">
+        <div class="thumb" style="background: var(--secondary-soft)">🧢</div>
+        <div><h4>Boné dad hat, laranja</h4>
+          <div class="meta"><span class="price">R$ 89,90</span><span class="tag comprei">Já comprei</span></div></div>
+      </div>
+      <button class="cta">Montar presente</button>
+    </div>
+  </template>
+
+  <!-- avatar do Vítor (mesmo desenho de public/avatars/coelho-caramelo.svg) -->
+  <svg width="0" height="0" style="position:absolute" aria-hidden="true">
+    <defs>
+      <clipPath id="bc"><circle cx="100" cy="100" r="100"/></clipPath>
+      <radialGradient id="bfur" cx="45%" cy="38%" r="70%"><stop offset="0" stop-color="#F4A458"/><stop offset="1" stop-color="#D97A2B"/></radialGradient>
+      <g id="bunny-caramelo"><g clip-path="url(#bc)">
+        <circle cx="100" cy="100" r="100" fill="#FFFFFF" opacity=".9"/>
+        <g transform="rotate(-14 72 80)"><ellipse cx="72" cy="46" rx="19" ry="46" fill="#D97A2B"/><ellipse cx="72" cy="50" rx="10" ry="34" fill="#F6A3B8"/></g>
+        <g transform="rotate(38 128 84)"><ellipse cx="128" cy="50" rx="19" ry="40" fill="#C96D22"/><ellipse cx="128" cy="54" rx="10" ry="28" fill="#F6A3B8"/></g>
+        <ellipse cx="100" cy="128" rx="64" ry="56" fill="url(#bfur)"/>
+        <path d="M100 80c-7 0-11 8-9 20 1 7 5 12 9 12s8-5 9-12c2-12-2-20-9-20z" fill="#FFE6C4"/>
+        <ellipse cx="62" cy="142" rx="13" ry="8" fill="#FF8FAB" opacity=".7"/><ellipse cx="138" cy="142" rx="13" ry="8" fill="#FF8FAB" opacity=".7"/>
+        <ellipse cx="76" cy="120" rx="8" ry="10" fill="#2A170C"/><ellipse cx="124" cy="120" rx="8" ry="10" fill="#2A170C"/>
+        <circle cx="79" cy="116" r="3" fill="#FFF"/><circle cx="127" cy="116" r="3" fill="#FFF"/>
+        <ellipse cx="91" cy="148" rx="13" ry="10" fill="#FFE6C4"/><ellipse cx="109" cy="148" rx="13" ry="10" fill="#FFE6C4"/>
+        <path d="M93 136h14c2 0 3 2 2 3.5l-6 6c-1.6 1.6-4.4 1.6-6 0l-6-6c-1-1.5 0-3.5 2-3.5z" fill="#F46F93"/>
+        <path d="M100 146v5M100 151c-3 4-7 4-9 2M100 151c3 4 7 4 9 2" fill="none" stroke="#8A4313" stroke-width="2.4" stroke-linecap="round"/>
+      </g></g>
+    </defs>
+  </svg>
+
+  <script>
+    const palettes = [
+      { cls: 'p-horta', name: 'Horta', about: 'Cenoura, folha e rosa-focinho. A mais "coelho" das três: quente, viva e com cara de quintal.',
+        sw: [['#ECF9F1','fundo'],['#FF7A1A','cenoura'],['#127F4B','folha'],['#FF5C8A','focinho'],['#2E1A10','cacau'],['#6D5A4E','texto 2']],
+        contrast: 'Contraste (mínimo AA: 4,5:1). Botão, cacau sobre cenoura: 6,3:1. Texto sobre o fundo: 15,2:1. Chip, branco sobre folha: 5,0:1.' },
+      { cls: 'p-presente', name: 'Papel de presente', about: 'Magenta, cobalto e amarelo-fita. Contrastes fortes, cara de embrulho e de festa.',
+        sw: [['#FFF0F6','fundo'],['#D61F69','magenta'],['#3053E3','cobalto'],['#FFC22E','fita'],['#1C1A4A','azul-noite'],['#5C5A86','texto 2']],
+        contrast: 'Contraste (mínimo AA: 4,5:1). Botão, branco sobre magenta: 4,9:1. Texto sobre o fundo: 14,7:1. Chip, branco sobre cobalto: 6,0:1.' },
+      { cls: 'p-doceria', name: 'Doceria', about: 'Chiclete, menta e limão. A mais doce e leve, lembra loja de bala.',
+        sw: [['#F6F1FF','fundo'],['#FF6FB5','chiclete'],['#14BF95','menta'],['#FFE14D','limão'],['#2A1B4A','uva'],['#6B5B8C','texto 2']],
+        contrast: 'Contraste (mínimo AA: 4,5:1). Botão, uva sobre chiclete: 6,1:1. Texto sobre o fundo: 14,0:1. Chip, uva sobre menta: 6,6:1.' },
+    ];
+    const grid = document.querySelector('.grid');
+    const tpl = document.getElementById('screen');
+    for (const p of palettes) {
+      const el = document.createElement('section');
+      el.className = `option ${p.cls}`;
+      el.innerHTML = `<header><h2>${p.name}</h2><p>${p.about}</p></header>
+        <div class="swatches-wrap"><div class="swatches">${p.sw.map(([c, n]) => `<div class="sw" style="background:${c}"><span>${n}</span></div>`).join('')}</div></div>`;
+      el.appendChild(tpl.content.cloneNode(true));
+      const note = document.createElement('p'); note.className = 'contrast'; note.textContent = p.contrast;
+      el.appendChild(note);
+      grid.appendChild(el);
+    }
+  </script>
+</body>
+</html>
