@@ -34,6 +34,7 @@ Cada um cadastra o que quer ganhar, e o outro monta o presente dentro do orçame
 | [`docs/requisitos.md`](docs/requisitos.md) | Dores, glossário, 39 requisitos funcionais, regras de negócio, não funcionais |
 | [`docs/arquitetura.md`](docs/arquitetura.md) | Stack, modelo de dados, extração, auth, push, cron |
 | [`docs/decisoes.md`](docs/decisoes.md) | Decisões de arquitetura (ADRs) e por que cada uma foi tomada |
+| [`docs/pesquisa-extracao.md`](docs/pesquisa-extracao.md) | Teste de extração em 13 lojas: o que funciona sem IA e o que não |
 | [`docs/roadmap.md`](docs/roadmap.md) | Fases de entrega |
 
 ## 🏗️ Stack em uma olhada
@@ -46,7 +47,7 @@ Cada um cadastra o que quer ganhar, e o outro monta o presente dentro do orçame
                               │  /api/scrape    link → produto (sem IA)
                               │      ├─ fetch próprio + JSON-LD / OpenGraph
                               │      ├─ leitores por loja (Amazon, Mercado Livre…)
-                              │      └─ Microlink / Jina (fallback grátis)
+                              │      └─ Jina Reader (fallback grátis, só o nome)
                               │
                               └─ cron diário: keep-alive · lembretes · limpeza ──▶ Web Push
 ```
@@ -94,7 +95,7 @@ npm run phone:hash -- "+55 31 9XXXX-XXXX"
 |---|---|---|
 | Vercel | Hobby | R$ 0 |
 | Supabase | Free (500 MB), São Paulo | R$ 0 · keep-alive diário evita a pausa |
-| Microlink / Jina Reader | Free | R$ 0 · só como fallback |
+| Jina Reader | Free, sem chave | R$ 0 · só como fallback |
 | Web Push | — | R$ 0 |
 
 ---

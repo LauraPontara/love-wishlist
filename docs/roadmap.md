@@ -4,7 +4,8 @@
 - [x] Levantamento de requisitos (fechado em 14/11/2026)
 - [x] Arquitetura, modelo de dados e ADRs
 - [x] Repositório, projeto Supabase em São Paulo e schema
-- [ ] **Teste de extração**: 2–3 links reais de cada loja que vocês usam → decide quais leitores construir
+- [x] **Teste de extração** com produtos públicos de 13 lojas ([resultado](pesquisa-extracao.md))
+- [ ] Repetir o teste com links reais do casal (incluindo Shopee)
 - [ ] Paletas *playful vibrante* (2–3 propostas) → escolha
 - [ ] Design system: tokens, tipografia, componentes, princípios de motion
 - [ ] Protótipo das telas: login, minha lista, lista do outro, adicionar + revisão em lote, montar presente, meus combos, calendário
@@ -22,7 +23,9 @@
 ## Fase 3: Extração
 - [ ] Colar vários links → extração em paralelo → revisão em cartões → Salvar todos
 - [ ] Classificação de erro (link quebrado × bloqueado × parcial)
-- [ ] Parsers genéricos + leitores das lojas priorizadas no teste
+- [ ] Leitor genérico (JSON-LD/OG) + leitores Amazon e Mercado Livre + fallback Jina
+- [ ] Validar o pipeline rodando de dentro da Vercel (IP de datacenter)
+- [ ] Investigar token de aplicação da API do Mercado Livre para trazer o preço
 - [ ] Atualizar preço
 
 ## Fase 4: Presentes

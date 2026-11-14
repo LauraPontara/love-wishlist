@@ -227,17 +227,19 @@ flowchart TD
 
 - **Atualizar preço** (RF18, RF26) usa o mesmo pipeline, mas só grava `price_cents` e `price_checked_at`.
 
-### Resultado dos testes (14/11/2026)
+### Resultado dos testes
 
-| Site | Fetch próprio | Jina Reader | Microlink |
-|---|---|---|---|
-| Kabum | ✅ completo (JSON-LD) | — | — |
-| Amazon | ⚠️ sem JSON-LD, precisa de leitor | ⚠️ texto bagunçado | ✅ nome e foto, ❌ preço |
-| Beleza na Web | ❌ 403 (Akamai) | ❌ | ❌ |
-| Adidas | ❌ 403 | ❌ | ❌ |
-| Magalu | ❌ 403 na busca | — | — |
+O detalhamento completo por loja está em [`pesquisa-extracao.md`](pesquisa-extracao.md). Resumo:
 
-Shopee, Shein, AliExpress e as lojas de beleza devem cair em `bloqueado` com frequência. Para elas, a tela de revisão é o caminho normal. Antes de construir os leitores, vamos testar 2–3 links reais de cada loja.
+| Resultado | Lojas |
+|---|---|
+| ✅ Leitor genérico resolve (nome, preço, foto) | Kabum, Americanas, Época, Boticário, Natura, Sephora |
+| 🟡 Leitor próprio | Amazon (completo), Mercado Livre (nome + foto; preço depende da API oficial) |
+| 🟠 Só nome | AliExpress |
+| 🔴 Bloqueado → preenchimento manual | Shein, Magalu, Beleza na Web |
+| ⚪ A testar com links reais | Shopee |
+
+Microlink saiu do pipeline: o free tier só aguenta uma rajada de ~2 chamadas. O fallback de nome é o Jina Reader.
 
 ## 6. Busca
 
