@@ -28,12 +28,12 @@ Legenda: **N** nome · **P** preço · **I** imagem · 🚫 bloqueado (403/captc
 | **Natura** | N P I | N P I | 🚫 | N P | ✅ Genérico resolve |
 | **Sephora** | N P I | N P I | 🚫 | N P | ✅ Genérico resolve |
 | **Amazon** | N P | P | N P | N P | 🟡 **Leitor próprio**: imagem em `data-old-hires`/`hiRes`, preço em `.a-price-whole`, cor em `inline-twister…color_name` |
-| **Mercado Livre** | 🚫 (verificação) | 🚫 | N I | N | 🟡 Bot de preview dá **nome + foto**. Preço só pela API oficial, que hoje exige token (403 sem auth) |
+| **Mercado Livre** | 🚫 (verificação) | 🚫 | N I | N | 🟠 Bloqueia navegador comum. Jina traz o **nome**. Preço e foto só pela API oficial, que exige token (403 sem auth) |
 | **AliExpress** | — (página JS) | I | — | N | 🟠 Só nome (via Jina). Preço vem do script da página e exige leitor próprio |
 | **Shein** | 🚫 (página de risco) | 🚫 | — | — | 🔴 Preenchimento manual |
 | **Magalu** | 🚫 403 | 🚫 | 🚫 | 🚫 | 🔴 Preenchimento manual |
 | **Beleza na Web** | 🚫 403 (Akamai) | 🚫 | 🚫 | 🚫 | 🔴 Preenchimento manual |
-| **Shopee** | não testado | | | | ⚪ Faltou um link real de produto. Testar com links do casal |
+| **Shopee** | sem dados (página JS) | N I | 🚫 | — | 🟠 UA de celular traz **nome + foto** via OpenGraph. Preço carregado por JS. A variação (`display_model_id`) fica só na URL |
 
 ### Variação (cor/tamanho/volume)
 
@@ -49,18 +49,17 @@ Legenda: **N** nome · **P** preço · **I** imagem · 🚫 bloqueado (403/captc
 
 ## 3. Decisões
 
-1. **Pipeline por loja, com detector de domínio:**
-   - **Genérico (JSON-LD → OpenGraph)** para Kabum, Americanas, Época, Boticário, Natura, Sephora e qualquer loja VTEX/Shopify desconhecida.
+1. **Respeitar bloqueios.** O pipeline se apresenta como um navegador comum (Chrome desktop ou Android) e **não** se disfarça de robô de preview (Facebook, WhatsApp) nem tenta contornar proteções antirrobô. Se a loja bloquear, o item vira `bloqueado` e é preenchido na revisão. Um teste com UA do WhatsApp foi barrado justamente por isso e não entrou no pipeline.
+2. **Pipeline por loja, com detector de domínio:**
+   - **Genérico (JSON-LD → OpenGraph)**, primeiro com UA desktop e depois com UA de celular: Kabum, Americanas, Época, Boticário, Natura, Sephora, Shopee (nome + foto) e qualquer loja VTEX/Shopify desconhecida.
    - **Leitor Amazon** (seletores).
-   - **Leitor Mercado Livre**: UA de bot de preview para nome + foto. O preço fica para a revisão (ver item 4).
-   - **Jina como último recurso** só para trazer o **nome** quando o resto falhar (AliExpress).
-   - **Shein, Magalu, Beleza na Web**: tentativa rápida (timeout curto) e, se der 403, vira `bloqueado` com o aviso "esse site não deixa a gente ler".
-2. **Microlink fora do pipeline**: a rajada do free tier é baixa demais para lotes. O Jina cobre o mesmo papel.
-3. **Não usar UA de bot como padrão**: ele ajuda no Mercado Livre e atrapalha no Boticário, na Natura e na Sephora. Cada leitor escolhe o seu UA.
+   - **Jina como último recurso**, só para trazer o **nome** (Mercado Livre, AliExpress).
+   - **Shein, Magalu, Beleza na Web**: uma tentativa com timeout curto. Se der 403, vira `bloqueado` com o aviso "esse site não deixa a gente ler".
+3. **Microlink fora do pipeline**: a rajada do free tier é baixa demais para lotes. O Jina cobre o mesmo papel.
 
 ## 4. Pontos em aberto
 
 - **Mercado Livre com preço**: criar um app gratuito no portal de desenvolvedores do ML e usar um token de aplicação na API `/items`. Precisa verificar se o token de aplicação (sem login de usuário) basta. Fica para a Fase 3.
-- **Shopee**: testar com 2–3 links reais do casal.
+- **Shopee com preço**: a Shopee tem programa oficial de afiliados/API de parceiros. Avaliar se dá para usar de graça. Até lá, o preço é manual.
 - **IP de datacenter**: este teste rodou de IP residencial. A Vercel roda em IPs de nuvem, que algumas lojas (Amazon principalmente) tratam com mais rigor. **Validar o pipeline a partir da Vercel** logo no deploy da Fase 1 e ajustar a tabela acima.
 - **Links reais do casal**: rodar o teste de novo com os links que já circularam no WhatsApp, especialmente os de lojas não listadas aqui.

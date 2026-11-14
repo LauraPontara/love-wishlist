@@ -234,10 +234,11 @@ O detalhamento completo por loja está em [`pesquisa-extracao.md`](pesquisa-extr
 | Resultado | Lojas |
 |---|---|
 | ✅ Leitor genérico resolve (nome, preço, foto) | Kabum, Americanas, Época, Boticário, Natura, Sephora |
-| 🟡 Leitor próprio | Amazon (completo), Mercado Livre (nome + foto; preço depende da API oficial) |
-| 🟠 Só nome | AliExpress |
+| 🟡 Leitor próprio | Amazon (completo) |
+| 🟠 Parcial | Shopee (nome + foto), Mercado Livre e AliExpress (só nome, via Jina) |
 | 🔴 Bloqueado → preenchimento manual | Shein, Magalu, Beleza na Web |
-| ⚪ A testar com links reais | Shopee |
+
+O pipeline se apresenta como navegador comum e **respeita bloqueios**: não se disfarça de robô de preview nem tenta contornar proteções.
 
 Microlink saiu do pipeline: o free tier só aguenta uma rajada de ~2 chamadas. O fallback de nome é o Jina Reader.
 
