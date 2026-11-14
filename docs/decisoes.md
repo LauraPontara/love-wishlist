@@ -136,8 +136,8 @@ Formato curto: contexto → decisão → consequências. Decisões substituídas
 
 **Decisão.**
 - Um componente próprio, inspirado no oneko.js:
-  - **Um sprite sheet base** de coelho em pixel art, com as animações: parado, andar, pular, sentar, coçar orelha, lavar, dormir, feliz.
-  - As **pelagens** chocolate e caramelo são geradas trocando a paleta no canvas, sem desenhar o sprite duas vezes.
+  - **Sprites gerados por código** (`sprites.js`): cada pose (sentado, piscar, nariz, feliz, curioso, lavar ×2, agachado, no ar, dormindo) é um conjunto de parâmetros desenhado em 32×32 de perfil e "pixelizado" (cores travadas na paleta + contorno de 1px), num canvas 40×40 com margem para orelhas e focinho não serem cortados.
+  - As **pelagens** chocolate e caramelo trocam só a paleta e um detalhe: topete (Laura) e orelha com a ponta dobrada para a frente (Vítor).
   - **Máquina de estados** por coelho, com plataformas lidas via `getBoundingClientRect()` dos elementos marcados como pousáveis.
 - Eventos do app (`item:salvo`, `combo:dado`, `input:foco`) disparam as reações.
 - O canvas fica com `pointer-events: none`. O clique no coelho é detectado pela posição.

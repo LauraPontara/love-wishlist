@@ -1,0 +1,24 @@
+<!doctype html>
+<html lang="pt-BR"><head><meta charset="utf-8"><title>Sprites</title>
+<style>body{margin:0;padding:24px;background:#FFF0F6;font-family:system-ui;color:#1C1A4A}.row{display:flex;flex-wrap:wrap;gap:18px;margin-bottom:18px;align-items:end}figure{margin:0;text-align:center;font-size:12px}canvas{image-rendering:pixelated;width:128px;height:128px;background:#FFE1EE;border-radius:8px}.dark{background:#14123A;color:#FFF0F6;padding:16px;border-radius:16px}.dark canvas{background:#221F55}</style>
+</head><body><div id="out"></div>
+<script type="module">
+import { buildSprites, FRAME_NAMES } from './sprites.js';
+const s = buildSprites();
+const out = document.getElementById('out');
+for (const theme of ['', 'dark']) {
+  const wrap = document.createElement('div'); wrap.className = theme;
+  for (const fur of ['chocolate', 'caramelo']) {
+    const row = document.createElement('div'); row.className = 'row';
+    for (const n of FRAME_NAMES) {
+      const f = document.createElement('figure');
+      const c = document.createElement("canvas"); c.width = 40; c.height = 40;
+      c.getContext('2d').drawImage(s[fur][n], 0, 0);
+      f.append(c, Object.assign(document.createElement('figcaption'), { textContent: `${fur} ${n}` }));
+      row.appendChild(f);
+    }
+    wrap.appendChild(row);
+  }
+  out.appendChild(wrap);
+}
+</script></body></html>

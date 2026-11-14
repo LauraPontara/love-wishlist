@@ -1,0 +1,108 @@
+<!doctype html>
+<html lang="pt-BR" data-theme="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Coelhinhos: protótipo</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wdth,wght@12..96,75..100,400..800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../tokens.css">
+<style>
+  * { box-sizing: border-box; }
+  body { margin: 0; font-family: var(--font); background: var(--bg); color: var(--ink); min-height: 100vh; }
+  header { background: var(--aurora); color: var(--wrap-ink); padding: 32px 24px 84px; position: relative; isolation: isolate; overflow: hidden; }
+  header::after { content: ''; position: absolute; inset: 0; z-index: -1; background-image: var(--grain); mix-blend-mode: overlay; opacity: .35; pointer-events: none; }
+  .wrap { max-width: 760px; margin: 0 auto; }
+  .who { display: flex; align-items: center; gap: 14px; }
+  .who img { width: 60px; height: 60px; }
+  h1 { margin: 0; font-size: 2.4rem; line-height: .95; letter-spacing: -0.02em; font-weight: 800; font-variation-settings: var(--display); }
+  header small { opacity: .85; }
+  main { margin-top: -40px; border-radius: var(--r-panel) var(--r-panel) 0 0; background: var(--bg); position: relative; padding: 28px 24px 160px; }
+  .row { display: flex; gap: 12px; flex-wrap: wrap; align-items: center; }
+  .search { flex: 1; min-width: 220px; border-radius: var(--r-field); border: 2px solid var(--line); background: var(--surface); color: var(--ink); padding: 14px 16px; font: inherit; font-size: 1rem; }
+  .search:focus-visible { outline: 3px solid var(--ribbon); outline-offset: 2px; }
+  .chips { display: flex; gap: 8px; margin: 14px 0 22px; }
+  .chip { padding: 8px 14px; border-radius: 999px; font-size: .9rem; font-weight: 600; border: 2px solid var(--line); background: var(--surface); color: var(--ink); cursor: pointer; font-family: inherit; }
+  .chip.on { background: var(--secondary); border-color: var(--secondary); color: var(--on-secondary); }
+  .tags { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 64px 18px; margin-top: 54px; }
+  .tag { --tag-bg: var(--surface); position: relative; display: grid; grid-template-columns: 56px 1fr auto; align-items: center; gap: 12px; padding: 10px 16px 10px 30px; background: var(--tag-bg); clip-path: polygon(18px 0, 100% 0, 100% 100%, 18px 100%, 0 50%); border-radius: var(--r-tag); }
+  .tag::before { content: ''; position: absolute; left: 11px; top: 50%; width: 9px; height: 9px; translate: 0 -50%; border-radius: 50%; background: var(--bg); box-shadow: inset 0 0 0 2px var(--line); }
+  .tag.sempre { --tag-bg: var(--tag-sempre); }
+  .thumb { width: 56px; height: 56px; border-radius: 12px; display: grid; place-items: center; font-size: 28px; background: var(--bg); }
+  .tag h3 { margin: 0; font-size: 1rem; font-weight: 700; }
+  .meta { font-size: .82rem; color: var(--ink-2); }
+  .price { font-weight: 800; font-size: 1.08rem; font-variation-settings: 'wdth' 80; }
+  .btn { border: 0; border-radius: var(--r-btn); padding: 14px 20px; font: inherit; font-weight: 800; cursor: pointer; }
+  .btn.primary { background: var(--primary); color: var(--on-primary); box-shadow: 0 5px 0 var(--primary-edge); }
+  .btn.ribbon { background: var(--ribbon); color: var(--on-ribbon); box-shadow: 0 5px 0 var(--ribbon-edge); }
+  .btn:active { translate: 0 3px; box-shadow: 0 2px 0 var(--primary-edge); }
+  .btn:focus-visible { outline: 3px solid var(--ink); outline-offset: 3px; }
+
+  .demo { max-width: 760px; margin: 0 auto 22px; background: var(--surface); color: var(--ink); border: 2px dashed var(--line); border-radius: 18px; padding: 14px 16px; font-size: .9rem; }
+  .demo h2 { margin: 0 0 4px; font-size: 1rem; font-weight: 800; }
+  .demo p { margin: 0 0 10px; color: var(--ink-2); line-height: 1.4; font-size: .85rem; }
+  .demo .btns { display: flex; flex-wrap: wrap; gap: 6px; }
+  .demo button { border: 2px solid var(--line); background: var(--bg); color: var(--ink); border-radius: 12px; padding: 7px 11px; font: inherit; font-weight: 700; cursor: pointer; }
+  .demo button[aria-pressed="true"] { background: var(--secondary); color: var(--on-secondary); border-color: var(--secondary); }
+  .toast { position: fixed; left: 50%; bottom: 24px; translate: -50% 0; background: var(--ink); color: var(--bg); padding: 10px 16px; border-radius: 12px; font-weight: 700; opacity: 0; transition: opacity .2s; z-index: 60; }
+  .toast.show { opacity: 1; }
+</style>
+</head>
+<body>
+<header>
+  <div class="wrap who">
+    <img src="../../../public/avatars/coelho-chocolate.svg" alt="">
+    <div><h1>Minha lista</h1><small>Laura, 9 desejos</small></div>
+  </div>
+</header>
+
+<main>
+  <aside class="demo" aria-label="Controles do protótipo">
+    <h2>Testar os coelhinhos</h2>
+    <p>Eles passeiam sozinhos. Clique num coelho para fazer carinho, clique na busca para ver a curiosidade, ou fique 25s sem mexer para eles cochilarem.</p>
+    <div class="btns">
+      <button id="b-item">Simular: itens salvos</button>
+      <button id="b-dado">Simular: combo dado</button>
+      <button id="b-sleep">Fazer cochilar agora</button>
+      <button id="b-calm" aria-pressed="false">Modo celular (calmo)</button>
+      <button id="b-theme" aria-pressed="false">Tema escuro</button>
+      <button id="b-off" aria-pressed="false">Desligar coelhos</button>
+    </div>
+  </aside>
+  <div class="wrap">
+    <div class="row">
+      <input class="search" data-perch placeholder="Buscar por nome, loja ou cor" aria-label="Buscar">
+      <button class="btn ribbon" data-perch id="add">Adicionar links</button>
+    </div>
+    <div class="chips"><button class="chip on">Todos</button><button class="chip">Beleza</button><button class="chip">Roupas</button><button class="chip">Sempre bem-vindos</button></div>
+    <div class="tags">
+      <div class="tag" data-perch><div class="thumb">👗</div><div><h3>Vestido midi linho, verde, M</h3><div class="meta">Shein</div></div><div class="price">R$ 129,90</div></div>
+      <div class="tag sempre" data-perch><div class="thumb">🧼</div><div><h3>Sabonete Nativa SPA Ameixa</h3><div class="meta">Sempre bem-vindo, ganhou 2x</div></div><div class="price">R$ 54,90</div></div>
+      <div class="tag" data-perch><div class="thumb">🎨</div><div><h3>Paleta de sombras 16 cores</h3><div class="meta">Shopee</div></div><div class="price">R$ 39,90</div></div>
+      <div class="tag sempre" data-perch><div class="thumb">🍬</div><div><h3>Bala Fini Dentaduras</h3><div class="meta">Sempre bem-vindo</div></div><div class="price">R$ 9,99</div></div>
+    </div>
+    <div class="row" style="margin-top:70px"><button class="btn primary" data-perch id="dado">Marcar combo como dado</button></div>
+  </div>
+</main>
+
+<div class="toast" id="toast"></div>
+
+<script type="module">
+  import { startBunnies } from './bunnies.js';
+  const bunnies = startBunnies({ perchSelector: '[data-perch]' });
+  window.bunnies = bunnies;
+  const toast = (msg) => { const t = document.getElementById('toast'); t.textContent = msg; t.classList.add('show'); setTimeout(() => t.classList.remove('show'), 1800); };
+  const toggle = (btn, fn) => btn.addEventListener('click', () => { const on = btn.getAttribute('aria-pressed') !== 'true'; btn.setAttribute('aria-pressed', on); fn(on); });
+  document.getElementById('b-item').onclick = () => { bunnies.emit('item:salvo'); toast('3 itens salvos'); };
+  document.getElementById('add').onclick = () => { bunnies.emit('item:salvo'); toast('3 itens salvos'); };
+  const dado = () => { bunnies.emit('combo:dado'); toast('Combo marcado como dado'); };
+  document.getElementById('b-dado').onclick = dado;
+  document.getElementById('dado').onclick = dado;
+  document.getElementById('b-sleep').onclick = () => bunnies.sleepNow();
+  toggle(document.getElementById('b-calm'), (on) => bunnies.setCalm(on));
+  toggle(document.getElementById('b-theme'), (on) => (document.documentElement.dataset.theme = on ? 'dark' : 'light'));
+  toggle(document.getElementById('b-off'), (on) => bunnies.setEnabled(!on));
+</script>
+</body>
+</html>
