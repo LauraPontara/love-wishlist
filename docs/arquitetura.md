@@ -19,7 +19,7 @@ flowchart LR
   subgraph Extracao["🌐 Extração (grátis)"]
     Fetch[Fetch próprio + JSON-LD / OG / microdata]
     Adapters[Leitores por loja]
-    ML[Microlink / Jina Reader]
+    ML[Jina Reader]
   end
 
   DB[(Supabase Postgres · sa-east-1)]
@@ -50,7 +50,7 @@ flowchart LR
 | Validação | **Zod** | Input da API e saída dos parsers |
 | Banco | **Supabase Postgres** (free, São Paulo) | 500 MB, painel, backups |
 | Sessão | **jose** (JWT em cookie httpOnly) | Leve, roda no Middleware |
-| Extração | `fetch` + **cheerio** + leitores por loja · Microlink · Jina | Em camadas, tudo grátis |
+| Extração | `fetch` + **cheerio** + leitores por loja · Jina Reader | Em camadas, tudo grátis |
 | Push | **web-push** (VAPID) | Grátis, sem serviço terceiro |
 | Hospedagem | **Vercel Hobby**, funções em `gru1` | Grátis, perto do banco |
 
@@ -204,7 +204,7 @@ flowchart TD
   S -- DNS/timeout/404/410 --> Q
   S -- 403/429/captcha --> B[bloqueado]
   S -- 200 --> P[Parsers: leitor da loja → JSON-LD Product → microdata → OpenGraph → URL]
-  B --> M[Microlink / Jina: tenta ao menos nome e foto]
+  B --> M[Jina Reader: tenta ao menos o nome]
   M --> P2[parcial ou bloqueado]
   P --> K{nome + preço?}
   K -- sim --> OK[ok]

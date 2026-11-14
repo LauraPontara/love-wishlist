@@ -85,7 +85,7 @@ Formato curto: contexto → decisão → consequências. Decisões substituídas
 - Os testes com lojas reais mostraram que o gargalo é o **bloqueio antirrobô**, não a interpretação: Kabum funciona, Amazon precisa de um leitor próprio, e Beleza na Web e Adidas bloqueiam até os serviços grátis.
 
 **Decisão.**
-- Ordem de tentativa: fetch próprio + dados estruturados → leitores por loja → Microlink/Jina (nome e foto).
+- Ordem de tentativa: fetch próprio + dados estruturados → leitores por loja → Jina Reader (só o nome). Microlink foi testado e descartado (ver [pesquisa-extracao.md](pesquisa-extracao.md)).
 - A categoria é sugerida por palavras-chave.
 - A tela de revisão em lote é sempre exibida.
 - Links com problema são classificados em `link_quebrado` × `bloqueado` × `parcial`, cada um com aviso próprio.
