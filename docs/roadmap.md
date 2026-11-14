@@ -14,7 +14,7 @@
 - [ ] Sprite sheet dos coelhos em pixel art + protótipo do comportamento
 - [x] Design system: [`design/design-system.md`](design/design-system.md) + [`design/tokens.css`](design/tokens.css)
 - [x] Protótipo das telas: [`design/telas.html`](design/telas.html) (claro e escuro)
-- [ ] Aprovar as telas
+- [x] Telas aprovadas (com cabeçalho Aurora)
 
 ## Fase 1: Fundação
 - [ ] Next.js + Tailwind + Motion, deploy na Vercel (`gru1`)
