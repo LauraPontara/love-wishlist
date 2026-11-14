@@ -1,0 +1,48 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" role="img" aria-labelledby="t">
+  <title id="t">Coelho caramelo</title>
+  <defs>
+    <clipPath id="c"><circle cx="100" cy="100" r="100"/></clipPath>
+    <radialGradient id="fur" cx="45%" cy="38%" r="70%">
+      <stop offset="0" stop-color="#F4A458"/>
+      <stop offset="1" stop-color="#D97A2B"/>
+    </radialGradient>
+  </defs>
+  <g clip-path="url(#c)">
+    <circle cx="100" cy="100" r="100" fill="#C9F2E3"/>
+    <circle cx="40" cy="42" r="10" fill="#FFF" opacity=".55"/>
+    <circle cx="164" cy="64" r="6" fill="#FFF" opacity=".45"/>
+
+    <!-- orelha esquerda em pé, direita caída -->
+    <g transform="rotate(-14 72 80)">
+      <ellipse cx="72" cy="46" rx="19" ry="46" fill="#D97A2B"/>
+      <ellipse cx="72" cy="50" rx="10" ry="34" fill="#F6A3B8"/>
+    </g>
+    <g transform="rotate(38 128 84)">
+      <ellipse cx="128" cy="50" rx="19" ry="40" fill="#C96D22"/>
+      <ellipse cx="128" cy="54" rx="10" ry="28" fill="#F6A3B8"/>
+    </g>
+
+    <!-- cabeça -->
+    <ellipse cx="100" cy="128" rx="64" ry="56" fill="url(#fur)"/>
+    <!-- mancha clara na testa -->
+    <path d="M100 80c-7 0-11 8-9 20 1 7 5 12 9 12s8-5 9-12c2-12-2-20-9-20z" fill="#FFE6C4"/>
+
+    <!-- bochechas -->
+    <ellipse cx="62" cy="142" rx="13" ry="8" fill="#FF8FAB" opacity=".7"/>
+    <ellipse cx="138" cy="142" rx="13" ry="8" fill="#FF8FAB" opacity=".7"/>
+
+    <!-- olhos -->
+    <ellipse cx="76" cy="120" rx="8" ry="10" fill="#2A170C"/>
+    <ellipse cx="124" cy="120" rx="8" ry="10" fill="#2A170C"/>
+    <circle cx="79" cy="116" r="3" fill="#FFF"/>
+    <circle cx="127" cy="116" r="3" fill="#FFF"/>
+    <circle cx="74" cy="124" r="1.4" fill="#FFF" opacity=".8"/>
+    <circle cx="122" cy="124" r="1.4" fill="#FFF" opacity=".8"/>
+
+    <!-- focinho -->
+    <ellipse cx="91" cy="148" rx="13" ry="10" fill="#FFE6C4"/>
+    <ellipse cx="109" cy="148" rx="13" ry="10" fill="#FFE6C4"/>
+    <path d="M93 136h14c2 0 3 2 2 3.5l-6 6c-1.6 1.6-4.4 1.6-6 0l-6-6c-1-1.5 0-3.5 2-3.5z" fill="#F46F93"/>
+    <path d="M100 146v5M100 151c-3 4-7 4-9 2M100 151c3 4 7 4 9 2" fill="none" stroke="#8A4313" stroke-width="2.4" stroke-linecap="round"/>
+  </g>
+</svg>

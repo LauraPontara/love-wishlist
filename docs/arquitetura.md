@@ -69,7 +69,7 @@ erDiagram
   profiles {
     text id PK "slug"
     text display_name
-    text avatar_emoji
+    text avatar "coelho-chocolate | coelho-caramelo"
     bool notify_new_items
     bool notify_occasions
   }

@@ -29,7 +29,7 @@ $$;
 create table public.profiles (
   id                text primary key check (id ~ '^[a-z0-9_-]{2,32}$'),
   display_name      text not null check (char_length(display_name) between 1 and 40),
-  avatar_emoji      text,
+  avatar            text check (avatar is null or avatar ~ '^[a-z0-9-]{2,40}$'), -- arquivo em public/avatars/{avatar}.svg
   notify_new_items  boolean not null default true,
   notify_occasions  boolean not null default true,
   created_at        timestamptz not null default now()
