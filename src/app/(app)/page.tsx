@@ -3,6 +3,7 @@ import { Suspense } from "react";
 import { ItemBrowser } from "@/components/item-browser";
 import { PageHeader, Sheet } from "@/components/page-header";
 import { getCurrentUser } from "@/lib/auth/current-user";
+import { getReceivedGifts } from "@/lib/combos/queries";
 import { getMyItems } from "@/lib/items/queries";
 
 export default function MyListPage() {
@@ -17,7 +18,7 @@ export default function MyListPage() {
 
 async function MyList() {
   const user = await getCurrentUser();
-  const items = await getMyItems(user.id);
+  const [items, gifts] = await Promise.all([getMyItems(user.id), getReceivedGifts(user.id)]);
   const wishes = items.filter((i) => i.status === "desejado").length;
   return (
     <>
@@ -25,7 +26,7 @@ async function MyList() {
         subtitle={`${user.displayName}, ${wishes} ${wishes === 1 ? "desejo" : "desejos"}`}
         action={<Link href="/item/novo" className="btn btn-ribbon">Adicionar item</Link>} />
       <Sheet>
-        <ItemBrowser items={items} mode="mine" ownerName={user.displayName} />
+        <ItemBrowser items={items} mode="mine" ownerName={user.displayName} gifts={gifts} />
       </Sheet>
     </>
   );

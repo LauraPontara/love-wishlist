@@ -2,7 +2,9 @@
 
 import Link from "next/link";
 import { useEffect, useMemo, useState, useTransition } from "react";
+import { giveThis, shouldWaitBeforeOwning } from "@/app/actions/combos";
 import { restoreItem, setOwned } from "@/app/actions/items";
+import { shortDate } from "@/lib/combos/domain";
 import { CATEGORIES, matchesSearch, parsePrice, type Item } from "@/lib/items/domain";
 import { TagCard } from "./tag-card";
 
@@ -12,7 +14,14 @@ type Sort = "recentes" | "menor" | "maior" | "nome";
 const TAB_LABEL: Record<Tab, string> = { desejado: "Desejos", ja_tenho: "Já tenho", recebido: "Recebidos" };
 export const UNDO_KEY = "nw:undo-delete";
 
-export function ItemBrowser({ items, mode, ownerName }: { items: Item[]; mode: "mine" | "partner"; ownerName: string }) {
+export type Gift = { times: number; lastAt: string; fromName: string };
+
+export function ItemBrowser({ items, mode, ownerName, gifts = {}, purchasedByMe = [] }: {
+  items: Item[]; mode: "mine" | "partner"; ownerName: string;
+  gifts?: Record<string, Gift>; purchasedByMe?: string[];
+}) {
+  const [confirmWait, setConfirmWait] = useState<Item | null>(null);
+  const purchased = useMemo(() => new Set(purchasedByMe), [purchasedByMe]);
   const [tab, setTab] = useState<Tab>("desejado");
   const [query, setQuery] = useState("");
   const [category, setCategory] = useState<string | null>(null);
@@ -61,6 +70,13 @@ export function ItemBrowser({ items, mode, ownerName }: { items: Item[]; mode: "
     if (sort === "nome") list.sort((a, b) => a.title.localeCompare(b.title, "pt-BR"));
     return list;
   }, [items, mode, tab, query, category, kind, budget, sort]);
+
+  // RF15: antes de marcar "Já tenho", um aviso vago se o outro já comprou (sem revelar nada)
+  const askOwned = (item: Item) =>
+    startTransition(async () => {
+      if (await shouldWaitBeforeOwning(item.id)) setConfirmWait(item);
+      else toggleOwned(item, true);
+    });
 
   const toggleOwned = (item: Item, owned: boolean) =>
     startTransition(async () => {
@@ -114,20 +130,43 @@ export function ItemBrowser({ items, mode, ownerName }: { items: Item[]; mode: "
             <li key={item.id}>
               {mode === "mine" ? (
                 <TagCard item={item} href={`/item/${item.id}`} dim={item.status !== "desejado"}
-                  badge={item.kind === "sempre" ? <span className="badge sempre">Sempre bem-vindo</span> : item.status === "recebido" ? <span className="badge">Recebido</span> : undefined}
-                  action={item.kind === "unico" && (
+                  badge={item.kind === "sempre"
+                    ? <span className="badge sempre">{gifts[item.id] ? `Sempre bem-vindo, ganhou ${gifts[item.id].times}x, última em ${shortDate(gifts[item.id].lastAt)}` : "Sempre bem-vindo"}</span>
+                    : item.status === "recebido"
+                      ? <span className="badge">{gifts[item.id] ? `Presente de ${gifts[item.id].fromName} em ${shortDate(gifts[item.id].lastAt)}` : "Recebido"}</span>
+                      : undefined}
+                  action={item.kind === "unico" && item.status !== "recebido" && (
                     <button type="button" className="btn btn-ghost btn-sm relative z-10" disabled={pending}
-                      onClick={() => toggleOwned(item, item.status === "desejado")}>
+                      onClick={() => (item.status === "desejado" ? askOwned(item) : toggleOwned(item, false))}>
                       {item.status === "desejado" ? "Já tenho" : "Voltar"}
                     </button>
                   )} />
               ) : (
-                <TagCard item={item} href={item.url} external
-                  badge={item.kind === "sempre" ? <span className="badge sempre">Sempre bem-vindo</span> : undefined} />
+                <TagCard item={item} href={item.url} external dim={purchased.has(item.id) && item.kind === "unico"}
+                  badge={purchased.has(item.id)
+                    ? <span className="badge">Você já comprou</span>
+                    : item.kind === "sempre" ? <span className="badge sempre">Sempre bem-vindo</span> : undefined}
+                  action={!(purchased.has(item.id) && item.kind === "unico") && (
+                    <button type="button" className="btn btn-primary btn-sm relative z-10" disabled={pending}
+                      onClick={() => startTransition(async () => { await giveThis(item.id); })}>Dar este</button>
+                  )} />
               )}
             </li>
           ))}
         </ul>
+      )}
+
+      {confirmWait && (
+        <div role="alertdialog" aria-modal="true" aria-labelledby="wait-title" className="fixed inset-0 z-50 grid place-items-center p-4" style={{ background: "rgba(14,12,38,.55)" }}>
+          <div className="w-full max-w-[420px] rounded-[24px] p-6 flex flex-col gap-4" style={{ background: "var(--surface)" }}>
+            <h2 id="wait-title" className="text-xl font-extrabold">Tem certeza?</h2>
+            <p style={{ color: "var(--ink-2)" }}>Talvez seja melhor esperar um pouco 👀</p>
+            <div className="flex flex-wrap gap-2 justify-end">
+              <button className="btn btn-ghost" onClick={() => setConfirmWait(null)}>Vou esperar</button>
+              <button className="btn btn-primary" onClick={() => { const item = confirmWait; setConfirmWait(null); toggleOwned(item, true); }}>Marcar mesmo assim</button>
+            </div>
+          </div>
+        </div>
       )}
 
       {toast && (

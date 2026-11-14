@@ -2,6 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useActionState, useState, useTransition } from "react";
+import { shouldWaitBeforeOwning } from "@/app/actions/combos";
 import { deleteItem, setOwned, type FormState } from "@/app/actions/items";
 import { CATEGORIES, parsePrice, parseVariant, storeFromUrl, variantToText, type Item } from "@/lib/items/domain";
 import { TagCard } from "./tag-card";
@@ -185,7 +186,12 @@ function ItemExtraActions({ item }: { item: Item }) {
     <>
       {item.kind === "unico" && (
         <button type="button" className="btn btn-ghost" disabled={pending}
-          onClick={() => start(async () => { await setOwned(item.id, item.status === "desejado"); router.push("/"); })}>
+          onClick={() => start(async () => {
+            const owning = item.status === "desejado";
+            // RF15: aviso vago se o outro já comprou, sem revelar nada
+            if (owning && (await shouldWaitBeforeOwning(item.id)) && !confirm("Tem certeza? Talvez seja melhor esperar um pouco 👀")) return;
+            await setOwned(item.id, owning); router.push("/");
+          })}>
           {item.status === "desejado" ? "Já tenho" : "Voltar para os desejos"}
         </button>
       )}

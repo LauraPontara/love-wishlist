@@ -99,10 +99,18 @@ body {
 .field::placeholder { color: var(--ink-2); opacity: .8; }
 .field:focus-visible { outline: 3px solid var(--ribbon); outline-offset: 2px; }
 
+/* ---------- caixa de presente (combo) ---------- */
+.gift-box { position: relative; overflow: hidden; }
+.gift-box::before, .gift-box::after { content: ''; position: absolute; background: var(--ribbon); pointer-events: none; }
+.gift-box::before { top: 0; height: 52px; right: 34px; width: 10px; border-radius: 0 0 3px 3px; }
+.gift-box::after { top: 18px; right: 0; width: 70px; height: 10px; border-radius: 3px 0 0 3px; }
+
 /* ---------- batimento (um por tela) ---------- */
 @media (prefers-reduced-motion: no-preference) {
   .beat { animation: beat var(--beat) var(--ease-beat) infinite; }
   .beat-soft { animation: beat-soft var(--beat) var(--ease-beat) infinite; }
   @keyframes beat { 0% { scale: 1; } 12% { scale: 1.12; } 24% { scale: 1; } 36% { scale: 1.07; } 52%, 100% { scale: 1; } }
+  .burst { animation: burst 1.2s var(--spring) both; }
+  @keyframes burst { 0% { scale: .2; opacity: 0; } 40% { scale: 1.35; opacity: 1; } 70% { scale: .95; } 100% { scale: 1; opacity: .7; } }
   @keyframes beat-soft { 0%, 52%, 100% { scale: 1; opacity: .55; } 12% { scale: 1.06; opacity: 1; } 36% { scale: 1.03; opacity: .85; } }
 }
