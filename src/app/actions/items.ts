@@ -46,6 +46,37 @@ function fieldErrors(result: ReturnType<typeof readForm>): FormState {
 
 const DUPLICATE = "Esse link já está na sua lista.";
 
+export type Draft = {
+  url: string; title: string; price: string; store: string; category: string; kind: string;
+  variant: string; notes: string; imageUrl: string;
+  scrapeStatus: "ok" | "parcial" | "bloqueado" | "link_quebrado" | "manual";
+};
+
+/** RF07: "Salvar todos". Salva o que dá e devolve o erro de cada cartão que falhou. */
+export async function createItems(drafts: Draft[]): Promise<{ savedIndexes: number[]; errors: Record<number, Record<string, string>> }> {
+  const profileId = await requireProfileId();
+  const savedIndexes: number[] = [];
+  const errors: Record<number, Record<string, string>> = {};
+
+  for (const [i, d] of drafts.slice(0, 20).entries()) {
+    const parsed = itemFormSchema.safeParse(d);
+    if (!parsed.success) {
+      const out: Record<string, string> = {};
+      for (const issue of parsed.error.issues) out[String(issue.path[0])] ??= issue.message;
+      errors[i] = out;
+      continue;
+    }
+    const { price, row } = toRow(parsed);
+    if (price === "invalido") { errors[i] = { price: "Use um valor como 129,90." }; continue; }
+    const status = ["ok", "parcial", "bloqueado", "link_quebrado", "manual"].includes(d.scrapeStatus) ? d.scrapeStatus : "manual";
+    const { error } = await db().from("items").insert({ ...row, owner_id: profileId, scrape_status: status });
+    if (error) errors[i] = error.code === "23505" ? { url: DUPLICATE } : { form: "Não deu para salvar este item." };
+    else savedIndexes.push(i);
+  }
+  if (savedIndexes.length) refresh();
+  return { savedIndexes, errors };
+}
+
 export async function createItem(_prev: FormState, formData: FormData): Promise<FormState> {
   const profileId = await requireProfileId();
   const parsed = readForm(formData);

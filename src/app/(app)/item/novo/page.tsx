@@ -1,17 +1,16 @@
 import type { Metadata } from "next";
-import { createItem } from "@/app/actions/items";
-import { ItemForm } from "@/components/item-form";
+import { NewItem } from "@/components/new-item";
 import { PageHeader, Sheet } from "@/components/page-header";
 
-export const metadata: Metadata = { title: "Adicionar item · Nossa Wishlist" };
+export const metadata: Metadata = { title: "Adicionar · Nossa Wishlist" };
+export const maxDuration = 60; // "Salvar todos" pode salvar vários itens
 
-// Fase 2: cadastro manual. Na Fase 3 entra "colar vários links" com extração.
 export default function NewItemPage() {
   return (
     <main className="flex-1 flex flex-col">
-      <PageHeader title="Adicionar item" subtitle="Cole o link e preencha o resto." back={{ href: "/", label: "Minha lista" }} />
+      <PageHeader title="Adicionar" subtitle="Cole um ou vários links. A gente busca nome, foto e preço." back={{ href: "/", label: "Minha lista" }} />
       <Sheet>
-        <ItemForm action={createItem} />
+        <NewItem />
       </Sheet>
     </main>
   );
