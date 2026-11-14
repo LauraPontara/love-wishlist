@@ -1,0 +1,115 @@
+/* =============================================================================
+   Love Wishlist: design tokens (paleta "Papel de presente")
+   Fonte da verdade das cores, tipografia, espaços e movimento.
+   Na Fase 1 este arquivo vira src/styles/tokens.css do Next.js.
+   Contraste AA verificado em todas as combinações texto/fundo (ver design-system.md).
+   ============================================================================= */
+
+:root,
+[data-theme="light"] {
+  /* superfícies */
+  --bg: #FFF0F6;            /* rosa papel */
+  --surface: #FFFFFF;
+  --surface-sunk: #FFE8F1;
+  --line: #FFE1EE;
+
+  /* texto */
+  --ink: #1C1A4A;           /* azul-noite */
+  --ink-2: #5C5A86;
+
+  /* ação */
+  --primary: #D61F69;       /* magenta */
+  --on-primary: #FFFFFF;
+  --primary-edge: #A8124F;
+  --secondary: #3053E3;     /* cobalto */
+  --on-secondary: #FFFFFF;
+  --ribbon: #FFC22E;        /* fita */
+  --on-ribbon: #1C1A4A;
+  --ribbon-edge: #D99A00;
+
+  /* papel de embrulho (cabeçalhos) */
+  --wrap: #D61F69;
+  --wrap-ink: #FFFFFF;
+
+  /* estados do item */
+  --tag-sempre: #FFFBEE;
+  --tag-comprado: #F4F6FF;
+  --badge-sempre: #FFF2CC;
+  --badge-info: #E1E7FF;
+
+  /* avisos da extração */
+  --warn-bg: #FFF2CC;  --warn-ink: #6B4A00;   /* bloqueado / parcial */
+  --error-bg: #FFE0E6; --error-ink: #9B0F3B;  /* link quebrado */
+  --ok-bg: #DDF6EA;    --ok-ink: #0D5C36;
+
+  --stripe-a: #D61F69; --stripe-b: #E8457F;
+  --heart-echo: .32;
+  --shadow: 0 18px 40px -24px rgba(28, 26, 74, .35);
+}
+
+[data-theme="dark"] {
+  --bg: #14123A;            /* noite profunda */
+  --surface: #221F55;
+  --surface-sunk: #1A1846;
+  --line: #2F2B6B;
+
+  --ink: #FFF0F6;
+  --ink-2: #B9B4E6;
+
+  --primary: #FF6AA3;       /* magenta aceso */
+  --on-primary: #14123A;
+  --primary-edge: #C93A75;
+  --secondary: #8EA2FF;
+  --on-secondary: #14123A;
+  --ribbon: #FFC22E;
+  --on-ribbon: #14123A;
+  --ribbon-edge: #C48A00;
+
+  --wrap: #8E1450;          /* embrulho vinho */
+  --wrap-ink: #FFF0F6;
+
+  --tag-sempre: #2B2650;
+  --tag-comprado: #1D1B49;
+  --badge-sempre: #4A3A12;
+  --badge-info: #2A3170;
+
+  --warn-bg: #4A3A12;  --warn-ink: #FFE7A8;
+  --error-bg: #5A1430; --error-ink: #FFD0DD;
+  --ok-bg: #123F2E;    --ok-ink: #BFF2D8;
+
+  --stripe-a: #FF6AA3; --stripe-b: #E0337A;
+  --heart-echo: .45;
+  --shadow: 0 18px 40px -24px rgba(0, 0, 0, .6);
+}
+
+:root {
+  /* tipografia: Bricolage Grotesque (Google Fonts), uma família só */
+  --font: 'Bricolage Grotesque', system-ui, sans-serif;
+  --display: 'wdth' 78, 'opsz' 96;   /* títulos: estreita e encorpada */
+  --numeric: 'wdth' 82;               /* preços */
+
+  /* escala (razão ~1.2, base 16px) */
+  --t-xs: .75rem;   /* 12 badges */
+  --t-sm: .875rem;  /* 14 metadados */
+  --t-md: 1rem;     /* 16 corpo */
+  --t-lg: 1.25rem;  /* 20 títulos de seção */
+  --t-xl: 2rem;     /* 32 título de tela */
+  --t-2xl: 2.6rem;  /* 42 login */
+
+  /* espaço (grade de 4px) */
+  --s1: 4px; --s2: 8px; --s3: 12px; --s4: 16px; --s5: 20px; --s6: 24px; --s8: 32px;
+
+  /* raios: cada um tem um papel */
+  --r-chip: 999px;   /* chips e pílulas */
+  --r-field: 16px;   /* campos */
+  --r-btn: 18px;     /* botões */
+  --r-panel: 28px;   /* folha sobre o papel de embrulho */
+  --r-tag: 0 16px 16px 0; /* etiqueta: ponta cortada à esquerda */
+
+  /* movimento */
+  --beat: 1.4s;                         /* ciclo do coração */
+  --ease-out: cubic-bezier(.2, .8, .2, 1);
+  --ease-beat: cubic-bezier(.3, 0, .2, 1);
+  --spring: cubic-bezier(.34, 1.56, .64, 1);
+  --t-fast: 120ms; --t-base: 220ms; --t-slow: 420ms;
+}

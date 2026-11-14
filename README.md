@@ -35,6 +35,8 @@ Cada um cadastra o que quer ganhar, e o outro monta o presente dentro do orçame
 | [`docs/arquitetura.md`](docs/arquitetura.md) | Stack, modelo de dados, extração, auth, push, cron |
 | [`docs/decisoes.md`](docs/decisoes.md) | Decisões de arquitetura (ADRs) e por que cada uma foi tomada |
 | [`docs/pesquisa-extracao.md`](docs/pesquisa-extracao.md) | Teste de extração em 13 lojas: o que funciona sem IA e o que não |
+| [`docs/design/design-system.md`](docs/design/design-system.md) | Design system: cores dos temas claro e escuro, tipografia, componentes e movimento |
+| [`docs/design/telas.html`](docs/design/telas.html) | Protótipo das telas (abra no navegador e troque o tema) |
 | [`docs/roadmap.md`](docs/roadmap.md) | Fases de entrega |
 
 ## 🏗️ Stack em uma olhada

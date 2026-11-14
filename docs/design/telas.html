@@ -1,0 +1,514 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Telas da Nossa Wishlist</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wdth,wght@12..96,75..100,400..800&display=swap" rel="stylesheet">
+<style>
+/* =============================================================================
+   Love Wishlist: design tokens (paleta "Papel de presente")
+   Fonte da verdade das cores, tipografia, espaços e movimento.
+   Na Fase 1 este arquivo vira src/styles/tokens.css do Next.js.
+   Contraste AA verificado em todas as combinações texto/fundo (ver design-system.md).
+   ============================================================================= */
+
+:root,
+[data-theme="light"] {
+  /* superfícies */
+  --bg: #FFF0F6;            /* rosa papel */
+  --surface: #FFFFFF;
+  --surface-sunk: #FFE8F1;
+  --line: #FFE1EE;
+
+  /* texto */
+  --ink: #1C1A4A;           /* azul-noite */
+  --ink-2: #5C5A86;
+
+  /* ação */
+  --primary: #D61F69;       /* magenta */
+  --on-primary: #FFFFFF;
+  --primary-edge: #A8124F;
+  --secondary: #3053E3;     /* cobalto */
+  --on-secondary: #FFFFFF;
+  --ribbon: #FFC22E;        /* fita */
+  --on-ribbon: #1C1A4A;
+  --ribbon-edge: #D99A00;
+
+  /* papel de embrulho (cabeçalhos) */
+  --wrap: #D61F69;
+  --wrap-ink: #FFFFFF;
+
+  /* estados do item */
+  --tag-sempre: #FFFBEE;
+  --tag-comprado: #F4F6FF;
+  --badge-sempre: #FFF2CC;
+  --badge-info: #E1E7FF;
+
+  /* avisos da extração */
+  --warn-bg: #FFF2CC;  --warn-ink: #6B4A00;   /* bloqueado / parcial */
+  --error-bg: #FFE0E6; --error-ink: #9B0F3B;  /* link quebrado */
+  --ok-bg: #DDF6EA;    --ok-ink: #0D5C36;
+
+  --stripe-a: #D61F69; --stripe-b: #E8457F;
+  --heart-echo: .32;
+  --shadow: 0 18px 40px -24px rgba(28, 26, 74, .35);
+}
+
+[data-theme="dark"] {
+  --bg: #14123A;            /* noite profunda */
+  --surface: #221F55;
+  --surface-sunk: #1A1846;
+  --line: #2F2B6B;
+
+  --ink: #FFF0F6;
+  --ink-2: #B9B4E6;
+
+  --primary: #FF6AA3;       /* magenta aceso */
+  --on-primary: #14123A;
+  --primary-edge: #C93A75;
+  --secondary: #8EA2FF;
+  --on-secondary: #14123A;
+  --ribbon: #FFC22E;
+  --on-ribbon: #14123A;
+  --ribbon-edge: #C48A00;
+
+  --wrap: #8E1450;          /* embrulho vinho */
+  --wrap-ink: #FFF0F6;
+
+  --tag-sempre: #2B2650;
+  --tag-comprado: #1D1B49;
+  --badge-sempre: #4A3A12;
+  --badge-info: #2A3170;
+
+  --warn-bg: #4A3A12;  --warn-ink: #FFE7A8;
+  --error-bg: #5A1430; --error-ink: #FFD0DD;
+  --ok-bg: #123F2E;    --ok-ink: #BFF2D8;
+
+  --stripe-a: #FF6AA3; --stripe-b: #E0337A;
+  --heart-echo: .45;
+  --shadow: 0 18px 40px -24px rgba(0, 0, 0, .6);
+}
+
+:root {
+  /* tipografia: Bricolage Grotesque (Google Fonts), uma família só */
+  --font: 'Bricolage Grotesque', system-ui, sans-serif;
+  --display: 'wdth' 78, 'opsz' 96;   /* títulos: estreita e encorpada */
+  --numeric: 'wdth' 82;               /* preços */
+
+  /* escala (razão ~1.2, base 16px) */
+  --t-xs: .75rem;   /* 12 badges */
+  --t-sm: .875rem;  /* 14 metadados */
+  --t-md: 1rem;     /* 16 corpo */
+  --t-lg: 1.25rem;  /* 20 títulos de seção */
+  --t-xl: 2rem;     /* 32 título de tela */
+  --t-2xl: 2.6rem;  /* 42 login */
+
+  /* espaço (grade de 4px) */
+  --s1: 4px; --s2: 8px; --s3: 12px; --s4: 16px; --s5: 20px; --s6: 24px; --s8: 32px;
+
+  /* raios: cada um tem um papel */
+  --r-chip: 999px;   /* chips e pílulas */
+  --r-field: 16px;   /* campos */
+  --r-btn: 18px;     /* botões */
+  --r-panel: 28px;   /* folha sobre o papel de embrulho */
+  --r-tag: 0 16px 16px 0; /* etiqueta: ponta cortada à esquerda */
+
+  /* movimento */
+  --beat: 1.4s;                         /* ciclo do coração */
+  --ease-out: cubic-bezier(.2, .8, .2, 1);
+  --ease-beat: cubic-bezier(.3, 0, .2, 1);
+  --spring: cubic-bezier(.34, 1.56, .64, 1);
+  --t-fast: 120ms; --t-base: 220ms; --t-slow: 420ms;
+}
+
+</style>
+<style>
+  * { box-sizing: border-box; }
+  body { margin: 0; font-family: var(--font); background: #ECE6F2; color: #1C1A4A; }
+  body.page-dark { background: #0B0A22; color: #FFF0F6; }
+  .intro { max-width: 1100px; margin: 0 auto; padding: 40px 16px 8px; display: flex; flex-wrap: wrap; gap: 16px 32px; align-items: end; justify-content: space-between; }
+  .intro h1 { margin: 0 0 6px; font-size: clamp(1.8rem, 3.4vw, 2.6rem); line-height: 1; font-weight: 800; letter-spacing: -0.02em; font-variation-settings: var(--display); }
+  .intro p { margin: 0; max-width: 60ch; line-height: 1.5; opacity: .75; }
+  .switch { display: inline-flex; padding: 4px; border-radius: 999px; background: rgba(127,120,170,.18); }
+  .switch button { border: 0; background: transparent; color: inherit; font: inherit; font-weight: 700; padding: 8px 16px; border-radius: 999px; cursor: pointer; }
+  .switch button[aria-pressed="true"] { background: #FFC22E; color: #1C1A4A; }
+  .stage { display: grid; grid-template-columns: repeat(auto-fit, minmax(330px, 1fr)); gap: 44px 28px; max-width: 1300px; margin: 0 auto; padding: 32px 16px 72px; justify-items: center; }
+  .cap { text-align: center; margin-top: 12px; font-size: .95rem; opacity: .7; }
+
+  /* ---------------- frame ---------------- */
+  .frame { width: 390px; max-width: 100%; height: 844px; border-radius: 44px; overflow: hidden; position: relative; border: 10px solid #0E0C26; background: var(--bg); color: var(--ink); box-shadow: 0 30px 60px -30px rgba(28,26,74,.45); display: flex; flex-direction: column; }
+  .scroll { flex: 1; overflow: hidden; display: flex; flex-direction: column; }
+
+  /* cabeçalho embrulho */
+  .wrap { background-color: var(--wrap); color: var(--wrap-ink); padding: 20px 20px 50px; position: relative; flex: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='56' height='56' viewBox='0 0 56 56'%3E%3Cg fill='%23FFFFFF' fill-opacity='.14'%3E%3Cpath d='M14 18c-2.5-3-7-1.6-7 1.8 0 3 3.6 5 7 7.6 3.4-2.6 7-4.6 7-7.6 0-3.4-4.5-4.8-7-1.8z'/%3E%3Cpath d='M42 44l-6-3.4v6.8zM42 44l6-3.4v6.8z'/%3E%3Ccircle cx='42' cy='44' r='1.6'/%3E%3C/g%3E%3C/svg%3E"); }
+  .wrap .ribbon-v { position: absolute; right: 58px; top: 0; bottom: 0; width: 18px; background: var(--ribbon); box-shadow: inset 3px 0 0 rgba(0,0,0,.1); }
+  .who { display: flex; align-items: center; gap: 12px; position: relative; }
+  .who svg { width: 52px; height: 52px; flex: none; }
+  .who h2 { margin: 0; font-size: var(--t-xl); line-height: .95; letter-spacing: -0.02em; font-weight: 800; font-variation-settings: var(--display); }
+  .who small { opacity: .85; font-size: .9rem; }
+  .back { display: inline-flex; align-items: center; gap: 6px; font-weight: 700; font-size: .95rem; margin-bottom: 12px; position: relative; opacity: .95; }
+
+  .sheet { background: var(--bg); flex: 1; margin-top: -30px; border-radius: var(--r-panel) var(--r-panel) 0 0; padding: 18px 16px 110px; position: relative; display: flex; flex-direction: column; gap: 12px; overflow: hidden; }
+  h4.sec { margin: 6px 0 0; font-size: var(--t-lg); font-weight: 800; font-variation-settings: 'wdth' 85; letter-spacing: -0.01em; display: flex; justify-content: space-between; align-items: baseline; }
+  h4.sec span { font-size: var(--t-sm); font-weight: 600; color: var(--ink-2); }
+
+  /* abas */
+  .tabs { display: grid; grid-template-columns: repeat(3, 1fr); padding: 4px; border-radius: 999px; background: var(--surface-sunk); }
+  .tabs b { text-align: center; padding: 9px 4px; border-radius: 999px; font-size: .9rem; font-weight: 700; color: var(--ink-2); }
+  .tabs b.on { background: var(--surface); color: var(--ink); box-shadow: 0 2px 6px rgba(28,26,74,.12); }
+
+  .search { background: var(--surface); border: 2px solid var(--line); border-radius: var(--r-field); padding: 13px 16px; color: var(--ink-2); font-size: .95rem; }
+  .chips { display: flex; gap: 8px; flex-wrap: wrap; }
+  .chip { padding: 7px 13px; border-radius: var(--r-chip); font-size: .85rem; font-weight: 600; border: 2px solid var(--line); background: var(--surface); color: var(--ink); }
+  .chip.on { background: var(--secondary); border-color: var(--secondary); color: var(--on-secondary); }
+
+  /* etiqueta */
+  .tags { display: flex; flex-direction: column; gap: 10px; }
+  .tag { --tag-bg: var(--surface); position: relative; display: grid; grid-template-columns: 52px 1fr auto; align-items: center; gap: 12px; padding: 9px 14px 9px 30px; background: var(--tag-bg); clip-path: polygon(18px 0, 100% 0, 100% 100%, 18px 100%, 0 50%); border-radius: var(--r-tag); }
+  .tag::before { content: ''; position: absolute; left: 11px; top: 50%; width: 9px; height: 9px; translate: 0 -50%; border-radius: 50%; background: var(--bg); box-shadow: inset 0 0 0 2px var(--line); }
+  .tag.sempre { --tag-bg: var(--tag-sempre); }
+  .tag.comprado { --tag-bg: var(--tag-comprado); }
+  .tag.comprado .thumb, .tag.comprado h3 { opacity: .6; }
+  .thumb { width: 52px; height: 52px; border-radius: 12px; display: grid; place-items: center; font-size: 26px; background: var(--bg); }
+  .tag h3 { margin: 0; font-size: .96rem; line-height: 1.2; font-weight: 700; }
+  .meta { font-size: .8rem; color: var(--ink-2); margin-top: 2px; }
+  .price { font-weight: 800; font-size: 1.05rem; font-variation-settings: 'wdth' 80; text-align: right; white-space: nowrap; }
+  .badge { display: inline-block; margin-top: 4px; font-size: var(--t-xs); font-weight: 700; padding: 2px 8px; border-radius: 6px; color: var(--ink); background: var(--badge-info); }
+  .badge.sempre { background: var(--badge-sempre); }
+  .qty { display: inline-flex; align-items: center; gap: 8px; margin-top: 4px; font-weight: 800; }
+  .qty i { font-style: normal; width: 24px; height: 24px; border-radius: 8px; display: grid; place-items: center; background: var(--surface-sunk); font-size: .95rem; }
+
+  /* fita de orçamento */
+  .budget { background: var(--surface); border: 2px solid var(--line); border-radius: 18px; padding: 14px 16px 16px; }
+  .budget .row { display: flex; justify-content: space-between; align-items: flex-end; gap: 8px; }
+  .budget .row span { font-size: .9rem; color: var(--ink-2); line-height: 1.3; }
+  .budget strong { font-size: 1.4rem; font-weight: 800; font-variation-settings: 'wdth' 82; text-align: right; white-space: nowrap; }
+  .budget strong em { display: block; font-style: normal; font-size: .8rem; color: var(--ink-2); font-weight: 600; }
+  .fita { position: relative; height: 16px; border-radius: 4px; margin-top: 10px; background: var(--line); overflow: hidden; }
+  .fita i { position: absolute; inset: 0 var(--left, 28%) 0 0; border-radius: 4px; background: repeating-linear-gradient(-45deg, var(--stripe-a) 0 8px, var(--stripe-b) 8px 16px); }
+  .fita i::after { content: ''; position: absolute; right: -2px; top: -2px; width: 6px; height: 20px; background: var(--ribbon); border-radius: 2px; }
+
+  /* botões */
+  .btn { display: block; width: 100%; border: 0; border-radius: var(--r-btn); padding: 16px; font: inherit; font-weight: 800; font-size: 1.08rem; cursor: pointer; text-align: center; }
+  .btn.primary { background: var(--primary); color: var(--on-primary); box-shadow: 0 5px 0 var(--primary-edge); }
+  .btn.ribbon { background: var(--ribbon); color: var(--on-ribbon); box-shadow: 0 5px 0 var(--ribbon-edge); }
+  .btn.ghost { background: var(--surface); color: var(--ink); border: 2px solid var(--line); padding: 13px; font-size: 1rem; }
+  .btn:focus-visible { outline: 3px solid var(--ink); outline-offset: 3px; }
+  .dock { position: absolute; left: 16px; right: 16px; bottom: 84px; isolation: isolate; }
+  .glow { position: absolute; inset: -14px -8px; border-radius: 28px; z-index: -1; background: radial-gradient(60% 80% at 50% 60%, color-mix(in srgb, var(--primary) 60%, transparent), color-mix(in srgb, var(--secondary) 30%, transparent) 60%, transparent 75%); filter: blur(14px); }
+
+  /* nav */
+  .nav { position: absolute; left: 0; right: 0; bottom: 0; height: 74px; background: var(--surface); border-top: 2px solid var(--line); display: grid; grid-template-columns: repeat(4, 1fr); padding: 8px 6px 12px; }
+  .nav a { display: flex; flex-direction: column; align-items: center; gap: 3px; font-size: .74rem; font-weight: 700; color: var(--ink-2); text-decoration: none; }
+  .nav a svg { width: 26px; height: 26px; }
+  .nav a.on { color: var(--primary); }
+  .nav a .mini { width: 26px; height: 26px; border-radius: 50%; }
+
+  /* revisão */
+  textarea.paste { width: 100%; min-height: 150px; resize: none; border-radius: var(--r-field); border: 2px solid var(--line); background: var(--surface); color: var(--ink); padding: 14px 16px; font: inherit; font-size: .92rem; line-height: 1.55; }
+  .hint { font-size: .85rem; color: var(--ink-2); line-height: 1.45; margin: 0; }
+  .rev { background: var(--surface); border-radius: 18px; border: 2px solid var(--line); overflow: hidden; }
+  .rev .note { padding: 9px 14px; font-size: .82rem; font-weight: 600; line-height: 1.35; }
+  .rev .note.ok { background: var(--ok-bg); color: var(--ok-ink); }
+  .rev .note.warn { background: var(--warn-bg); color: var(--warn-ink); }
+  .rev .note.err { background: var(--error-bg); color: var(--error-ink); }
+  .rev .body { display: grid; grid-template-columns: 56px 1fr; gap: 10px 12px; padding: 12px 14px 14px; }
+  .rev .ph { width: 56px; height: 56px; border-radius: 12px; display: grid; place-items: center; font-size: 26px; background: var(--bg); }
+  .rev .ph.empty { border: 2px dashed var(--line); font-size: 18px; color: var(--ink-2); }
+  .in { border: 2px solid var(--line); border-radius: 12px; padding: 8px 10px; font-size: .9rem; background: var(--bg); color: var(--ink); }
+  .in.missing { border-color: var(--primary); border-style: dashed; color: var(--ink-2); }
+  .rev .fields { display: flex; flex-direction: column; gap: 6px; }
+  .rev .line2 { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+  .seg { display: grid; grid-template-columns: 1fr 1fr; border-radius: 12px; background: var(--surface-sunk); padding: 3px; grid-column: 1 / -1; }
+  .seg b { text-align: center; font-size: .82rem; padding: 6px; border-radius: 9px; color: var(--ink-2); }
+  .seg b.on { background: var(--surface); color: var(--ink); box-shadow: 0 1px 4px rgba(28,26,74,.12); }
+  .url { grid-column: 1 / -1; font-size: .78rem; color: var(--ink-2); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+  /* combos */
+  .box { position: relative; background: var(--surface); border-radius: 20px; border: 2px solid var(--line); padding: 14px 16px 14px; overflow: hidden; }
+  .box::before, .box::after { content: ''; position: absolute; background: var(--ribbon); }
+  .box::before { top: 0; height: 52px; right: 34px; width: 10px; border-radius: 0 0 3px 3px; }
+  .box::after { top: 18px; right: 0; width: 70px; height: 10px; border-radius: 3px 0 0 3px; }
+  .box h5 { margin: 0; font-size: 1.1rem; font-weight: 800; padding-right: 70px; }
+  .box .when { font-size: .85rem; color: var(--ink-2); margin-top: 2px; }
+  .box .sum { display: flex; justify-content: space-between; align-items: baseline; margin-top: 10px; font-size: .9rem; color: var(--ink-2); }
+  .box .sum strong { font-size: 1.15rem; color: var(--ink); font-variation-settings: 'wdth' 82; }
+  .steps { display: flex; align-items: center; gap: 6px; margin-top: 10px; }
+  .steps b { font-size: .76rem; font-weight: 700; padding: 4px 10px; border-radius: 999px; background: var(--surface-sunk); color: var(--ink-2); }
+  .steps b.done { background: var(--badge-info); color: var(--ink); }
+  .steps b.now { background: var(--primary); color: var(--on-primary); }
+  .steps hr { flex: 1; border: 0; height: 2px; background: var(--line); margin: 0; }
+  .box.dado { opacity: .75; }
+  .alert { margin-top: 10px; font-size: .82rem; font-weight: 600; padding: 7px 10px; border-radius: 10px; background: var(--warn-bg); color: var(--warn-ink); }
+
+  /* calendário */
+  .next { position: relative; border-radius: 24px; padding: 20px 18px; background: var(--surface); border: 2px solid var(--line); display: grid; grid-template-columns: 1fr auto; align-items: center; overflow: hidden; isolation: isolate; }
+  .next .h { position: absolute; right: -10px; top: 50%; width: 170px; height: 160px; translate: 0 -50%; z-index: -1; filter: blur(6px); opacity: .9; }
+  .next small { color: var(--ink-2); font-weight: 600; }
+  .next h5 { margin: 4px 0 2px; font-size: 1.5rem; line-height: 1; font-weight: 800; font-variation-settings: var(--display); }
+  .next .days { text-align: center; color: #fff; text-shadow: 0 2px 10px rgba(28,26,74,.35); }
+  .next .days b { display: block; font-size: 2.6rem; line-height: .9; font-weight: 800; font-variation-settings: var(--display); }
+  .next .days span { font-size: .8rem; font-weight: 700; }
+  .date { display: grid; grid-template-columns: 52px 1fr auto; gap: 12px; align-items: center; padding: 10px 4px; border-bottom: 2px solid var(--line); }
+  .date .d { width: 52px; height: 56px; border-radius: 14px; background: var(--surface); border: 2px solid var(--line); display: flex; flex-direction: column; align-items: center; justify-content: center; line-height: 1; }
+  .date .d b { font-size: 1.3rem; font-weight: 800; font-variation-settings: var(--display); }
+  .date .d span { font-size: .7rem; color: var(--ink-2); font-weight: 700; margin-top: 2px; }
+  .date h6 { margin: 0; font-size: 1rem; font-weight: 700; }
+  .date .meta { margin: 0; }
+  .date svg { width: 34px; height: 34px; }
+  .date .cnt { font-size: .82rem; font-weight: 700; color: var(--ink-2); white-space: nowrap; }
+
+  @media (prefers-reduced-motion: no-preference) {
+    .beat { animation: beat var(--beat) var(--ease-beat) infinite; }
+    .beat-soft { animation: beat-soft var(--beat) var(--ease-beat) infinite; }
+    @keyframes beat { 0% { scale: 1; } 12% { scale: 1.12; } 24% { scale: 1; } 36% { scale: 1.07; } 52%, 100% { scale: 1; } }
+    @keyframes beat-soft { 0%, 52%, 100% { scale: 1; opacity: .55; } 12% { scale: 1.06; opacity: 1; } 36% { scale: 1.03; opacity: .85; } }
+  }
+</style>
+</head>
+<body>
+<section class="intro">
+  <div>
+    <h1>As telas, no visual aprovado</h1>
+    <p>Minha lista, adicionar links, revisão, montar presente, meus combos e calendário. A lista do Vítor e o login estão na direção visual.</p>
+  </div>
+  <div class="switch" role="group" aria-label="Tema">
+    <button aria-pressed="true" data-t="light">Claro</button>
+    <button aria-pressed="false" data-t="dark">Escuro</button>
+  </div>
+</section>
+<div class="stage" id="stage"></div>
+
+<!-- ======================= barra de navegação ======================= -->
+<template id="nav">
+  <nav class="nav">
+    <a data-k="minha"><svg viewBox="0 0 200 200" class="mini"><use href="#bunny-chocolate"/></svg>Minha lista</a>
+    <a data-k="vitor"><svg viewBox="0 0 200 200" class="mini"><use href="#bunny-caramelo"/></svg>Vítor</a>
+    <a data-k="combos"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><rect x="3" y="9" width="18" height="12" rx="2"/><path d="M2 9h20M12 9v12M12 9c-2-4-7-5-7-2s5 2 7 2zm0 0c2-4 7-5 7-2s-5 2-7 2z"/></svg>Combos</a>
+    <a data-k="datas"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><rect x="3" y="5" width="18" height="16" rx="3"/><path d="M3 10h18M8 3v4M16 3v4"/><path d="M12 18c-2-1.5-3.5-2.6-3.5-4a1.7 1.7 0 0 1 3.5-.6 1.7 1.7 0 0 1 3.5.6c0 1.4-1.5 2.5-3.5 4z" fill="currentColor" stroke="none"/></svg>Datas</a>
+  </nav>
+</template>
+
+<!-- ======================= 1. Minha lista ======================= -->
+<template id="minha" data-nav="minha" data-cap="Minha lista">
+  <div class="scroll">
+    <header class="wrap"><div class="ribbon-v"></div>
+      <div class="who"><svg viewBox="0 0 200 200"><use href="#bunny-chocolate"/></svg><div><h2>Minha lista</h2><small>Laura, 9 desejos</small></div></div>
+    </header>
+    <div class="sheet">
+      <div class="tabs"><b class="on">Desejos 9</b><b>Já tenho 4</b><b>Recebidos 2</b></div>
+      <div class="search">Buscar por nome, loja ou cor</div>
+      <div class="chips"><span class="chip on">Todos</span><span class="chip">Beleza</span><span class="chip">Roupas</span><span class="chip">Sempre bem-vindos</span></div>
+      <div class="tags">
+        <div class="tag"><div class="thumb">👗</div><div><h3>Vestido midi linho, verde, M</h3><div class="meta">Shein, preço de 12/nov</div></div><div class="price">R$ 129,90</div></div>
+        <div class="tag sempre"><div class="thumb">🧼</div><div><h3>Sabonete líquido Nativa SPA Ameixa</h3><span class="badge sempre">Sempre bem-vindo, ganhou 2x</span></div><div class="price">R$ 54,90</div></div>
+        <div class="tag"><div class="thumb">🎨</div><div><h3>Paleta de sombras CHEERYEP 16 cores</h3><div class="meta">Shopee</div></div><div class="price">R$ 39,90</div></div>
+        <div class="tag sempre"><div class="thumb">🍬</div><div><h3>Bala Fini Dentaduras</h3><span class="badge sempre">Sempre bem-vindo</span></div><div class="price">R$ 9,99</div></div>
+      </div>
+    </div>
+    <div class="dock"><button class="btn ribbon">Adicionar links</button></div>
+  </div>
+</template>
+
+<!-- ======================= 2. Adicionar ======================= -->
+<template id="adicionar" data-nav="minha" data-cap="Adicionar links">
+  <div class="scroll">
+    <header class="wrap"><div class="ribbon-v"></div>
+      <div class="back">‹ Minha lista</div>
+      <div class="who"><div><h2>Adicionar</h2><small>Cole um ou vários links, um por linha</small></div></div>
+    </header>
+    <div class="sheet">
+      <textarea class="paste" aria-label="Links">https://www.kabum.com.br/produto/690301/fone-jbl-wave-buds-2
+https://shopee.com.br/Paleta-De-Sombras-CHEERYEP-i.714531963.22995687403
+https://www.magazineluiza.com.br/cafeteira-nespresso/p/ab12cd34
+https://www.boticario.com.br/produto/creme-maos-nativa-spa-ameixa-75g</textarea>
+      <p class="hint">Também dá para compartilhar direto do app da loja: toque em Compartilhar e escolha Nossa Wishlist.</p>
+      <h4 class="sec">Encontrados <span>4 links</span></h4>
+      <div class="tags">
+        <div class="tag"><div class="thumb">🎧</div><div><h3>Buscando dados…</h3><div class="meta">kabum.com.br</div></div><div class="price">⋯</div></div>
+        <div class="tag"><div class="thumb">🎨</div><div><h3>Buscando dados…</h3><div class="meta">shopee.com.br</div></div><div class="price">⋯</div></div>
+      </div>
+    </div>
+    <div class="dock"><button class="btn primary">Buscar dados dos 4 links</button></div>
+  </div>
+</template>
+
+<!-- ======================= 3. Revisão ======================= -->
+<template id="revisao" data-nav="minha" data-cap="Revisão em cartões (RF07 e RF09)">
+  <div class="scroll">
+    <header class="wrap"><div class="ribbon-v"></div>
+      <div class="back">‹ Adicionar</div>
+      <div class="who"><div><h2>Confira antes de salvar</h2><small>4 itens, 2 precisam de você</small></div></div>
+    </header>
+    <div class="sheet" style="gap:10px">
+      <div class="rev">
+        <div class="note ok">Tudo encontrado</div>
+        <div class="body"><div class="ph">🎧</div>
+          <div class="fields"><div class="in">Fone JBL Wave Buds 2, preto</div><div class="line2"><div class="in">R$ 299,90</div><div class="in">Tecnologia</div></div></div>
+          <div class="seg"><b class="on">Único</b><b>Sempre bem-vindo</b></div></div>
+      </div>
+      <div class="rev">
+        <div class="note warn">Achamos nome e foto. Falta o preço.</div>
+        <div class="body"><div class="ph">🎨</div>
+          <div class="fields"><div class="in">Paleta de sombras CHEERYEP 16 cores</div><div class="line2"><div class="in missing">Preço</div><div class="in">Beleza</div></div></div></div>
+      </div>
+      <div class="rev">
+        <div class="note warn">Esse site não deixa a gente ler os dados automaticamente. O link está salvo, é só preencher nome e preço.</div>
+        <div class="body"><div class="ph empty">foto</div>
+          <div class="fields"><div class="in missing">Nome do item</div><div class="line2"><div class="in missing">Preço</div><div class="in">Outros</div></div></div>
+          <div class="url">magazineluiza.com.br/cafeteira-nespresso/p/ab12cd34</div></div>
+      </div>
+      <div class="rev">
+        <div class="note err">Não conseguimos acessar esse link. Verifique se ele está correto ou traga o link de outra loja.</div>
+      </div>
+    </div>
+    <div class="dock"><button class="btn primary">Salvar 4 itens</button></div>
+  </div>
+</template>
+
+<!-- ======================= 4. Montar presente ======================= -->
+<template id="montar" data-nav="vitor" data-cap="Montar presente">
+  <div class="scroll">
+    <header class="wrap"><div class="ribbon-v"></div>
+      <div class="back">‹ Lista do Vítor</div>
+      <div class="who"><svg viewBox="0 0 200 200"><use href="#bunny-caramelo"/></svg><div><h2>Presente do Vítor</h2><small>Aniversário, 14 de janeiro</small></div></div>
+    </header>
+    <div class="sheet">
+      <div class="budget" style="--left: 9%">
+        <div class="row"><span>No combo: 3 itens<br>e 1 extra</span><strong>R$ 273,37<em>de R$ 300</em></strong></div>
+        <div class="fita"><i></i></div>
+      </div>
+      <div class="tags">
+        <div class="tag"><div class="thumb">🎧</div><div><h3>Fone JBL Tune 520BT, preto</h3><div class="meta">Amazon</div></div><div class="price">R$ 189,90</div></div>
+        <div class="tag sempre"><div class="thumb">🍫</div><div><h3>Chocolate Lacta ao Leite</h3><div class="qty"><i>−</i>3<i>+</i></div></div><div class="price">R$ 25,47</div></div>
+        <div class="tag sempre"><div class="thumb">💐</div><div><h3>Flores do Vitório</h3><span class="badge">Extra, fora da lista</span></div><div class="price">R$ 58,00</div></div>
+      </div>
+      <h4 class="sec">Adicionar da lista <span>cabem em R$ 26,63</span></h4>
+      <div class="search">Buscar na lista do Vítor</div>
+      <div class="tags">
+        <div class="tag"><div class="thumb">🧦</div><div><h3>Meia Lupo cano alto, kit 3</h3><div class="meta">Mercado Livre</div></div><div class="price">R$ 24,90</div></div>
+      </div>
+    </div>
+    <div class="dock"><div class="glow beat-soft"></div><button class="btn primary">Salvar combo</button></div>
+  </div>
+</template>
+
+<!-- ======================= 5. Meus combos ======================= -->
+<template id="combos" data-nav="combos" data-cap="Meus combos (visíveis só para quem montou)">
+  <div class="scroll">
+    <header class="wrap"><div class="ribbon-v"></div>
+      <div class="who"><div><h2>Meus combos</h2><small>Só você vê os seus presentes</small></div></div>
+    </header>
+    <div class="sheet">
+      <div class="box">
+        <h5>Aniversário do Vítor</h5><div class="when">14 de janeiro, em 61 dias</div>
+        <div class="steps"><b class="done">Montado</b><hr><b class="now">Comprado</b><hr><b>Dado</b></div>
+        <div class="sum"><span>4 itens</span><strong>R$ 262,40 pagos</strong></div>
+        <div class="alert">O Vítor já comprou "Meia Lupo". Que tal trocar?</div>
+      </div>
+      <div class="box">
+        <h5>Natal</h5><div class="when">25 de dezembro, em 41 dias</div>
+        <div class="steps"><b class="now">Montado</b><hr><b>Comprado</b><hr><b>Dado</b></div>
+        <div class="sum"><span>2 itens</span><strong>R$ 97,80</strong></div>
+      </div>
+      <h4 class="sec">Já dados <span>2</span></h4>
+      <div class="box dado">
+        <h5>Dia dos Namorados</h5><div class="when">Dado em 12 de junho</div>
+        <div class="sum"><span>3 itens</span><strong>R$ 241,00</strong></div>
+      </div>
+    </div>
+    <div class="dock"><button class="btn ribbon">Montar novo presente</button></div>
+  </div>
+</template>
+
+<!-- ======================= 6. Calendário ======================= -->
+<template id="datas" data-nav="datas" data-cap="Calendário do casal">
+  <div class="scroll">
+    <header class="wrap"><div class="ribbon-v"></div>
+      <div class="who"><div><h2>Nossas datas</h2><small>Lembrete 7 dias antes de cada uma</small></div></div>
+    </header>
+    <div class="sheet">
+      <div class="next">
+        <svg class="h beat" viewBox="0 0 200 190"><use href="#heart"/></svg>
+        <div><small>Próxima data</small><h5>Natal</h5><span class="meta">25 de dezembro</span></div>
+        <div class="days"><b>41</b><span>dias</span></div>
+      </div>
+      <div>
+        <div class="date"><div class="d"><b>14</b><span>jan</span></div><div><h6>Aniversário do Vítor</h6><p class="meta">Combo comprado</p></div><svg viewBox="0 0 200 200"><use href="#bunny-caramelo"/></svg></div>
+        <div class="date"><div class="d"><b>21</b><span>abr</span></div><div><h6>Aniversário de namoro</h6><p class="meta">Nenhum combo ainda</p></div><span class="cnt">158 dias</span></div>
+        <div class="date"><div class="d"><b>12</b><span>jun</span></div><div><h6>Dia dos Namorados</h6><p class="meta">Nenhum combo ainda</p></div><span class="cnt">210 dias</span></div>
+        <div class="date"><div class="d"><b>06</b><span>set</span></div><div><h6>Aniversário da Laura</h6><p class="meta">Só o Vítor vê os combos dele</p></div><svg viewBox="0 0 200 200"><use href="#bunny-chocolate"/></svg></div>
+      </div>
+    </div>
+    <div class="dock"><button class="btn ghost">Adicionar data</button></div>
+  </div>
+</template>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <radialGradient id="heartfill" cx="50%" cy="45%" r="65%">
+      <stop offset="0" stop-color="#FFC22E"/><stop offset=".28" stop-color="#FF5EA0"/><stop offset=".62" stop-color="#D61F69"/><stop offset="1" stop-color="#3053E3"/>
+    </radialGradient>
+    <path id="heart" fill="url(#heartfill)" d="M100 182C42 136 8 100 8 64 8 34 31 12 58 12c19 0 34 10 42 26 8-16 23-26 42-26 27 0 50 22 50 52 0 36-34 72-92 118z"/>
+    <clipPath id="cc"><circle cx="100" cy="100" r="100"/></clipPath>
+    <radialGradient id="cfur" cx="45%" cy="38%" r="70%"><stop offset="0" stop-color="#8A5233"/><stop offset="1" stop-color="#5E341E"/></radialGradient>
+    <g id="bunny-chocolate"><g clip-path="url(#cc)">
+      <circle cx="100" cy="100" r="100" fill="#FFD3E0"/>
+      <g transform="rotate(-12 72 80)"><ellipse cx="72" cy="46" rx="19" ry="46" fill="#5E341E"/><ellipse cx="72" cy="50" rx="10" ry="34" fill="#F6A3B8"/></g>
+      <g transform="rotate(12 128 80)"><ellipse cx="128" cy="46" rx="19" ry="46" fill="#5E341E"/><ellipse cx="128" cy="50" rx="10" ry="34" fill="#F6A3B8"/></g>
+      <ellipse cx="100" cy="128" rx="64" ry="56" fill="url(#cfur)"/>
+      <path d="M88 76c4-10 12-12 12-12s2 8-2 14c6-6 14-5 14-5s-3 9-12 11z" fill="#8A5233"/>
+      <ellipse cx="62" cy="142" rx="13" ry="8" fill="#FF8FAB" opacity=".75"/><ellipse cx="138" cy="142" rx="13" ry="8" fill="#FF8FAB" opacity=".75"/>
+      <ellipse cx="76" cy="120" rx="8" ry="10" fill="#22130B"/><ellipse cx="124" cy="120" rx="8" ry="10" fill="#22130B"/>
+      <circle cx="79" cy="116" r="3" fill="#FFF"/><circle cx="127" cy="116" r="3" fill="#FFF"/>
+      <ellipse cx="91" cy="148" rx="13" ry="10" fill="#F2DCC6"/><ellipse cx="109" cy="148" rx="13" ry="10" fill="#F2DCC6"/>
+      <path d="M93 136h14c2 0 3 2 2 3.5l-6 6c-1.6 1.6-4.4 1.6-6 0l-6-6c-1-1.5 0-3.5 2-3.5z" fill="#F46F93"/>
+      <path d="M100 146v5M100 151c-3 4-7 4-9 2M100 151c3 4 7 4 9 2" fill="none" stroke="#5E341E" stroke-width="2.4" stroke-linecap="round"/>
+    </g></g>
+    <clipPath id="bc"><circle cx="100" cy="100" r="100"/></clipPath>
+    <radialGradient id="bfur" cx="45%" cy="38%" r="70%"><stop offset="0" stop-color="#F4A458"/><stop offset="1" stop-color="#D97A2B"/></radialGradient>
+    <g id="bunny-caramelo"><g clip-path="url(#bc)">
+      <circle cx="100" cy="100" r="100" fill="#C9F2E3"/>
+      <g transform="rotate(-14 72 80)"><ellipse cx="72" cy="46" rx="19" ry="46" fill="#D97A2B"/><ellipse cx="72" cy="50" rx="10" ry="34" fill="#F6A3B8"/></g>
+      <g transform="rotate(38 128 84)"><ellipse cx="128" cy="50" rx="19" ry="40" fill="#C96D22"/><ellipse cx="128" cy="54" rx="10" ry="28" fill="#F6A3B8"/></g>
+      <ellipse cx="100" cy="128" rx="64" ry="56" fill="url(#bfur)"/>
+      <path d="M100 80c-7 0-11 8-9 20 1 7 5 12 9 12s8-5 9-12c2-12-2-20-9-20z" fill="#FFE6C4"/>
+      <ellipse cx="62" cy="142" rx="13" ry="8" fill="#FF8FAB" opacity=".7"/><ellipse cx="138" cy="142" rx="13" ry="8" fill="#FF8FAB" opacity=".7"/>
+      <ellipse cx="76" cy="120" rx="8" ry="10" fill="#2A170C"/><ellipse cx="124" cy="120" rx="8" ry="10" fill="#2A170C"/>
+      <circle cx="79" cy="116" r="3" fill="#FFF"/><circle cx="127" cy="116" r="3" fill="#FFF"/>
+      <ellipse cx="91" cy="148" rx="13" ry="10" fill="#FFE6C4"/><ellipse cx="109" cy="148" rx="13" ry="10" fill="#FFE6C4"/>
+      <path d="M93 136h14c2 0 3 2 2 3.5l-6 6c-1.6 1.6-4.4 1.6-6 0l-6-6c-1-1.5 0-3.5 2-3.5z" fill="#F46F93"/>
+      <path d="M100 146v5M100 151c-3 4-7 4-9 2M100 151c3 4 7 4 9 2" fill="none" stroke="#8A4313" stroke-width="2.4" stroke-linecap="round"/>
+    </g></g>
+  </defs>
+</svg>
+
+<script>
+  const ids = ['minha', 'adicionar', 'revisao', 'montar', 'combos', 'datas'];
+  const stage = document.getElementById('stage');
+  const nav = document.getElementById('nav');
+  for (const id of ids) {
+    const t = document.getElementById(id);
+    const wrap = document.createElement('div');
+    const frame = document.createElement('div');
+    frame.className = 'frame'; frame.dataset.theme = 'light';
+    frame.appendChild(t.content.cloneNode(true));
+    const n = nav.content.cloneNode(true);
+    n.querySelector(`[data-k="${t.dataset.nav}"]`).classList.add('on');
+    frame.appendChild(n);
+    const cap = document.createElement('div'); cap.className = 'cap'; cap.textContent = t.dataset.cap;
+    wrap.append(frame, cap); stage.appendChild(wrap);
+  }
+  const setTheme = (th) => {
+    document.querySelectorAll('.frame').forEach(f => f.dataset.theme = th);
+    document.body.classList.toggle('page-dark', th === 'dark');
+    document.querySelectorAll('.switch button').forEach(b => b.setAttribute('aria-pressed', b.dataset.t === th));
+  };
+  document.querySelectorAll('.switch button').forEach(b => b.addEventListener('click', () => setTheme(b.dataset.t)));
+</script>
+</body>
+</html>

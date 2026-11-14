@@ -12,8 +12,9 @@
 - [x] Direção visual aprovada ([`design/direcao-visual.html`](design/direcao-visual.html)): etiquetas de presente, papel de embrulho, fita de orçamento e coração pulsante, nos temas claro e escuro (RF49)
 - [x] Requisitos dos coelhinhos no site (RF40–RF48)
 - [ ] Sprite sheet dos coelhos em pixel art + protótipo do comportamento
-- [ ] Design system: tokens, tipografia, componentes, princípios de motion
-- [ ] Protótipo das telas: login, minha lista, lista do outro, adicionar + revisão em lote, montar presente, meus combos, calendário
+- [x] Design system: [`design/design-system.md`](design/design-system.md) + [`design/tokens.css`](design/tokens.css)
+- [x] Protótipo das telas: [`design/telas.html`](design/telas.html) (claro e escuro)
+- [ ] Aprovar as telas
 
 ## Fase 1: Fundação
 - [ ] Next.js + Tailwind + Motion, deploy na Vercel (`gru1`)
