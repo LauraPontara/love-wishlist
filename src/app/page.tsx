@@ -9,8 +9,8 @@ export default function Home() {
       <Suspense fallback={<HeaderSkeleton />}>
         <Header />
       </Suspense>
-      <section className="relative -mt-[30px] flex-1 rounded-t-[28px] px-4 pt-6 pb-16" style={{ background: "var(--bg)" }}>
-        <div className="mx-auto max-w-[720px] flex flex-col gap-4">
+      <section className="relative -mt-[30px] flex-1 rounded-t-[28px] px-4 sm:px-8 pt-6 sm:pt-8 pb-16" style={{ background: "var(--bg)" }}>
+        <div className="mx-auto max-w-[1100px] flex flex-col gap-4">
           <div className="rounded-[20px] p-5 border-2" style={{ background: "var(--surface)", borderColor: "var(--line)" }}>
             <h2 className="text-xl font-extrabold mb-1" style={{ fontVariationSettings: "'wdth' 85" }}>Sua lista está chegando</h2>
             <p style={{ color: "var(--ink-2)" }} className="leading-relaxed">
@@ -27,14 +27,14 @@ export default function Home() {
 async function Header() {
   const user = await getCurrentUser();
   return (
-    <header className="aurora px-5 pt-6 pb-14">
-      <div className="mx-auto max-w-[720px] flex items-center gap-3">
+    <header className="aurora px-5 sm:px-8 pt-6 sm:pt-10 pb-14 sm:pb-16">
+      <div className="mx-auto max-w-[1100px] flex items-center gap-3 sm:gap-4">
         {user.avatar && (
           // eslint-disable-next-line @next/next/no-img-element
-          <img src={`/avatars/${user.avatar}.svg`} alt="" className="w-[54px] h-[54px]" />
+          <img src={`/avatars/${user.avatar}.svg`} alt="" className="w-[54px] h-[54px] sm:w-[68px] sm:h-[68px]" />
         )}
         <div>
-          <h1 className="display text-[2rem]">Oi, {user.displayName}</h1>
+          <h1 className="display text-[2rem] sm:text-[2.6rem]">Oi, {user.displayName}</h1>
           {user.partner && <p className="opacity-85 text-sm">Você e {user.partner.displayName}</p>}
         </div>
       </div>
@@ -43,5 +43,5 @@ async function Header() {
 }
 
 function HeaderSkeleton() {
-  return <header className="aurora px-5 pt-6 pb-14"><div className="mx-auto max-w-[720px] h-[54px]" /></header>;
+  return <header className="aurora px-5 sm:px-8 pt-6 sm:pt-10 pb-14 sm:pb-16"><div className="mx-auto max-w-[1100px] h-[54px]" /></header>;
 }
