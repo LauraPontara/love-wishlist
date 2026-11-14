@@ -7,205 +7,260 @@ flowchart LR
   subgraph Celular["📱 Android (PWA)"]
     UI[Next.js UI]
     Share[Share Target]
+    SW[Service Worker: push]
   end
 
-  subgraph Vercel["▲ Vercel (Hobby)"]
-    MW[Middleware: valida sessão]
-    Auth[/api/auth/]
-    Items[/api/items/]
-    Scrape[/api/scrape/]
-    Health[/api/health/]
+  subgraph Vercel["▲ Vercel Hobby · gru1 (São Paulo)"]
+    MW[Middleware: sessão]
+    API[/api/*: auth, items, combos, occasions, scrape, push/]
+    Cron[/api/cron/daily/]
   end
 
-  subgraph Fontes["🌐 Extração"]
-    HTML[Fetch HTML + JSON-LD / OG]
-    Jina[Jina Reader]
-    Apify[Apify free]
-    Gemini[Gemini Flash]
+  subgraph Extracao["🌐 Extração (grátis)"]
+    Fetch[Fetch próprio + JSON-LD / OG / microdata]
+    Adapters[Leitores por loja]
+    ML[Microlink / Jina Reader]
   end
 
-  DB[(Supabase Postgres)]
-  Cron[Vercel Cron diário]
+  DB[(Supabase Postgres · sa-east-1)]
+  Push[Web Push · VAPID]
 
-  Share --> UI --> MW
-  MW --> Auth & Items & Scrape
-  Items --> DB
-  Scrape --> HTML --> Gemini
-  Scrape -. fallback .-> Jina & Apify
-  Scrape --> DB
-  Cron --> Health --> DB
+  Share --> UI --> MW --> API
+  API --> DB
+  API --> Fetch --> Adapters
+  Fetch -. fallback .-> ML
+  Cron --> DB
+  Cron --> Push --> SW
+  API --> Push
 ```
 
-**Princípio central:** o navegador nunca fala com o Supabase diretamente. Toda leitura e escrita passa pelas rotas do Next.js, que usam a `service_role` no servidor. Assim:
+**Princípio central:** o navegador nunca fala com o Supabase diretamente. Toda leitura e escrita passa pelas rotas do Next.js, que usam a `service_role` no servidor. Por isso:
 
-- regras como "o dono não vê reservas" (RN01) ficam num único lugar;
-- não existe chave do banco exposta no front;
-- RLS fica habilitado **sem nenhuma policy**, ou seja, acesso negado para `anon`/`authenticated`.
+- RN01 (dono nunca vê combos e reservas) e RN02 (combo só para quem montou) ficam num único lugar;
+- nenhuma chave do banco fica exposta no front;
+- o RLS fica ligado **sem policies**, e `anon`/`authenticated` não têm nenhum grant.
 
 ## 2. Stack
 
 | Camada | Tecnologia | Motivo |
 |---|---|---|
-| Framework | **Next.js 15 (App Router) + TypeScript** | Front e API no mesmo deploy, Server Components, deploy nativo na Vercel |
+| Framework | **Next.js (App Router) + TypeScript** | Front e API no mesmo deploy |
 | Estilo | **Tailwind CSS v4** + tokens próprios | Design system via CSS variables |
-| Animação | **Motion** (ex-Framer Motion) | Microinterações, layout animations, gestos de swipe |
-| Validação | **Zod** | Valida input da API e a saída da IA |
-| Banco | **Supabase Postgres** (free) | 500 MB, backups, painel bom |
-| Sessão | **jose** (JWT HS256 em cookie httpOnly) | Leve, roda no Edge Middleware |
-| Extração | `fetch` + **cheerio** · Jina Reader · Apify | Em camadas, do grátis ao fallback |
-| IA | **Gemini Flash / Flash-Lite** (free tier) | Interpreta categoria, variação e nome limpo |
-| Hospedagem | **Vercel Hobby** | Grátis, sem cold sleep do front |
+| Animação | **Motion** | Microinterações, layout animations, swipe |
+| Validação | **Zod** | Input da API e saída dos parsers |
+| Banco | **Supabase Postgres** (free, São Paulo) | 500 MB, painel, backups |
+| Sessão | **jose** (JWT em cookie httpOnly) | Leve, roda no Middleware |
+| Extração | `fetch` + **cheerio** + leitores por loja · Microlink · Jina | Em camadas, tudo grátis |
+| Push | **web-push** (VAPID) | Grátis, sem serviço terceiro |
+| Hospedagem | **Vercel Hobby**, funções em `gru1` | Grátis, perto do banco |
 
 ## 3. Modelo de dados
 
 ```mermaid
 erDiagram
   profiles ||--o{ items : "é dono"
-  profiles ||--o{ reservations : "reserva"
-  profiles ||--o{ gifts : "deu"
-  items ||--o| reservations : ""
-  items ||--o{ gifts : ""
+  profiles ||--o{ combos : "monta"
+  profiles ||--o{ combos : "recebe"
+  combos ||--|{ combo_items : ""
+  items ||--o{ combo_items : ""
+  occasions ||--o{ combos : ""
+  profiles ||--o{ push_subscriptions : ""
 
   profiles {
-    text id PK "slug: 'ela' | 'ele'"
+    text id PK "slug"
     text display_name
     text avatar_emoji
+    bool notify_new_items
+    bool notify_occasions
   }
   items {
     uuid id PK
     text owner_id FK
-    text url "imutável, como foi colado"
-    text url_normalized "para detectar duplicado"
+    text url "editável, nunca vazio"
+    text url_normalized "detecta duplicado"
     text title
     text image_url
-    int  price_cents
-    text currency "BRL"
+    int price_cents
     timestamptz price_checked_at
     text store
     text category
-    jsonb variant "{Cor: 'Laranja', Tamanho: 'M'}"
+    jsonb variant
     text kind "unico | sempre"
-    text status "desejado | adquirido"
-    smallint priority "1 normal, 2 muito"
+    text status "desejado | ja_tenho | recebido"
+    timestamptz status_changed_at
     text notes
-    text scrape_status "ok | parcial | falhou | manual"
-    timestamptz acquired_at
-    timestamptz created_at
-    timestamptz updated_at
+    text scrape_status "ok | parcial | bloqueado | link_quebrado | manual"
   }
-  reservations {
-    uuid item_id PK,FK
-    text reserved_by FK
-    timestamptz created_at
-  }
-  gifts {
+  occasions {
     uuid id PK
-    uuid item_id FK
-    text given_by FK
+    text name
+    text kind "aniversario | namoro | natal | dia_namorados | outra"
+    smallint month
+    smallint day
+    text honoree_id FK "null = do casal"
+  }
+  combos {
+    uuid id PK
+    text creator_id FK
+    text recipient_id FK
+    text name
+    uuid occasion_id FK
+    date occasion_date
+    int budget_cents
+    text status "montado | comprado | dado"
+    timestamptz purchased_at
     timestamptz given_at
+  }
+  combo_items {
+    uuid id PK
+    uuid combo_id FK
+    uuid item_id FK "null se extra ou item removido"
+    text snapshot_title
+    text extra_url
+    int quantity
+    int unit_price_cents
+    int paid_cents
+  }
+  push_subscriptions {
+    uuid id PK
+    text profile_id FK
+    text endpoint UK
+    text p256dh
+    text auth
   }
 ```
 
 Tabelas auxiliares:
 
-- `login_attempts (ip_hash, attempted_at)`: rate limit do login.
-- `scrape_cache (url_normalized, payload jsonb, created_at)`: não reextrai o mesmo link em menos de 24 h.
-- `ai_usage (day date, calls int)`: teto diário de chamadas à IA.
+- `login_attempts`: rate limit do login.
+- `scrape_cache`: não reextrai o mesmo link em menos de 24 h.
+- `notification_log`: impede lembrete duplicado (uma linha por ocasião, ano e pessoa).
+
+### Estados derivados (sem tabela própria)
+
+| Pergunta | Como é respondida |
+|---|---|
+| O item está reservado? | Existe `combo_items` dele em combo `comprado` |
+| "Ganhou 3x · última em 14/nov" | `count` e `max(given_at)` dos combos `dado` com o item |
+| "Presente de Vitor em 14/nov" (Recebidos) | O combo `dado` que levou o item a `recebido` |
+| Alerta "ela já comprou" (RF33) | Item `ja_tenho` dentro de combo `comprado` |
+| Aviso vago (RF15) | O servidor só devolve `true/false`: o item está em algum combo `comprado`? |
+
+### Transições de combo (funções no banco, atômicas)
+
+| Função | Faz |
+|---|---|
+| `combo_mark_purchased(combo, creator)` | `montado → comprado`. Falha se algum item único já estiver em outro combo comprado ou não estiver mais desejado (RN04). |
+| `combo_unmark_purchased(combo, creator)` | `comprado → montado` |
+| `combo_mark_given(combo, creator)` | `montado/comprado → dado`. Itens únicos desejados viram `recebido`. |
+
+Triggers garantem as regras que não podem falhar mesmo com bug na API:
+
+- itens sempre bem-vindos nunca saem de `desejado`;
+- quantidade > 1 só em sempre bem-vindo ou extra;
+- itens do combo pertencem ao destinatário;
+- itens só mudam com o combo `montado`;
+- combo `dado` não muda mais.
 
 ### Visibilidade (aplicada no servidor)
 
-| Quem pede | Lista de quem | Vê reservas? | Vê gifts? |
-|---|---|---|---|
-| Dono | própria | ❌ nunca | ✅ só os entregues |
-| Presenteador | do outro | ✅ | ✅ |
+| Quem pede | O que vê |
+|---|---|
+| Dono, na própria lista | Itens, Já tenho, Recebidos (com "presente de…"), contadores. **Nunca** combos nem reservas. |
+| Presenteador, na lista do outro | Itens disponíveis + marca "já comprei" nos que estão nos **próprios** combos comprados |
+| Qualquer um, em Meus combos | Só os combos em que é `creator_id` |
 
 ## 4. Autenticação por telefone
 
-Os telefones **não ficam no código nem no banco em texto puro**.
+Os telefones **não ficam no código nem no banco**.
 
 ```
 entrada: "+55 (31) 9 XXXX-XXXX"
-  → normaliza para E.164: "+5531XXXXXXXXX"
+  → normaliza para E.164
   → HMAC-SHA256(PHONE_PEPPER, e164)
-  → compara (timing-safe) com ALLOWED_PHONE_HASHES  ← variável de ambiente
-  → bateu? emite JWT { sub: "ela" } em cookie httpOnly, Secure, SameSite=Lax, 90 dias
+  → compara (timing-safe) com ALLOWED_PHONE_HASHES   ← variável de ambiente: "perfil:hash,perfil:hash"
+  → bateu? JWT { sub: perfil } em cookie httpOnly, Secure, SameSite=Lax, 90 dias
 ```
 
-- O **pepper** é um segredo forte que só existe na Vercel e no `.env.local`. Telefone tem pouca entropia: sem o pepper, um hash puro seria quebrável por força bruta. Com o pepper, um vazamento do hash sozinho não revela o número.
-- **Rate limit**: 5 tentativas a cada 15 min por IP, com hash do IP na tabela `login_attempts`.
-- Resposta genérica no erro ("número não reconhecido"), sem diferenciar casos.
-- `middleware.ts` protege todas as rotas, exceto `/login`, `/api/auth`, `/api/health` e os assets.
-- Script local `npm run phone:hash` gera os hashes para colar na Vercel.
+- O **pepper** é um segredo forte que existe só na Vercel e no `.env.local`. Sem ele, um hash vazado não revela o número.
+- **Rate limit**: 5 tentativas a cada 15 min por IP (hash do IP em `login_attempts`).
+- Erro sempre genérico: "número não reconhecido".
+- `middleware.ts` protege tudo, exceto `/login`, `/api/auth`, `/api/health`, `/api/cron/*` (estes protegidos por `CRON_SECRET`) e assets.
 
-> É uma autenticação de *conveniência*, adequada para dados de baixo risco (uma lista de presentes). Quem souber um dos dois números consegue entrar. Se um dia precisar de mais, dá para evoluir para um PIN de 4 dígitos ou OTP pelo Supabase Auth.
+> Autenticação de *conveniência*, adequada para uma lista de presentes. Se um dia precisar, dá para evoluir para PIN ou OTP sem mudar o modelo de dados.
 
-## 5. Pipeline de extração (`/api/scrape`)
+## 5. Extração de dados (`/api/scrape`)
+
+Sem IA. O objetivo é **preencher o máximo possível e sempre deixar o resto para a tela de revisão**.
 
 ```mermaid
 flowchart TD
-  A[URL colada / compartilhada] --> B{Cache < 24h?}
-  B -- sim --> Z[Retorna prévia]
-  B -- não --> C[Fetch HTML com UA de navegador]
-  C --> D[Extrai JSON-LD Product, OpenGraph, meta, query params da URL]
-  D --> E{Tem nome + preço + imagem?}
-  E -- não --> F[Jina Reader r.jina.ai → markdown da página]
-  F --> G{Ainda falta?}
-  G -- sim --> H[Apify actor do site, só se houver crédito]
-  E -- sim --> I
-  G -- não --> I
-  H --> I[Monta contexto enxuto ≤ 4k tokens]
-  I --> J{Teto diário de IA ok?}
-  J -- sim --> K[Gemini Flash, saída JSON estruturada]
-  J -- não --> L[Heurística: categoria por palavras-chave]
-  K --> M[Valida com Zod]
-  L --> M
-  M --> N[Salva cache] --> Z
+  A[Lote de links] --> V{URL válida?}
+  V -- não --> Q[link_quebrado]
+  V -- sim --> C{Cache < 24h?}
+  C -- sim --> R[Cartão de revisão]
+  C -- não --> F[Fetch com UA de celular, timeout 10s]
+  F --> S{Resposta}
+  S -- DNS/timeout/404/410 --> Q
+  S -- 403/429/captcha --> B[bloqueado]
+  S -- 200 --> P[Parsers: leitor da loja → JSON-LD Product → microdata → OpenGraph → URL]
+  B --> M[Microlink / Jina: tenta ao menos nome e foto]
+  M --> P2[parcial ou bloqueado]
+  P --> K{nome + preço?}
+  K -- sim --> OK[ok]
+  K -- não --> PA[parcial]
+  Q & P2 & OK & PA --> CAT[Sugestão de categoria por palavras-chave] --> R
 ```
 
-**Como a variação é descoberta.** Ela costuma estar em três lugares:
+- **Cada link é processado de forma independente** e em paralelo (até 3 por vez). Um link ruim não atrasa nem derruba os outros.
+- **Variação**: vem dos query params da URL (`?cor=`, `?variant=`, `?th=1` + ASIN na Amazon), de `color`/`size` no JSON-LD e de seletores dos leitores específicos.
+- **Leitores por loja** (`lib/scrape/adapters/`) são criados à medida que os testes com links reais mostram necessidade. Prioridade: Amazon e Mercado Livre.
+- **Classificação do erro** (RF09):
 
-1. **Query params da URL**: `?cor=laranja&tamanho=M`, `?variant=4412…`, `/dp/B0XXXX` (na Amazon o ASIN já é a variação).
-2. **JSON-LD**: `ProductGroup` + `hasVariant` + `sku` e `color`/`size` do `offers` selecionado.
-3. **Texto da página**: o seletor marcado como ativo.
+  | Sinal | `scrape_status` |
+  |---|---|
+  | URL inválida, erro de DNS, 404/410, timeout repetido | `link_quebrado` |
+  | 401/403/429, página de captcha/bloqueio (Akamai, Cloudflare) | `bloqueado` |
+  | 200 sem nome ou sem preço | `parcial` |
+  | Nome e preço encontrados | `ok` |
+  | Cadastro sem extração | `manual` |
 
-O Gemini recebe esses três sinais e devolve:
+- **Atualizar preço** (RF18, RF26) usa o mesmo pipeline, mas só grava `price_cents` e `price_checked_at`.
 
-```json
-{
-  "title": "Boné Dad Hat Sarja",
-  "store": "Loja X",
-  "price": 89.9,
-  "currency": "BRL",
-  "image": "https://…",
-  "category": "Acessórios",
-  "variant": { "Cor": "Laranja", "Tamanho": "Único" },
-  "suggested_kind": "unico",
-  "confidence": 0.86
-}
-```
+### Resultado dos testes (14/11/2026)
 
-`suggested_kind` é só uma sugestão (comida e cosmético tendem a `sempre`). O dono confirma na prévia.
+| Site | Fetch próprio | Jina Reader | Microlink |
+|---|---|---|---|
+| Kabum | ✅ completo (JSON-LD) | — | — |
+| Amazon | ⚠️ sem JSON-LD, precisa de leitor | ⚠️ texto bagunçado | ✅ nome e foto, ❌ preço |
+| Beleza na Web | ❌ 403 (Akamai) | ❌ | ❌ |
+| Adidas | ❌ 403 | ❌ | ❌ |
+| Magalu | ❌ 403 na busca | — | — |
 
-**Sites difíceis** (Shopee, Shein, às vezes Amazon e Mercado Livre bloqueiam robôs ou renderizam via JS): é para isso que existem os fallbacks Jina e Apify. Se tudo falhar, vale o RF07: salva o link e o usuário completa à mão.
+Shopee, Shein, AliExpress e as lojas de beleza devem cair em `bloqueado` com frequência. Para elas, a tela de revisão é o caminho normal. Antes de construir os leitores, vamos testar 2–3 links reais de cada loja.
 
-**Travas de custo:**
+## 6. Busca
 
-- `AI_DAILY_LIMIT` (padrão 50 chamadas/dia) em `ai_usage`.
-- Cache por URL normalizada.
-- Contexto truncado (sem mandar HTML inteiro).
-- Modelo Flash-Lite por padrão, Flash só quando a confiança vier baixa.
+As listas têm no máximo algumas centenas de itens. O servidor devolve a lista inteira e **a busca e os filtros rodam no navegador**: são instantâneos, funcionam enquanto você digita e não precisam de índice no banco. A normalização remove acentos e maiúsculas (`normalize('NFD')`) no nome, na loja, na variação e na observação.
 
-## 6. Disponibilidade (keep-alive)
+## 7. Avisos (Web Push)
 
-O Supabase Free **pausa o projeto depois de 7 dias sem atividade**. A Vercel Hobby não pausa.
+- Chaves **VAPID** em env. O service worker do PWA recebe os avisos. No Android, funciona com o app instalado.
+- **Item novo** (RF37): ao salvar um lote, um único push para o outro perfil, se ele tiver ativado.
+- **Lembrete de ocasião** (RF38): o cron diário calcula as ocasiões que acontecem daqui a 7 dias, monta a mensagem conforme o combo de cada pessoa e registra em `notification_log` para não repetir.
+- Assinaturas que retornam 404/410 são removidas.
 
-- **Vercel Cron** (`vercel.json`), 1x por dia → `GET /api/health` com `Authorization: Bearer CRON_SECRET` → faz um `select` leve no banco.
-- **Backup**: workflow do GitHub Actions com o mesmo ping, também diário.
-- `/api/health` responde `{ db: "ok", latency_ms }`, útil também para um monitor externo gratuito (UptimeRobot) se quiser alerta.
+## 8. Agendamentos (Vercel Cron, 1x por dia)
 
-## 7. PWA e Share Target (Android)
+`GET /api/cron/daily` (protegido por `CRON_SECRET`), às 09:00 de Brasília:
 
-`manifest.webmanifest`:
+1. **Keep-alive**: consulta o banco, para o Supabase Free nunca pausar (ele pausa depois de 7 dias sem atividade).
+2. **Lembretes de ocasião**.
+3. **Limpeza**: `login_attempts` > 1 dia e `scrape_cache` > 7 dias.
+
+Reserva: um workflow do GitHub Actions faz um ping diário em `/api/health`, caso o cron da Vercel falhe.
+
+## 9. PWA e Share Target
 
 ```json
 {
@@ -217,24 +272,32 @@ O Supabase Free **pausa o projeto depois de 7 dias sem atividade**. A Vercel Hob
 }
 ```
 
-`/share` pega `url`, ou extrai a primeira URL de `text` (o WhatsApp manda o link dentro do texto), e abre direto a tela de prévia com a extração já rodando.
+`/share` junta `url` e todas as URLs encontradas em `text` (o WhatsApp manda o link dentro do texto) e abre a tela de revisão já extraindo.
 
-## 8. Estrutura de pastas (planejada)
+## 10. Estrutura de pastas (planejada)
 
 ```
 src/
   app/
-    (auth)/login/          tela de telefone
-    (app)/                 lista própria, lista do outro, item, "já tenho"
-    share/                 entrada do Share Target
-    api/{auth,items,scrape,health}/
+    (auth)/login/
+    (app)/
+      minha-lista/          lista, já tenho, recebidos
+      lista/[perfil]/       lista do outro
+      montar/               montar presente
+      combos/               meus combos
+      calendario/
+      adicionar/            colar links + revisão em lote
+      ajustes/              avisos, sair
+    share/
+    api/{auth,items,combos,occasions,scrape,push,cron,health}/
   lib/
-    auth/                  hmac, jwt, rate limit
-    db/                    cliente supabase (server-only) + queries
-    scrape/                fetchers, parsers (jsonld, og, url), gemini
-    domain/                tipos, regras de visibilidade
-  components/              design system
-supabase/migrations/       SQL versionado
+    auth/                   hmac, jwt, rate limit
+    db/                     cliente supabase (server-only) + queries
+    scrape/                 fetch, parsers, adapters/, classify, category
+    domain/                 tipos, regras de visibilidade, soma do combo
+    push/
+  components/               design system
+supabase/migrations/
 scripts/phone-hash.ts
 docs/
 ```
