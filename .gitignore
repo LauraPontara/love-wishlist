@@ -16,3 +16,6 @@ supabase/.temp/
 *.tsbuildinfo
 next-env.d.ts
 *.pem
+
+.vercel
+.env*
