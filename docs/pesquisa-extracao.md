@@ -67,9 +67,24 @@ Legenda: **N** nome · **P** preço · **I** imagem · 🚫 bloqueado (403/captc
    - **Shein, Magalu, Beleza na Web**: uma tentativa com timeout curto. Se der 403, vira `bloqueado` com o aviso "esse site não deixa a gente ler".
 3. **Microlink fora do pipeline**: a rajada do free tier é baixa demais para lotes. O Jina cobre o mesmo papel.
 
-## 4. Pontos em aberto
+## 4. Validação a partir da Vercel (14/11/2026, depois do deploy)
+
+O pipeline rodando em produção (região gru1, IP de nuvem), sem cache:
+
+| Loja | Local (residencial) | Vercel (nuvem) |
+|---|---|---|
+| Kabum, Americanas, Boticário, Natura, Sephora, Época | ✅ completo | ✅ completo |
+| Amazon | ✅ completo + cor | ✅ completo + cor |
+| Shopee | 🟠 nome + foto | 🟠 nome + foto |
+| Mercado Livre | 🟠 nome + foto (UA de preview) | 🔴 bloqueado (só devolve "Mercado Libre") |
+| Magalu | 🔴 403 | 🔴 conexão derrubada → tratado como bloqueado |
+| Shein | 🔴 | 🔴 |
+| Domínio inexistente / produto 404 | link quebrado | link quebrado |
+
+Lição aplicada: "link quebrado" só para domínio inexistente e 404/410; conexão derrubada, timeout, 4xx/5xx e captcha viram "site não deixa ler".
+
+## 5. Pontos em aberto
 
 - **Mercado Livre com preço**: criar um app gratuito no portal de desenvolvedores do ML e usar um token de aplicação na API `/items`. Precisa verificar se o token de aplicação (sem login de usuário) basta. Fica para a Fase 3.
 - **Shopee com preço**: a Shopee tem programa oficial de afiliados/API de parceiros. Avaliar se dá para usar de graça. Até lá, o preço é manual.
-- **IP de datacenter**: este teste rodou de IP residencial. A Vercel roda em IPs de nuvem, que algumas lojas (Amazon principalmente) tratam com mais rigor. **Validar o pipeline a partir da Vercel** logo no deploy da Fase 1 e ajustar a tabela acima.
 - **Links reais do casal**: rodar o teste de novo com os links que já circularam no WhatsApp, especialmente os de lojas não listadas aqui.

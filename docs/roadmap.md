@@ -33,13 +33,13 @@
 - [x] Busca por texto sem acento + orçamento máximo + tipo + categoria + ordenação
 - [x] Responsivo: barra inferior no celular/tablet, lateral no desktop, grade de 1 a 3 colunas
 
-## Fase 3: Extração
-- [ ] Colar vários links → extração em paralelo → revisão em cartões → Salvar todos
-- [ ] Classificação de erro (link quebrado × bloqueado × parcial)
-- [ ] Leitor genérico (JSON-LD/OG, UA desktop → celular) + leitores Amazon e Mercado Livre + fallback Jina
-- [ ] Validar o pipeline rodando de dentro da Vercel (IP de datacenter)
-- [ ] Investigar token de aplicação da API do Mercado Livre para trazer o preço
-- [ ] Atualizar preço
+## Fase 3: Extração ✅
+- [x] Colar vários links (inclusive mensagem do WhatsApp) → extração em paralelo → revisão em cartões → Salvar todos
+- [x] Classificação de erro (link quebrado × bloqueado × parcial × ok)
+- [x] Leitor genérico (JSON-LD/OG, UA desktop → celular) + leitor Amazon + Mercado Livre + fallback Jina
+- [x] Validado rodando de dentro da Vercel (ver [pesquisa](pesquisa-extracao.md#4-validação-a-partir-da-vercel-14112026-depois-do-deploy))
+- [x] Atualizar preço e dados / buscar dados do novo link na edição
+- [ ] Investigar token de aplicação da API do Mercado Livre para trazer o preço (da nuvem o ML bloqueia tudo)
 
 ## Fase 4: Presentes
 - [ ] Montar presente: orçamento, extras, quantidade, preços atualizados
