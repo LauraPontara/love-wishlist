@@ -61,6 +61,7 @@ describe("utilitários", () => {
     expect(isJunkTitle("Shopee Brasil")).toBe(true);
     expect(isJunkTitle("Fone JBL")).toBe(false);
     expect(isJunkTitle("SHEIN.com is mainly design and produce fashion")).toBe(true);
+    expect(isJunkTitle("Mercado Libre")).toBe(true);
     expect(isJunkTitle("Shopee Brasil | Ofertas incríveis. Melhores preços do mercado")).toBe(true);
   });
   it("limpa o sufixo da loja no título", () => {

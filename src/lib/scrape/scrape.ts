@@ -93,20 +93,18 @@ async function extract(url: string): Promise<{ status: ScrapeStatus; parsed: Par
   const attempts = isML ? [UA.preview, UA.desktop] : [UA.desktop, UA.mobile];
 
   let best: Parsed = {};
-  let sawBlock = false;
-  let sawBroken = false;
 
+  // "Link quebrado" só quando é certeza: domínio inexistente ou página 404/410.
+  // Conexão derrubada, timeout, 403/429/5xx e captcha contam como "site não deixa ler".
   for (const ua of attempts) {
     const page = await fetchPage(url, ua);
     if (page.kind === "error") {
       if (page.reason === "dns") return { status: "link_quebrado", parsed: {} };
-      sawBroken = page.reason === "timeout" ? sawBroken : true;
       continue;
     }
     if (page.status === 404 || page.status === 410) return { status: "link_quebrado", parsed: {} };
-    const blocked = [401, 403, 429, 503].includes(page.status) || (page.html.length < 60_000 && BLOCK_MARKERS.test(page.html.slice(0, 60_000)));
-    if (blocked) { sawBlock = true; continue; }
-    if (page.status >= 400) { sawBroken = true; continue; }
+    const blocked = page.status >= 400 || (page.html.length < 60_000 && BLOCK_MARKERS.test(page.html.slice(0, 60_000)));
+    if (blocked) continue;
 
     const parsed = parseFor(host, page.html, page.finalUrl);
     if (isJunkTitle(parsed.title)) parsed.title = undefined;
@@ -121,9 +119,7 @@ async function extract(url: string): Promise<{ status: ScrapeStatus; parsed: Par
 
   if (best.title && best.priceCents) return { status: "ok", parsed: best };
   if (best.title || best.imageUrl) return { status: "parcial", parsed: best };
-  if (sawBlock) return { status: "bloqueado", parsed: best };
-  if (sawBroken) return { status: "link_quebrado", parsed: best };
-  return { status: "bloqueado", parsed: best }; // respondeu, mas sem nada legível
+  return { status: "bloqueado", parsed: best };
 }
 
 export async function scrapeUrl(url: string): Promise<ScrapeResult> {

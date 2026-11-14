@@ -152,7 +152,7 @@ export function merge(...parts: Parsed[]): Parsed {
 export function isJunkTitle(title: string | undefined): boolean {
   if (!title) return true;
   return /access denied|acesso negado|robot check|captcha|attention required|just a moment|page not found|página não encontrada|unable to give you access|403 forbidden|404|ops!/i.test(title)
-    || /^(amazon\.com\.br|mercado livre|shopee brasil|shein|aliexpress)[^a-z]*$/i.test(title.trim())
+    || /^(amazon\.com\.br|mercado livre|mercado libre|shopee brasil|shein|aliexpress|magazine luiza|magalu)[^a-z]*$/i.test(title.trim())
     // slogans de página inicial que aparecem quando a loja não mostra o produto
     || /^shein\.com is |ofertas incr[ií]veis\. melhores pre[cç]os|compre online com seguran[cç]a|onde comprar e vender de tudo/i.test(title.trim());
 }
