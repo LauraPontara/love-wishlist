@@ -24,7 +24,7 @@
 ## Fase 3: Extração
 - [ ] Colar vários links → extração em paralelo → revisão em cartões → Salvar todos
 - [ ] Classificação de erro (link quebrado × bloqueado × parcial)
-- [ ] Leitor genérico (JSON-LD/OG, UA desktop → celular) + leitor Amazon + fallback Jina
+- [ ] Leitor genérico (JSON-LD/OG, UA desktop → celular) + leitores Amazon e Mercado Livre + fallback Jina
 - [ ] Validar o pipeline rodando de dentro da Vercel (IP de datacenter)
 - [ ] Investigar token de aplicação da API do Mercado Livre para trazer o preço
 - [ ] Atualizar preço

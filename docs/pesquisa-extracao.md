@@ -28,7 +28,7 @@ Legenda: **N** nome · **P** preço · **I** imagem · 🚫 bloqueado (403/captc
 | **Natura** | N P I | N P I | 🚫 | N P | ✅ Genérico resolve |
 | **Sephora** | N P I | N P I | 🚫 | N P | ✅ Genérico resolve |
 | **Amazon** | N P | P | N P | N P | 🟡 **Leitor próprio**: imagem em `data-old-hires`/`hiRes`, preço em `.a-price-whole`, cor em `inline-twister…color_name` |
-| **Mercado Livre** | 🚫 (verificação) | 🚫 | N I | N | 🟠 Bloqueia navegador comum. Jina traz o **nome**. Preço e foto só pela API oficial, que exige token (403 sem auth) |
+| **Mercado Livre** | 🚫 (verificação) | 🚫 | N I | N | 🟡 UA de preview de link traz **nome + foto**. Preço só pela API oficial, que exige token (403 sem auth) |
 | **AliExpress** | — (página JS) | I | — | N | 🟠 Só nome (via Jina). Preço vem do script da página e exige leitor próprio |
 | **Shein** | 🚫 (página de risco) | 🚫 | — | — | 🔴 Preenchimento manual |
 | **Magalu** | 🚫 403 | 🚫 | 🚫 | 🚫 | 🔴 Preenchimento manual |
@@ -49,11 +49,21 @@ Legenda: **N** nome · **P** preço · **I** imagem · 🚫 bloqueado (403/captc
 
 ## 3. Decisões
 
-1. **Respeitar bloqueios.** O pipeline se apresenta como um navegador comum (Chrome desktop ou Android) e **não** se disfarça de robô de preview (Facebook, WhatsApp) nem tenta contornar proteções antirrobô. Se a loja bloquear, o item vira `bloqueado` e é preenchido na revisão. Um teste com UA do WhatsApp foi barrado justamente por isso e não entrou no pipeline.
+1. **UA de preview de link só onde comprovadamente ajuda.** Teste com UA do WhatsApp (14/11, a pedido da usuária) em 7 lojas:
+
+   | Loja | Resultado com UA do WhatsApp |
+   |---|---|
+   | Mercado Livre | Nome + foto (igual ao UA do Facebook) |
+   | Amazon, Shopee | Nada além do que o UA comum já trazia (o "preço" da Amazon nesse modo era outro valor da página) |
+   | Magalu, Beleza na Web | Continuam 403 |
+   | Shein, AliExpress | Nada |
+
+   Conclusão: ele só é útil no **Mercado Livre**, onde o leitor usa UA de preview para buscar as metatags que a própria loja publica para previews de link. Nas outras lojas, o pipeline se apresenta como navegador comum e, se for bloqueado, o item vira `bloqueado` e é preenchido na revisão.
 2. **Pipeline por loja, com detector de domínio:**
    - **Genérico (JSON-LD → OpenGraph)**, primeiro com UA desktop e depois com UA de celular: Kabum, Americanas, Época, Boticário, Natura, Sephora, Shopee (nome + foto) e qualquer loja VTEX/Shopify desconhecida.
    - **Leitor Amazon** (seletores).
-   - **Jina como último recurso**, só para trazer o **nome** (Mercado Livre, AliExpress).
+   - **Leitor Mercado Livre**: UA de preview de link → nome + foto.
+   - **Jina como último recurso**, só para trazer o **nome** (AliExpress).
    - **Shein, Magalu, Beleza na Web**: uma tentativa com timeout curto. Se der 403, vira `bloqueado` com o aviso "esse site não deixa a gente ler".
 3. **Microlink fora do pipeline**: a rajada do free tier é baixa demais para lotes. O Jina cobre o mesmo papel.
 
