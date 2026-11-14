@@ -66,7 +66,7 @@ npm run dev                    # http://localhost:3000
 ```bash
 supabase login
 supabase link --project-ref <ref-do-projeto>
-supabase db push --linked      # aplica supabase/migrations
+supabase db push --remote      # aplica supabase/migrations
 ```
 
 ### Variáveis de ambiente
