@@ -7,7 +7,10 @@
 - [x] **Teste de extração** com produtos públicos de 13 lojas ([resultado](pesquisa-extracao.md))
 - [x] Shopee testada com link real (nome + foto)
 - [ ] Repetir o teste com mais links reais do casal
-- [ ] Paletas *playful vibrante* (2–3 propostas) → escolha
+- [x] Paletas *playful vibrante*: 3 propostas em [`design/paletas.html`](design/paletas.html)
+- [ ] Escolha da paleta
+- [x] Requisitos dos coelhinhos no site (RF40–RF48)
+- [ ] Sprite sheet dos coelhos em pixel art + protótipo do comportamento
 - [ ] Design system: tokens, tipografia, componentes, princípios de motion
 - [ ] Protótipo das telas: login, minha lista, lista do outro, adicionar + revisão em lote, montar presente, meus combos, calendário
 

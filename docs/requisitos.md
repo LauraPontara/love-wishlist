@@ -126,6 +126,22 @@ Dois usuários fixos, o casal. Os dois usam **Android**. Cada um é:
 - **RF38**: **Lembrete de ocasião**: 7 dias antes de cada data. Se o usuário tiver um combo para a ocasião ainda Montado, o aviso diz isso. Se não tiver combo, sugere montar um.
 - **RF39**: Cada um ativa ou desativa os avisos nas configurações.
 
+### 4.9 Coelhinhos no site
+Dois coelhos em **pixel art** passeiam pelo site o tempo todo: o **chocolate** (Laura) e o **caramelo** (Vítor), com as mesmas pelagens dos avatares.
+
+- **RF40**: Os dois aparecem sempre juntos, para os dois usuários.
+- **RF41**: **Passeiam sozinhos**: andam, pulam e param pela tela. No computador, de vez em quando vão até perto do cursor, mas não o seguem.
+- **RF42**: **Pulam e sentam** em cima de campos de texto, botões e cartões de item, **na borda de cima**, sem cobrir o conteúdo.
+- **RF43**: **Idle fofo**: coçar a orelha, mexer o nariz, se lavar e cochilar quando ninguém mexe no site por um tempo.
+- **RF44**: **Interagem entre si**: se encontram, encostam o focinho, pulam juntos e às vezes um persegue o outro.
+- **RF45**: **Carinho**: clicar ou tocar num coelho deixa ele feliz e solta um coraçãozinho.
+- **RF46**: **Reagem ao app**:
+  - pulinhos de alegria quando itens novos são salvos;
+  - festa dos dois, com corações, quando um combo é marcado como Dado. Só quem marcou vê, e a surpresa continua só dele;
+  - curiosidade: correm até o campo onde a pessoa está digitando e ficam olhando.
+- **RF47**: **No celular**, ficam mais calmos: sentados ou dando pulinhos perto da borda de baixo, reagindo ao toque, sem passear por cima do conteúdo.
+- **RF48**: **Ajustes** tem um liga/desliga dos coelhos, salvo por pessoa.
+
 ## 5. Regras de negócio
 
 - **RN01**: O dono **nunca vê** combos do outro nem reservas. A única pista é o aviso vago do RF15. A regra é aplicada no servidor.
@@ -149,6 +165,8 @@ Dois usuários fixos, o casal. Os dois usam **Android**. Cada um é:
 | RNF06 | **Acessível**: contraste AA, alvos de toque ≥ 44 px, respeita `prefers-reduced-motion`. |
 | RNF07 | **Design**: estética *playful vibrante*, autoral e sem cara de template genérico. |
 | RNF08 | **Região**: banco e funções em São Paulo. |
+| RNF09 | **Coelhos nunca atrapalham**: não bloqueiam cliques nem toques nos elementos onde estão (só o corpo do coelho é clicável), não cobrem texto e pausam quando a aba está em segundo plano. Com `prefers-reduced-motion`, ficam sentados e só piscam. |
+| RNF10 | **Coelhos leves**: um canvas só, sprite sheet pequeno (< 30 KB) e ~60 fps sem pesar a bateria do celular. |
 
 ## 7. Fora do escopo
 

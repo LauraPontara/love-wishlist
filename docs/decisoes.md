@@ -127,6 +127,27 @@ Formato curto: contexto → decisão → consequências. Decisões substituídas
 
 ---
 
+## ADR-012: Coelhinhos como componente próprio, em pixel art
+**Status:** aceita
+
+**Contexto.**
+- A usuária quer os dois coelhos passeando, pulando em inputs e botões, interagindo entre si e reagindo ao app.
+- As bibliotecas prontas de "web pet" (oneko.js, web-sprite-pet, bichito) resolvem andar e seguir o mouse, mas não sentar em elementos, a interação entre dois pets ou as reações a eventos.
+
+**Decisão.**
+- Um componente próprio, inspirado no oneko.js:
+  - **Um sprite sheet base** de coelho em pixel art, com as animações: parado, andar, pular, sentar, coçar orelha, lavar, dormir, feliz.
+  - As **pelagens** chocolate e caramelo são geradas trocando a paleta no canvas, sem desenhar o sprite duas vezes.
+  - **Máquina de estados** por coelho, com plataformas lidas via `getBoundingClientRect()` dos elementos marcados como pousáveis.
+- Eventos do app (`item:salvo`, `combo:dado`, `input:foco`) disparam as reações.
+- O canvas fica com `pointer-events: none`. O clique no coelho é detectado pela posição.
+
+**Consequências.**
+- Controle total sobre os comportamentos e o visual.
+- O sprite precisa ser desenhado (ver roadmap).
+
+---
+
 ## ADR-011: Avisos via Web Push com VAPID
 **Status:** aceita
 
