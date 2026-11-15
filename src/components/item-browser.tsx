@@ -2,13 +2,13 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useEffect, useMemo, useState, useTransition } from "react";
+import { useEffect, useMemo, useRef, useState, useTransition, type PointerEvent as RPointerEvent } from "react";
 import { giveThis, shouldWaitBeforeOwning } from "@/app/actions/combos";
 import { createGroup, deleteItem, restoreItem, setOwned } from "@/app/actions/items";
 import { shortDate } from "@/lib/combos/domain";
 import { CATEGORIES, CATEGORY_EMOJI, formatPrice, matchesSearch, parsePrice, type Item } from "@/lib/items/domain";
 import { useConfirm } from "./confirm";
-import { PencilIcon, TrashIcon } from "./icons";
+import { CloseIcon, PencilIcon, TrashIcon } from "./icons";
 import { Swipe } from "./swipe";
 import { TagCard } from "./tag-card";
 
@@ -32,6 +32,9 @@ export function ItemBrowser({ items, mode, ownerName, gifts = {}, purchasedByMe 
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [groupName, setGroupName] = useState("");
   const [groupError, setGroupError] = useState<string | null>(null);
+  const [naming, setNaming] = useState(false);
+  // toque longo (celular) entra no modo de seleção
+  const press = useRef<{ timer?: ReturnType<typeof setTimeout>; x: number; y: number; fired: boolean }>({ x: 0, y: 0, fired: false });
   const ask = useConfirm();
   const router = useRouter();
   const purchased = useMemo(() => new Set(purchasedByMe), [purchasedByMe]);
@@ -115,7 +118,37 @@ export function ItemBrowser({ items, mode, ownerName, gifts = {}, purchasedByMe 
   const filtersActive = query || category || kind !== "todos" || budget;
 
   const toggleSelected = (id: string) => setSelected((prev) => { const n = new Set(prev); if (n.has(id)) n.delete(id); else n.add(id); return n; });
-  const stopGrouping = () => { setGrouping(false); setSelected(new Set()); setGroupName(""); setGroupError(null); };
+  const stopGrouping = () => { setGrouping(false); setNaming(false); setSelected(new Set()); setGroupName(""); setGroupError(null); };
+  const canGroup = (i: Item) => i.kind === "unico" && i.status === "desejado";
+  const longPress = (item: Item) => mode !== "mine" || tab !== "desejado" ? {} : {
+    onPointerDown: (e: RPointerEvent) => {
+      if (e.pointerType === "mouse") return;
+      const p = press.current;
+      clearTimeout(p.timer);
+      p.x = e.clientX; p.y = e.clientY; p.fired = false;
+      p.timer = setTimeout(() => {
+        p.fired = true;
+        setGrouping(true);
+        if (canGroup(item)) setSelected((prev) => new Set(prev).add(item.id));
+        else setToast({ text: "Itens sempre bem-vindos não entram em grupo." });
+        navigator.vibrate?.(12);
+      }, 450);
+    },
+    onPointerMove: (e: RPointerEvent) => {
+      const p = press.current;
+      if (Math.hypot(e.clientX - p.x, e.clientY - p.y) > 8) clearTimeout(p.timer);
+    },
+    onPointerUp: () => clearTimeout(press.current.timer),
+    onPointerCancel: () => clearTimeout(press.current.timer),
+    onContextMenu: (e: React.MouseEvent) => e.preventDefault(),
+  };
+  // o "toque" que o celular solta ao fim do toque longo não pode abrir o item nem desmarcar a seleção
+  const listGuards = {
+    onClickCapture: (e: React.MouseEvent) => {
+      if (press.current.fired) { e.preventDefault(); e.stopPropagation(); press.current.fired = false; }
+    },
+    onPointerDownCapture: () => { press.current.fired = false; },
+  };
   const submitGroup = () => startTransition(async () => {
     setGroupError(null);
     const res = await createGroup([...selected], groupName);
@@ -152,17 +185,15 @@ export function ItemBrowser({ items, mode, ownerName, gifts = {}, purchasedByMe 
           ))}
         </div>
       )}
-      {mode === "mine" && tab === "desejado" && !grouping && items.filter((i) => i.kind === "unico" && i.status === "desejado").length >= 2 && (
-        <p className="text-sm -mt-1" style={{ color: "var(--ink-2)" }}>
-          Tem opções parecidas (ex.: 3 mouses)?{" "}
-          <button type="button" className="font-extrabold underline" style={{ color: "var(--ink)" }} onClick={() => setGrouping(true)}>Agrupar como “quero um desses”</button>
-        </p>
+      {mode === "mine" && tab === "desejado" && !grouping && (
+        <button type="button" className="chip hidden lg:inline-flex self-start items-center gap-1.5" onClick={() => setGrouping(true)}>
+          ☑ Selecionar itens
+        </button>
       )}
       {grouping && (
-        <div className="rounded-[18px] border-2 p-4 flex flex-col gap-1" style={{ background: "var(--surface)", borderColor: "var(--secondary)" }}>
-          <p className="font-extrabold">Escolha as opções do grupo</p>
-          <p className="text-sm" style={{ color: "var(--ink-2)" }}>Toque em 2 ou mais itens únicos. Quando um deles for dado (ou você marcar “Já tenho”), os outros saem da lista junto.</p>
-        </div>
+        <p className="text-sm font-semibold -mb-1" style={{ color: "var(--ink-2)" }} aria-live="polite">
+          Escolha os itens que são opções parecidas. {selected.size > 0 && <strong style={{ color: "var(--ink)" }}>{selected.size} {selected.size === 1 ? "selecionado" : "selecionados"}</strong>}
+        </p>
       )}
 
       {/* busca + orçamento + ordenação: empilham no celular, ficam em linha a partir do tablet */}
@@ -188,7 +219,7 @@ export function ItemBrowser({ items, mode, ownerName, gifts = {}, purchasedByMe 
       {visible.length === 0 ? (
         <EmptyState mode={mode} tab={tab} filtered={Boolean(filtersActive)} ownerName={ownerName} total={items.length} />
       ) : (
-        <ul className="grid gap-3 md:grid-cols-2 2xl:grid-cols-3" aria-busy={pending}>
+        <ul className="grid gap-3 md:grid-cols-2 2xl:grid-cols-3" aria-busy={pending} {...listGuards}>
           {entries.map((entry) => {
             if (entry.type === "group") {
               return (
@@ -217,7 +248,7 @@ export function ItemBrowser({ items, mode, ownerName, gifts = {}, purchasedByMe 
               );
             }
             return (
-            <li key={item.id}>
+            <li key={item.id} {...longPress(item)}>
               {mode === "mine" ? (
                 <Swipe radius="0 16px 16px 0" label={`Ações de ${item.title}`}
                   actions={[{ label: "Editar", icon: <PencilIcon />, style: { background: "var(--secondary)", color: "var(--on-secondary)" }, onClick: () => router.push(`/item/${item.id}`) },
@@ -255,21 +286,37 @@ export function ItemBrowser({ items, mode, ownerName, gifts = {}, purchasedByMe 
         </ul>
       )}
 
-      {grouping && <div aria-hidden="true" className="h-36" />}
       {grouping && (
-        <div className="fixed inset-x-0 bottom-[76px] lg:bottom-0 lg:left-[252px] z-40 px-4 pb-4 pt-3 border-t-2 flex flex-col gap-2"
-          style={{ background: "var(--surface)", borderColor: "var(--line)" }}>
-          {groupError && <p role="alert" className="text-sm font-semibold" style={{ color: "var(--error-ink)" }}>{groupError}</p>}
-          <div className="flex flex-col sm:flex-row gap-2 max-w-[900px] w-full mx-auto">
-            <input className="field !text-base !py-3 flex-1" placeholder="Nome do grupo (ex.: Mouse)" value={groupName} maxLength={60}
-              onChange={(e) => setGroupName(e.target.value)} aria-label="Nome do grupo" />
-            <div className="grid grid-cols-2 gap-2 sm:flex">
-              <button type="button" className="btn btn-ghost" onClick={stopGrouping}>Cancelar</button>
-              <button type="button" className="btn btn-primary" disabled={pending || selected.size < 2 || !groupName.trim()} onClick={submitGroup}>
-                Agrupar{selected.size ? ` (${selected.size})` : ""}
-              </button>
+        <div className="fixed right-4 bottom-[calc(92px+env(safe-area-inset-bottom))] lg:right-8 lg:bottom-8 z-[55] flex items-center gap-2">
+          <button type="button" className="icon-btn !w-12 !h-12 !rounded-full shadow-lg" aria-label="Cancelar seleção" title="Cancelar seleção" onClick={stopGrouping}><CloseIcon /></button>
+          <button type="button" className="btn btn-primary !rounded-full shadow-lg" disabled={selected.size < 2}
+            onClick={() => { setGroupError(null); setNaming(true); }}>
+            Agrupar{selected.size ? ` (${selected.size})` : ""}
+          </button>
+        </div>
+      )}
+      {naming && (
+        <div className="fixed inset-0 z-[80] grid items-end sm:place-items-center sm:p-4 confirm-backdrop" style={{ background: "rgba(10,8,30,.6)" }}
+          onClick={(e) => { if (e.target === e.currentTarget) setNaming(false); }}>
+          <form role="dialog" aria-modal="true" aria-labelledby="group-title"
+            className="confirm-sheet w-full sm:max-w-[420px] rounded-t-[28px] sm:rounded-[28px] p-6 pb-[max(24px,env(safe-area-inset-bottom))] flex flex-col gap-4 border-2"
+            style={{ background: "var(--surface)", borderColor: "var(--line)" }}
+            onSubmit={(e) => { e.preventDefault(); submitGroup(); }}
+            onKeyDown={(e) => { if (e.key === "Escape") setNaming(false); }}>
+            <div>
+              <h2 id="group-title" className="text-xl font-extrabold leading-tight" style={{ fontVariationSettings: "'wdth' 85" }}>Nome do grupo</h2>
+              <p className="mt-1 text-sm leading-relaxed" style={{ color: "var(--ink-2)" }}>
+                {selected.size} opções. Quando uma delas for dada (ou você marcar “Já tenho”), as outras saem da lista junto.
+              </p>
             </div>
-          </div>
+            <input className="field !text-base" placeholder="Ex.: Mouse" value={groupName} maxLength={60} autoFocus
+              onChange={(e) => setGroupName(e.target.value)} aria-label="Nome do grupo" />
+            {groupError && <p role="alert" className="text-sm font-semibold" style={{ color: "var(--error-ink)" }}>{groupError}</p>}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-3">
+              <button type="button" className="btn btn-ghost w-full order-2 sm:order-1" onClick={() => setNaming(false)}>Voltar</button>
+              <button type="submit" className="btn btn-primary w-full order-1 sm:order-2" disabled={pending || !groupName.trim()}>{pending ? "Agrupando…" : "Criar grupo"}</button>
+            </div>
+          </form>
         </div>
       )}
 

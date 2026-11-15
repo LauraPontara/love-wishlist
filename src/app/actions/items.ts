@@ -123,7 +123,29 @@ export async function updateItem(id: string, _prev: FormState, formData: FormDat
     return { error: "Não deu para salvar agora. Tente de novo." };
   }
   if (row.kind === "sempre") await cleanupGroups(profileId);
+  else {
+    const res = await applyGroupChanges(id, formData);
+    if (!res.ok) return { error: res.error };
+  }
   redirect("/");
+}
+
+/** Mudanças do quadro "Quero um desses", aplicadas só ao salvar o item. */
+async function applyGroupChanges(id: string, formData: FormData): Promise<GroupResult> {
+  const get = (k: string) => String(formData.get(k) ?? "");
+  const action = get("group_action");
+  const groupId = get("group_id");
+  if (action === "dissolve" && groupId) return deleteGroup(groupId);
+  if (action === "leave") return setItemGroup(id, null);
+  if (action === "join") return setItemGroup(id, { groupId: get("group_target") });
+  if (action === "new") return setItemGroup(id, { newName: get("group_new_name"), withItemId: get("group_new_with") });
+  if (groupId) {
+    const rename = get("group_rename").trim();
+    if (rename) { const r = await renameGroup(groupId, rename); if (!r.ok) return r; }
+    const pref = get("group_preferred");
+    if (pref === "1" || pref === "0") return setPreferred(id, pref === "1");
+  }
+  return { ok: true };
 }
 
 /** RF14: "Já tenho" (e desfazer). Só para itens únicos. */
@@ -233,6 +255,18 @@ export async function renameGroup(groupId: string, name: string): Promise<GroupR
   if (!clean) return { ok: false, error: "Dê um nome ao grupo." };
   const { error } = await db().from("item_groups").update({ name: clean }).eq("id", groupId).eq("owner_id", profileId);
   if (error) return { ok: false, error: "Não deu para renomear." };
+  refresh();
+  return { ok: true };
+}
+
+/** Desfaz o grupo: os itens continuam na lista, só deixam de ser "um desses". */
+export async function deleteGroup(groupId: string): Promise<GroupResult> {
+  const profileId = await requireProfileId();
+  if (!UUID.test(groupId)) return { ok: false, error: "Grupo não encontrado." };
+  // sem grupo, a etiqueta "saiu junto" não faz mais sentido (o item fica onde está; dá para Voltar)
+  await db().from("items").update({ left_with_group: false }).eq("group_id", groupId).eq("owner_id", profileId);
+  const { error } = await db().from("item_groups").delete().eq("id", groupId).eq("owner_id", profileId);
+  if (error) return { ok: false, error: "Não deu para desfazer o grupo." };
   refresh();
   return { ok: true };
 }

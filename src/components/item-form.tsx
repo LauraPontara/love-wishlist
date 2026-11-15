@@ -3,7 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useActionState, useState, useTransition } from "react";
 import { shouldWaitBeforeOwning } from "@/app/actions/combos";
-import { deleteItem, renameGroup, setItemGroup, setOwned, setPreferred, type FormState } from "@/app/actions/items";
+import { deleteItem, setOwned, type FormState } from "@/app/actions/items";
 import { CATEGORIES, parsePrice, parseVariant, storeFromUrl, variantToText, type Item, type ItemGroup } from "@/lib/items/domain";
 import { useConfirm } from "./confirm";
 import { ExternalIcon } from "./icons";
@@ -222,53 +222,65 @@ function ItemExtraActions({ item }: { item: Item }) {
   );
 }
 
-/** "Quero um desses": colocar o item num grupo, escolher a ⭐, renomear ou tirar do grupo. */
+/**
+ * "Quero um desses": entrar num grupo, ⭐, renomear, sair ou desfazer o grupo.
+ * Nada é gravado aqui: as escolhas viram campos do formulário e só valem em "Salvar alterações".
+ */
 function GroupEditor({ item, groups, candidates }: { item: Item; groups: ItemGroup[]; candidates: Array<{ id: string; title: string }> }) {
-  const router = useRouter();
-  const [pending, start] = useTransition();
-  const [error, setError] = useState<string | null>(null);
+  const g = item.group;
+  const [action, setAction] = useState<"" | "leave" | "dissolve">("");
+  const [preferred, setPreferredValue] = useState(Boolean(g?.preferred));
+  const [renaming, setRenaming] = useState(false);
+  const [name, setName] = useState(g?.name ?? "");
   const [choice, setChoice] = useState("");
   const [newName, setNewName] = useState("");
   const [withItem, setWithItem] = useState("");
-  const [renaming, setRenaming] = useState(false);
-  const [name, setName] = useState(item.group?.name ?? "");
-  const run = (fn: () => Promise<{ ok: boolean; error?: string }>) => start(async () => {
-    setError(null);
-    const res = await fn();
-    if (!res.ok) setError(res.error ?? "Não deu para salvar.");
-    else { setChoice(""); setRenaming(false); router.refresh(); }
-  });
-  const g = item.group;
+  const note = (text: string, undo: () => void) => (
+    <p className="text-sm rounded-xl px-3 py-2 flex flex-wrap items-center gap-x-2" style={{ background: "var(--warn-bg)", color: "var(--warn-ink)" }}>
+      <span className="font-semibold">{text}</span>
+      <button type="button" className="font-extrabold underline" onClick={undo}>Desfazer</button>
+    </p>
+  );
 
   return (
     <fieldset className="rounded-[18px] border-2 p-4 flex flex-col gap-3" style={{ borderColor: "var(--line)" }}>
       <legend className="font-bold px-1">Quero um desses</legend>
-      {error && <p role="alert" className="text-sm font-semibold" style={{ color: "var(--error-ink)" }}>{error}</p>}
       {g ? (
         <>
-          {renaming ? (
-            <div className="flex flex-col sm:flex-row gap-2">
-              <input className="field !text-base !py-3 flex-1" value={name} onChange={(e) => setName(e.target.value)} maxLength={60} aria-label="Nome do grupo" />
-              <div className="grid grid-cols-2 gap-2 sm:flex">
-                <button type="button" className="btn btn-ghost btn-sm" onClick={() => { setRenaming(false); setName(g.name); }}>Cancelar</button>
-                <button type="button" className="btn btn-primary btn-sm" disabled={pending || !name.trim()} onClick={() => run(() => renameGroup(g.id, name))}>Salvar nome</button>
+          <input type="hidden" name="group_id" value={g.id} />
+          <input type="hidden" name="group_action" value={action} />
+          <input type="hidden" name="group_preferred" value={preferred === g.preferred ? "" : preferred ? "1" : "0"} />
+          <input type="hidden" name="group_rename" value={renaming && name.trim() !== g.name ? name : ""} />
+          {action === "dissolve" ? note(`O grupo ${g.name} será desfeito ao salvar. Os itens continuam na lista.`, () => setAction(""))
+            : action === "leave" ? note("Este item sai do grupo ao salvar.", () => setAction(""))
+            : (
+            <>
+              {renaming ? (
+                <input className="field !text-base !py-3" value={name} onChange={(e) => setName(e.target.value)} maxLength={60} aria-label="Nome do grupo" autoFocus />
+              ) : (
+                <p className="text-sm" style={{ color: "var(--ink-2)" }}>
+                  Faz parte do grupo <strong style={{ color: "var(--ink)" }}>{g.name}</strong>. Quando uma opção for dada, as outras saem da lista junto.
+                </p>
+              )}
+              <div className="flex flex-wrap gap-2">
+                <button type="button" className="chip" aria-pressed={preferred} onClick={() => setPreferredValue(!preferred)}>
+                  {preferred ? "⭐ É o preferido" : "☆ Marcar como preferido"}
+                </button>
+                <button type="button" className="chip" aria-pressed={renaming} onClick={() => { setRenaming(!renaming); setName(g.name); }}>{renaming ? "Manter o nome" : "Renomear grupo"}</button>
+                <button type="button" className="chip" onClick={() => setAction("leave")}>Tirar do grupo</button>
+                <button type="button" className="chip" style={{ color: "var(--error-ink)" }} onClick={() => setAction("dissolve")}>Desfazer grupo</button>
               </div>
-            </div>
-          ) : (
-            <p className="text-sm" style={{ color: "var(--ink-2)" }}>
-              Faz parte do grupo <strong style={{ color: "var(--ink)" }}>{g.name}</strong>. Quando uma opção for dada, as outras saem da lista junto.
-            </p>
+            </>
           )}
-          <div className="flex flex-wrap gap-2">
-            <button type="button" className="chip" aria-pressed={g.preferred} disabled={pending}
-              onClick={() => run(() => setPreferred(item.id, !g.preferred))}>{g.preferred ? "⭐ É o preferido" : "☆ Marcar como preferido"}</button>
-            {!renaming && <button type="button" className="chip" disabled={pending} onClick={() => setRenaming(true)}>Renomear grupo</button>}
-            <button type="button" className="chip" disabled={pending} onClick={() => run(() => setItemGroup(item.id, null))}>Tirar do grupo</button>
-          </div>
+          <p className="text-xs" style={{ color: "var(--ink-2)" }}>As mudanças do grupo valem quando você tocar em “Salvar alterações”.</p>
         </>
       ) : (
         <>
-          <p className="text-sm" style={{ color: "var(--ink-2)" }}>Junte opções parecidas (ex.: 3 mouses). {"Quem for dar vê todas juntas e escolhe uma."}</p>
+          <input type="hidden" name="group_action" value={choice === "novo" ? "new" : choice ? "join" : ""} />
+          <input type="hidden" name="group_target" value={choice !== "novo" ? choice : ""} />
+          <input type="hidden" name="group_new_name" value={choice === "novo" ? newName : ""} />
+          <input type="hidden" name="group_new_with" value={choice === "novo" ? withItem : ""} />
+          <p className="text-sm" style={{ color: "var(--ink-2)" }}>Junte opções parecidas (ex.: 3 mouses). Quem for dar vê todas juntas e escolhe uma.</p>
           <select className="field !text-base" value={choice} onChange={(e) => setChoice(e.target.value)} aria-label="Grupo">
             <option value="">Não faz parte de um grupo</option>
             {groups.map((gr) => <option key={gr.id} value={gr.id}>Grupo: {gr.name}</option>)}
@@ -283,12 +295,7 @@ function GroupEditor({ item, groups, candidates }: { item: Item; groups: ItemGro
               </select>
             </div>
           )}
-          {choice && (
-            <button type="button" className="btn btn-ghost btn-sm self-start" disabled={pending || (choice === "novo" && (!newName.trim() || !withItem))}
-              onClick={() => run(() => setItemGroup(item.id, choice === "novo" ? { newName, withItemId: withItem } : { groupId: choice }))}>
-              {choice === "novo" ? "Criar grupo" : "Colocar no grupo"}
-            </button>
-          )}
+          {choice && <p className="text-xs" style={{ color: "var(--ink-2)" }}>O item entra no grupo quando você tocar em “Salvar alterações”.</p>}
         </>
       )}
     </fieldset>
