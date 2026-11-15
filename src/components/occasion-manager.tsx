@@ -3,6 +3,7 @@
 import { useState, useTransition } from "react";
 import { deleteOccasion, saveOccasion } from "@/app/actions/occasions";
 import { monthLong, monthShort } from "@/lib/combos/domain";
+import { IconButton, PencilIcon } from "./icons";
 
 type Person = { id: string; displayName: string; avatar: string | null };
 export type OccasionRow = {
@@ -32,7 +33,7 @@ export function OccasionList({ occasions, people }: { occasions: OccasionRow[]; 
               </div>
               <div className="flex items-center gap-3">
                 {person?.avatar && <img src={`/avatars/${person.avatar}.svg`} alt={person.displayName} className="w-9 h-9 hidden sm:block" />}
-                <button className="text-sm font-bold underline" style={{ color: "var(--ink-2)" }} onClick={() => setEditing(o.id)}>Editar</button>
+                <IconButton label={`Editar ${o.name}`} onClick={() => setEditing(o.id)}><PencilIcon /></IconButton>
               </div>
             </li>
           );
@@ -77,7 +78,7 @@ function OccasionForm({ people, occasion, onDone }: { people: Person[]; occasion
       <label className="flex flex-col gap-1"><span className="text-sm font-bold">Mês</span>
         <select className="field !text-base" value={month} onChange={(e) => setMonth(Number(e.target.value))}>{Array.from({ length: 12 }, (_, i) => <option key={i} value={i + 1}>{monthLong(i + 1)}</option>)}</select></label>
       {error && <p role="alert" className="sm:col-span-2 xl:col-span-5 rounded-xl px-3 py-2 text-sm font-semibold" style={{ background: "var(--error-bg)", color: "var(--error-ink)" }}>{error}</p>}
-      <div className="sm:col-span-2 xl:col-span-5 flex flex-wrap gap-2">
+      <div className="sm:col-span-2 xl:col-span-5 actions">
         <button className="btn btn-primary btn-sm" disabled={pending}>{occasion ? "Salvar data" : "Adicionar data"}</button>
         <button type="button" className="btn btn-ghost btn-sm" onClick={onDone}>Cancelar</button>
         {occasion && (

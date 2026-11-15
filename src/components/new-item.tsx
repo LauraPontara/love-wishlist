@@ -6,7 +6,7 @@ import { ItemForm } from "./item-form";
 import { PasteLinks } from "./paste-links";
 
 /** Adicionar: "Colar links" (padrão, Fase 3) ou "Preencher à mão". */
-export function NewItem() {
+export function NewItem({ initialText = "", autoFetch = false }: { initialText?: string; autoFetch?: boolean }) {
   const [mode, setMode] = useState<"links" | "manual">("links");
   return (
     <div className="flex flex-col gap-5">
@@ -18,7 +18,7 @@ export function NewItem() {
           </button>
         ))}
       </div>
-      {mode === "links" ? <PasteLinks onManual={() => setMode("manual")} /> : <ItemForm action={createItem} />}
+      {mode === "links" ? <PasteLinks initialText={initialText} autoFetch={autoFetch} onManual={() => setMode("manual")} /> : <ItemForm action={createItem} />}
     </div>
   );
 }

@@ -4,7 +4,7 @@ import { daysBetween, nextOccurrence, todayInSaoPaulo, type Combo, type ComboLin
 
 type LineRow = {
   id: string; item_id: string | null; is_extra: boolean; snapshot_title: string; extra_url: string | null;
-  quantity: number; unit_price_cents: number | null; paid_cents: number | null;
+  quantity: number; unit_price_cents: number | null; paid_cents: number | null; created_at: string;
   items: { url: string; image_url: string | null; category: string; kind: "unico" | "sempre"; status: "desejado" | "ja_tenho" | "recebido" } | null;
 };
 type ComboRow = {
@@ -21,7 +21,7 @@ const SELECT = `id, recipient_id, name, occasion_id, occasion_date, budget_cents
 
 function toCombo(r: ComboRow): Combo {
   const lines: ComboLine[] = [...r.combo_items]
-    .sort((a, b) => Number(a.is_extra) - Number(b.is_extra))
+    .sort((a, b) => Number(a.is_extra) - Number(b.is_extra) || a.created_at.localeCompare(b.created_at))
     .map((l) => ({
       id: l.id, itemId: l.item_id, isExtra: l.is_extra, title: l.snapshot_title,
       url: l.items?.url ?? l.extra_url, imageUrl: l.items?.image_url ?? null,

@@ -95,7 +95,7 @@ export function ItemForm({ action, item }: { action: Action; item?: Item }) {
           <textarea name="notes" className="field min-h-[90px] resize-y" value={values.notes} onChange={set("notes")} maxLength={1000} />
         </Field>
 
-        <div className="flex flex-wrap gap-3 pt-2">
+        <div className="actions pt-2">
           <button type="submit" className="btn btn-primary" disabled={saving}>{saving ? "Salvando…" : item ? "Salvar alterações" : "Adicionar à lista"}</button>
           {item && <ItemExtraActions item={item} />}
         </div>

@@ -41,14 +41,16 @@
 - [x] Atualizar preço e dados / buscar dados do novo link na edição
 - [ ] Investigar token de aplicação da API do Mercado Livre para trazer o preço (da nuvem o ML bloqueia tudo)
 
-## Fase 4: Presentes
-- [ ] Montar presente: orçamento, extras, quantidade, preços atualizados
-- [ ] Meus combos e etapas Montado → Comprado → Dado
-- [ ] "Dar este", aviso vago, alerta "já comprou", contador de sempre bem-vindo
-- [ ] Calendário do casal
+## Fase 4: Presentes ✅
+- [x] Montar presente: orçamento, extras, quantidade, preços atualizados ao abrir
+- [x] Meus combos e etapas Montado → Comprado → Dado, com "paguei"
+- [x] "Dar este", selo "Você já comprou", aviso vago, alerta "já comprou", Recebidos e contador de sempre bem-vindo
+- [x] Calendário do casal (próxima data, adicionar, editar, excluir)
 
 ## Fase 5: App no celular
-- [ ] PWA instalável + Share Target
+- [x] PWA instalável + Share Target (`/share`) + ícone de coração
+- [x] Esqueletos de carregamento, botões de ícone e ações largas no celular
+- [x] Link repetido permitido (migration `20261115010000`) e botão Duplicar na revisão
 - [ ] Web Push: item novo + lembrete de ocasião
 - [ ] Polimento de motion, estados vazios, onboarding
 

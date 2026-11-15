@@ -1,10 +1,11 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useMemo, useState, useTransition } from "react";
+import { useEffect, useMemo, useRef, useState, useTransition } from "react";
 import { createItems, type Draft } from "@/app/actions/items";
 import { CATEGORIES, CATEGORY_EMOJI, type Category } from "@/lib/items/domain";
 import { extractUrls } from "@/lib/scrape/parse";
+import { CopyIcon, IconButton, TrashIcon } from "./icons";
 import type { ScrapeResult } from "@/lib/scrape/scrape";
 
 type Card = Draft & { key: string; errors?: Record<string, string> };
@@ -31,7 +32,7 @@ const toDraft = (r: ScrapeResult): Card => ({
 });
 
 // RF04–RF09: colar um ou vários links → extração → revisão em cartões → Salvar todos.
-export function PasteLinks({ initialText = "", onManual }: { initialText?: string; onManual?: () => void }) {
+export function PasteLinks({ initialText = "", autoFetch = false, onManual }: { initialText?: string; autoFetch?: boolean; onManual?: () => void }) {
   const router = useRouter();
   const [text, setText] = useState(initialText);
   const [cards, setCards] = useState<Card[]>([]);
@@ -60,8 +61,19 @@ export function PasteLinks({ initialText = "", onManual }: { initialText?: strin
     }
   }
 
+  // veio do "Compartilhar" do Android: já busca sem precisar tocar no botão
+  const started = useRef(false);
+  useEffect(() => {
+    if (!autoFetch || started.current || !urls.length) return;
+    started.current = true;
+    void fetchData();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [autoFetch, urls.length]);
+
   const update = (key: string, patch: Partial<Card>) => setCards((cs) => cs.map((c) => (c.key === key ? { ...c, ...patch, errors: undefined } : c)));
   const remove = (key: string) => setCards((cs) => cs.filter((c) => c.key !== key));
+  // mesma loja/link, outra opção (cor, modelo): copia o cartão logo abaixo
+  const duplicate = (key: string) => setCards((cs) => cs.flatMap((c) => (c.key === key ? [c, { ...c, key: crypto.randomUUID(), errors: undefined }] : [c])));
 
   function saveAll() {
     startSaving(async () => {
@@ -71,7 +83,7 @@ export function PasteLinks({ initialText = "", onManual }: { initialText?: strin
       }));
       const { savedIndexes, errors } = await createItems(drafts);
       const remaining = cards.map((c, i) => ({ ...c, errors: errors[i] })).filter((_, i) => !savedIndexes.includes(i));
-      if (!remaining.length) { router.push("/"); return; }
+      if (!remaining.length) { setCards([]); setText(""); setMessage(null); router.push("/"); return; }
       setCards(remaining);
       setMessage(savedIndexes.length
         ? `${savedIndexes.length} ${savedIndexes.length === 1 ? "item salvo" : "itens salvos"}. Confira ${remaining.length === 1 ? "o que ficou" : "os que ficaram"}.`
@@ -89,7 +101,7 @@ export function PasteLinks({ initialText = "", onManual }: { initialText?: strin
               placeholder={"Cole um link por linha.\nTambém dá para colar a mensagem inteira do WhatsApp."} disabled={loading} />
           </label>
           {message && <p role="alert" className="rounded-xl px-4 py-3 font-semibold" style={TONE.err}>{message}</p>}
-          <div className="flex flex-wrap items-center gap-3">
+          <div className="actions items-center">
             <button className="btn btn-primary" disabled={!urls.length || loading} onClick={fetchData}>
               {loading ? `Buscando ${Math.min(urls.length, 10)} ${urls.length === 1 ? "link" : "links"}…` : urls.length > 1 ? `Buscar dados dos ${Math.min(urls.length, 10)} links` : "Buscar dados"}
             </button>
@@ -131,11 +143,11 @@ export function PasteLinks({ initialText = "", onManual }: { initialText?: strin
       {message && <p role="status" className="rounded-xl px-4 py-3 font-semibold" style={TONE.warn}>{message}</p>}
 
       <ul className="grid gap-4 xl:grid-cols-2">
-        {cards.map((c) => <ReviewCard key={c.key} card={c} onChange={(p) => update(c.key, p)} onRemove={() => remove(c.key)} />)}
+        {cards.map((c) => <ReviewCard key={c.key} card={c} onChange={(p) => update(c.key, p)} onRemove={() => remove(c.key)} onDuplicate={() => duplicate(c.key)} />)}
       </ul>
 
       <div className="sticky bottom-[96px] lg:bottom-6 z-30 flex justify-end">
-        <button className="btn btn-primary shadow-lg" disabled={saving || !cards.length} onClick={saveAll}>
+        <button className="btn btn-primary shadow-lg w-full sm:w-auto" disabled={saving || !cards.length} onClick={saveAll}>
           {saving ? "Salvando…" : cards.length === 1 ? "Salvar item" : `Salvar ${cards.length} itens`}
         </button>
       </div>
@@ -143,7 +155,7 @@ export function PasteLinks({ initialText = "", onManual }: { initialText?: strin
   );
 }
 
-function ReviewCard({ card, onChange, onRemove }: { card: Card; onChange: (p: Partial<Card>) => void; onRemove: () => void }) {
+function ReviewCard({ card, onChange, onRemove, onDuplicate }: { card: Card; onChange: (p: Partial<Card>) => void; onRemove: () => void; onDuplicate: () => void }) {
   const note = card.errors?.form ? { tone: "err" as const, text: card.errors.form } : card.errors?.url ? { tone: "err" as const, text: card.errors.url } : NOTES[card.scrapeStatus];
   const missing = (v: string) => (card.scrapeStatus !== "ok" && !v.trim() ? { borderStyle: "dashed", borderColor: "var(--primary)" } : undefined);
   const err = card.errors ?? {};
@@ -183,6 +195,11 @@ function ReviewCard({ card, onChange, onRemove }: { card: Card; onChange: (p: Pa
           <input className="field !py-2.5 !text-[.85rem]" value={card.url} onChange={(e) => onChange({ url: e.target.value })} />
           {err.url && <span className="text-xs font-semibold" style={{ color: "var(--error-ink)" }}>{err.url}</span>}
         </label>
+        <label className="flex flex-col gap-1 col-span-2">
+          <span className="text-xs font-bold" style={{ color: "var(--ink-2)" }}>Link da foto (opcional)</span>
+          <input className="field !py-2.5 !text-[.85rem]" value={card.imageUrl} onChange={(e) => onChange({ imageUrl: e.target.value })} placeholder="https://" />
+          {err.imageUrl && <span className="text-xs font-semibold" style={{ color: "var(--error-ink)" }}>{err.imageUrl}</span>}
+        </label>
         <div className="col-span-2 flex flex-wrap items-center justify-between gap-3">
           <div role="radiogroup" aria-label="Tipo" className="grid grid-cols-2 p-1 rounded-xl" style={{ background: "var(--surface-sunk)" }}>
             {([["unico", "Único"], ["sempre", "Sempre bem-vindo"]] as const).map(([v, label]) => (
@@ -193,7 +210,10 @@ function ReviewCard({ card, onChange, onRemove }: { card: Card; onChange: (p: Pa
               </button>
             ))}
           </div>
-          <button type="button" className="text-sm font-bold underline" style={{ color: "var(--ink-2)" }} onClick={onRemove}>Descartar</button>
+          <span className="flex gap-2">
+            <IconButton label="Duplicar (outra opção do mesmo link)" onClick={onDuplicate}><CopyIcon /></IconButton>
+            <IconButton label="Descartar" tone="danger" onClick={onRemove}><TrashIcon /></IconButton>
+          </span>
         </div>
       </div>
     </li>

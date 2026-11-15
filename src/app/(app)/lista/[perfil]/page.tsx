@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 import { Suspense } from "react";
 import { ItemBrowser } from "@/components/item-browser";
 import { PageHeader, Sheet } from "@/components/page-header";
+import { ListSkeleton } from "@/components/skeleton";
 import { getCurrentUser } from "@/lib/auth/current-user";
 import { getMyPurchasedItemIds } from "@/lib/combos/queries";
 import { getPartnerItems } from "@/lib/items/queries";
@@ -9,7 +10,7 @@ import { getPartnerItems } from "@/lib/items/queries";
 export default function PartnerListPage({ params }: PageProps<"/lista/[perfil]">) {
   return (
     <main className="flex-1 flex flex-col">
-      <Suspense fallback={<><PageHeader title="Lista" /><Sheet><p style={{ color: "var(--ink-2)" }}>Carregando…</p></Sheet></>}>
+      <Suspense fallback={<><PageHeader title="Lista" /><Sheet><ListSkeleton /></Sheet></>}>
         <PartnerList params={params} />
       </Suspense>
     </main>

@@ -15,7 +15,8 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: [
+  themeColor: [ // barra do sistema
+
     { media: "(prefers-color-scheme: light)", color: "#D61F69" },
     { media: "(prefers-color-scheme: dark)", color: "#14123A" },
   ],

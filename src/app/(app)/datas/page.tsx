@@ -4,6 +4,7 @@ import { Suspense } from "react";
 import { Heart } from "@/components/heart";
 import { OccasionList } from "@/components/occasion-manager";
 import { PageHeader, Sheet } from "@/components/page-header";
+import { ListSkeleton } from "@/components/skeleton";
 import { getCurrentUser } from "@/lib/auth/current-user";
 import { countdownLabel, formatDayMonth } from "@/lib/combos/domain";
 import { getMyCombos, getOccasions } from "@/lib/combos/queries";
@@ -13,7 +14,7 @@ export const metadata: Metadata = { title: "Nossas datas · Nossa Wishlist" };
 export default function DatesPage() {
   return (
     <main className="flex-1 flex flex-col">
-      <Suspense fallback={<><PageHeader title="Nossas datas" /><Sheet><p style={{ color: "var(--ink-2)" }}>Carregando…</p></Sheet></>}>
+      <Suspense fallback={<><PageHeader title="Nossas datas" /><Sheet><ListSkeleton /></Sheet></>}>
         <Dates />
       </Suspense>
     </main>
@@ -29,7 +30,7 @@ async function Dates() {
   const next = occasions[0];
 
   const statusFor = (o: (typeof occasions)[number]) => {
-    if (o.honoreeId === user.id) return `Só ${user.partner?.displayName ?? "o outro"} vê os presentes dele${user.partner?.displayName.endsWith("a") ? "a" : ""}`;
+    if (o.honoreeId === user.id) return `Só ${user.partner?.displayName ?? "o outro"} vê os presentes ${user.partner?.displayName.endsWith("a") ? "dela" : "dele"}`;
     const combo = combos.find((c) => c.occasionId === o.id && c.occasionDate === o.nextDate);
     return combo ? STAGE[combo.status] : "Nenhum presente montado ainda";
   };

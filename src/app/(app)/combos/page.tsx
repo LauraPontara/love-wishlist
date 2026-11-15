@@ -3,6 +3,7 @@ import { Suspense } from "react";
 import { ComboCard } from "@/components/combo-card";
 import { NewComboForm } from "@/components/new-combo-form";
 import { PageHeader, Sheet } from "@/components/page-header";
+import { ListSkeleton } from "@/components/skeleton";
 import { getCurrentUser } from "@/lib/auth/current-user";
 import { countdownLabel, formatDayMonth } from "@/lib/combos/domain";
 import { getMyCombos, getOccasions } from "@/lib/combos/queries";
@@ -12,7 +13,7 @@ export const metadata: Metadata = { title: "Meus combos · Nossa Wishlist" };
 export default function CombosPage() {
   return (
     <main className="flex-1 flex flex-col">
-      <Suspense fallback={<><PageHeader title="Meus combos" /><Sheet><p style={{ color: "var(--ink-2)" }}>Carregando…</p></Sheet></>}>
+      <Suspense fallback={<><PageHeader title="Meus combos" /><Sheet><ListSkeleton /></Sheet></>}>
         <Combos />
       </Suspense>
     </main>

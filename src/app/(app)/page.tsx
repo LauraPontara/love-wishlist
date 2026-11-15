@@ -2,6 +2,7 @@ import Link from "next/link";
 import { Suspense } from "react";
 import { ItemBrowser } from "@/components/item-browser";
 import { PageHeader, Sheet } from "@/components/page-header";
+import { ListSkeleton } from "@/components/skeleton";
 import { getCurrentUser } from "@/lib/auth/current-user";
 import { getReceivedGifts } from "@/lib/combos/queries";
 import { getMyItems } from "@/lib/items/queries";
@@ -36,7 +37,7 @@ function Loading() {
   return (
     <>
       <PageHeader title="Minha lista" />
-      <Sheet><p style={{ color: "var(--ink-2)" }}>Carregando…</p></Sheet>
+      <Sheet><ListSkeleton /></Sheet>
     </>
   );
 }

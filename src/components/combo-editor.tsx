@@ -8,6 +8,7 @@ import {
 import { boughtByOwnerAlerts, budgetState, comboTotal, countdownLabel, daysBetween, formatDayMonth, lineTotal, todayInSaoPaulo, type Combo, type ComboLine } from "@/lib/combos/domain";
 import { CATEGORY_EMOJI, formatPrice, matchesSearch, type Category, type Item } from "@/lib/items/domain";
 import { Heart } from "./heart";
+import { IconButton, TrashIcon } from "./icons";
 import { StageSteps } from "./stage-steps";
 
 type Occ = { id: string; name: string; label: string };
@@ -122,7 +123,7 @@ export function ComboEditor({ combo, available, purchasedElsewhere, occasions, r
         {editable && <ExtraForm onAdd={(e) => run(() => addExtra(combo.id, e))} pending={pending} />}
 
         {/* ações de etapa */}
-        <div className="flex flex-wrap gap-3 pt-2">
+        <div className="actions pt-2">
           {combo.status === "montado" && (
             <button className="btn btn-primary" disabled={pending || !combo.lines.length} onClick={() => run(() => setComboStage(combo.id, "comprado"))}>Marcar como comprado</button>
           )}
@@ -180,7 +181,7 @@ function MetaEditor({ combo, occasions, disabled, onSave }: { combo: Combo; occa
         </select></label>
       <label className="flex flex-col gap-1"><span className="text-sm font-bold">Orçamento</span>
         <input className="field !text-base" inputMode="decimal" placeholder="R$" value={budget} onChange={(e) => setBudget(e.target.value)} /></label>
-      <div className="sm:col-span-3 flex gap-2"><button className="btn btn-primary btn-sm">Salvar</button><button type="button" className="btn btn-ghost btn-sm" onClick={() => setOpen(false)}>Cancelar</button></div>
+      <div className="sm:col-span-3 actions"><button className="btn btn-primary btn-sm">Salvar</button><button type="button" className="btn btn-ghost btn-sm" onClick={() => setOpen(false)}>Cancelar</button></div>
     </form>
   );
 }
@@ -221,7 +222,7 @@ function ComboLineRow({ line, status, pending, onQty, onPaid, onRemove }: {
         <span className="font-extrabold whitespace-nowrap" style={{ fontVariationSettings: "'wdth' 80" }}>
           {line.paidCents == null && line.unitPriceCents == null ? "Sem preço" : formatPrice(lineTotal(line))}
         </span>
-        {status === "montado" && <button type="button" className="text-xs font-bold underline" style={{ color: "var(--ink-2)" }} disabled={pending} onClick={onRemove}>Tirar</button>}
+        {status === "montado" && <IconButton label={`Tirar ${line.title} do presente`} disabled={pending} onClick={onRemove} className="relative z-10"><TrashIcon /></IconButton>}
       </div>
     </li>
   );
@@ -242,7 +243,7 @@ function ExtraForm({ onAdd, pending }: { onAdd: (e: { title: string; price: stri
         <input className="field !text-base" inputMode="decimal" value={price} onChange={(e) => setPrice(e.target.value)} placeholder="R$" /></label>
       <label className="flex flex-col gap-1 sm:col-span-2"><span className="text-sm font-bold">Link (opcional)</span>
         <input className="field !text-base" type="url" value={url} onChange={(e) => setUrl(e.target.value)} placeholder="https://" /></label>
-      <div className="sm:col-span-2 flex gap-2"><button className="btn btn-primary btn-sm" disabled={pending}>Adicionar extra</button><button type="button" className="btn btn-ghost btn-sm" onClick={() => setOpen(false)}>Cancelar</button></div>
+      <div className="sm:col-span-2 actions"><button className="btn btn-primary btn-sm" disabled={pending}>Adicionar extra</button><button type="button" className="btn btn-ghost btn-sm" onClick={() => setOpen(false)}>Cancelar</button></div>
     </form>
   );
 }

@@ -58,7 +58,7 @@ Dois usuários fixos, o casal. Os dois usam **Android**. Cada um é:
   | Site bloqueia leitura automática | 403, captcha, página de bloqueio | "Esse site não deixa a gente ler os dados automaticamente. O link está salvo, é só preencher nome e preço." |
   | Leitura parcial | Achou nome e foto, mas não o preço | Os campos encontrados vêm preenchidos e os que faltam ficam destacados |
 
-- **RF10**: Avisar quando o mesmo link já estiver na lista do dono.
+- **RF10**: O mesmo link **pode** ser cadastrado mais de uma vez (há lojas em que o link não indica a opção escolhida, como paletas de sombra). Na revisão, o botão **Duplicar** cria outra opção do mesmo link para trocar só a foto e a descrição.
 - **RF11**: Campos do item:
 
   | Campo | Obrigatório |
