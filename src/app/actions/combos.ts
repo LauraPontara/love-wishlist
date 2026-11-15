@@ -97,7 +97,7 @@ export async function updateComboMeta(comboId: string, input: { name: string; oc
 export async function deleteCombo(comboId: string): Promise<Result> {
   const creatorId = await requireProfileId();
   const combo = await ownCombo(comboId, creatorId);
-  if (!combo) return fail("Combo não encontrado.");
+  if (!combo) return fail("Presente não encontrado.");
   if (combo.status === "dado") return fail("Um presente já dado fica no histórico.");
   const { error } = await db().from("combos").delete().eq("id", comboId).eq("creator_id", creatorId);
   if (error) return fail(dbError(error.message));
@@ -108,11 +108,11 @@ export async function deleteCombo(comboId: string): Promise<Result> {
 export async function addItemToCombo(comboId: string, itemId: string): Promise<Result> {
   const creatorId = await requireProfileId();
   const combo = await ownCombo(comboId, creatorId);
-  if (!combo) return fail("Combo não encontrado.");
+  if (!combo) return fail("Presente não encontrado.");
   const { data: item } = await db().from("items").select("title, price_cents, owner_id").eq("id", itemId).maybeSingle();
   if (!item || item.owner_id !== combo.recipient_id) return fail("Esse item não é da lista de quem vai ganhar.");
   const { error } = await db().from("combo_items").insert({ combo_id: comboId, item_id: itemId, snapshot_title: item.title, unit_price_cents: item.price_cents });
-  if (error) return fail(error.code === "23505" ? "Esse item já está no combo." : dbError(error.message));
+  if (error) return fail(error.code === "23505" ? "Esse item já está no presente." : dbError(error.message));
   refresh();
   return { ok: true };
 }
@@ -126,7 +126,7 @@ const extraSchema = z.object({
 /** RF29: extras (flores, cartão…) só existem no combo. */
 export async function addExtra(comboId: string, input: { title: string; price?: string; url?: string }): Promise<Result> {
   const creatorId = await requireProfileId();
-  if (!(await ownCombo(comboId, creatorId))) return fail("Combo não encontrado.");
+  if (!(await ownCombo(comboId, creatorId))) return fail("Presente não encontrado.");
   const parsed = extraSchema.safeParse(input);
   if (!parsed.success) return fail(parsed.error.issues[0].message);
   const price = parsePrice(parsed.data.price);
@@ -141,7 +141,7 @@ export async function addExtra(comboId: string, input: { title: string; price?: 
 
 export async function removeLine(comboId: string, lineId: string): Promise<Result> {
   const creatorId = await requireProfileId();
-  if (!(await ownCombo(comboId, creatorId))) return fail("Combo não encontrado.");
+  if (!(await ownCombo(comboId, creatorId))) return fail("Presente não encontrado.");
   const { error } = await db().from("combo_items").delete().eq("id", lineId).eq("combo_id", comboId);
   if (error) return fail(dbError(error.message));
   refresh();
@@ -151,7 +151,7 @@ export async function removeLine(comboId: string, lineId: string): Promise<Resul
 /** RF28: quantidade só em "sempre bem-vindo" e extras (o banco garante). */
 export async function setQuantity(comboId: string, lineId: string, quantity: number): Promise<Result> {
   const creatorId = await requireProfileId();
-  if (!(await ownCombo(comboId, creatorId))) return fail("Combo não encontrado.");
+  if (!(await ownCombo(comboId, creatorId))) return fail("Presente não encontrado.");
   const q = Math.max(1, Math.min(99, Math.round(quantity)));
   const { error } = await db().from("combo_items").update({ quantity: q }).eq("id", lineId).eq("combo_id", comboId);
   if (error) return fail(dbError(error.message));
@@ -162,7 +162,7 @@ export async function setQuantity(comboId: string, lineId: string, quantity: num
 /** RF30: "paguei R$ …" substitui o preço na soma. Vazio volta a usar o preço. */
 export async function setPaid(comboId: string, lineId: string, value: string): Promise<Result> {
   const creatorId = await requireProfileId();
-  if (!(await ownCombo(comboId, creatorId))) return fail("Combo não encontrado.");
+  if (!(await ownCombo(comboId, creatorId))) return fail("Presente não encontrado.");
   const paid = parsePrice(value);
   if (paid === "invalido") return fail("Valor inválido. Use algo como 179,90.");
   const { error } = await db().from("combo_items").update({ paid_cents: paid }).eq("id", lineId).eq("combo_id", comboId);

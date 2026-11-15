@@ -28,7 +28,7 @@ export function NavLinks({ me, partner }: { me: Person; partner: Person | null }
   const links: NavItem[] = [
     { href: "/", label: "Minha lista", short: "Minha lista", icon: <Avatar name={me.avatar} />, active: path === "/" || path.startsWith("/item") },
     ...(partner ? [{ href: `/lista/${partner.id}`, label: `Lista ${article} ${partner.displayName}`, short: partner.displayName, icon: <Avatar name={partner.avatar} />, active: path.startsWith("/lista") }] : []),
-    { href: "/combos", label: "Meus combos", short: "Combos", icon: <GiftIcon />, active: path.startsWith("/combos") },
+    { href: "/combos", label: "Presentes", short: "Presentes", icon: <GiftIcon />, active: path.startsWith("/combos") },
     { href: "/datas", label: "Nossas datas", short: "Datas", icon: <CalendarIcon />, active: path.startsWith("/datas") },
   ];
 

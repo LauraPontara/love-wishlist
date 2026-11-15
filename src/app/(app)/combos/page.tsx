@@ -10,12 +10,12 @@ import { getCurrentUser } from "@/lib/auth/current-user";
 import { countdownLabel, formatDayMonth } from "@/lib/combos/domain";
 import { getMyCombos, getOccasions } from "@/lib/combos/queries";
 
-export const metadata: Metadata = { title: "Meus combos · Nossa Wishlist" };
+export const metadata: Metadata = { title: "Presentes · Nossa Wishlist" };
 
 export default function CombosPage() {
   return (
     <main className="flex-1 flex flex-col">
-      <Suspense fallback={<><PageHeader title="Meus combos" /><Sheet><ListSkeleton /></Sheet></>}>
+      <Suspense fallback={<><PageHeader title="Presentes" /><Sheet><ListSkeleton /></Sheet></>}>
         <Combos />
       </Suspense>
     </main>
@@ -36,7 +36,7 @@ async function Combos() {
 
   return (
     <>
-      <PageHeader title="Meus combos" subtitle={`Só você vê os presentes que monta para ${partnerName}.`} />
+      <PageHeader title="Presentes" subtitle={`Só você vê os presentes que monta para ${partnerName}.`} />
       <Sheet>
         <div className="flex flex-col gap-6">
           <NewComboForm occasions={giftable} partnerName={partnerName} />

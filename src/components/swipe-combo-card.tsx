@@ -25,7 +25,7 @@ export function SwipeComboCard({ combo }: { combo: Combo }) {
       onClick: async () => {
         const ok = await ask({
           title: "Excluir este presente?",
-          body: <>“{combo.name}” some de Meus combos. Os itens continuam na lista.</>,
+          body: <>“{combo.name}” some dos seus presentes. Os itens continuam na lista.</>,
           confirmLabel: "Excluir presente", tone: "danger",
         });
         if (ok) start(async () => { await deleteCombo(combo.id); router.refresh(); });

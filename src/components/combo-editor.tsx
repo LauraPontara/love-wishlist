@@ -133,7 +133,7 @@ export function ComboEditor({ combo, available, purchasedElsewhere, occasions, r
               <button className="btn btn-primary" disabled={pending} data-tour="finish" onClick={() => { setBuilding(false); router.push("/combos"); }}>Concluir presente</button>
               <button className="btn btn-ghost" style={{ color: "var(--error-ink)" }} disabled={pending}
                 onClick={async () => {
-                  if (await ask({ title: "Excluir este presente?", body: <>“{combo.name}” some de Meus combos. Os itens continuam na lista.</>, confirmLabel: "Excluir presente", tone: "danger" }))
+                  if (await ask({ title: "Excluir este presente?", body: <>“{combo.name}” some dos seus presentes. Os itens continuam na lista.</>, confirmLabel: "Excluir presente", tone: "danger" }))
                     run(() => deleteCombo(combo.id));
                 }}>
                 Excluir presente

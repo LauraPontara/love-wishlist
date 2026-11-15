@@ -49,7 +49,7 @@ async function Dates() {
                 <h2 className="display text-[2rem] sm:text-[2.4rem] mt-1">{next.name}</h2>
                 <p className="text-sm mt-1" style={{ color: "var(--ink-2)" }}>{formatDayMonth(next.nextDate)}</p>
                 <p className="text-sm font-semibold mt-3">{statusFor(next)}</p>
-                {next.honoreeId !== user.id && <Link href="/combos" className="btn btn-ribbon btn-sm mt-4">Ver meus combos</Link>}
+                {next.honoreeId !== user.id && <Link href="/combos" className="btn btn-ribbon btn-sm mt-4">Ver presentes</Link>}
               </div>
               <div className="text-center text-white [text-shadow:0_2px_10px_rgba(28,26,74,.35)]">
                 <b className="display block text-[3.2rem] sm:text-[4rem]">{next.daysUntil}</b>

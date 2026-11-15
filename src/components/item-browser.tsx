@@ -343,7 +343,7 @@ function EmptyState({ mode, tab, filtered, ownerName, total }: { mode: "mine" | 
   if (filtered && total > 0) text = "Nada encontrado com esses filtros. Tente outra busca ou limpe os filtros.";
   else if (mode === "partner") text = `${ownerName} ainda não adicionou desejos. Que tal dar uma dica?`;
   else if (tab === "ja_tenho") text = "Quando você comprar algo da sua lista, marque como \"Já tenho\" e ele aparece aqui.";
-  else if (tab === "recebido") text = "Os presentes que você ganhar pelos combos aparecem aqui.";
+  else if (tab === "recebido") text = "Os presentes que você ganhar aparecem aqui.";
   else text = "Sua lista está vazia. Adicione o link de algo que você quer ganhar.";
   return (
     <div className="rounded-[20px] border-2 border-dashed p-6 sm:p-8 text-center flex flex-col items-center gap-4" style={{ borderColor: "var(--line)" }}>

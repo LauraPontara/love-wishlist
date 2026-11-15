@@ -13,7 +13,7 @@ export const maxDuration = 60; // a atualização de preços roda nas ações de
 export default function ComboPage({ params, searchParams }: PageProps<"/combos/[id]">) {
   return (
     <main className="flex-1 flex flex-col">
-      <Suspense fallback={<><PageHeader title="Montar presente" back={{ href: "/combos", label: "Meus combos" }} /><Sheet><ListSkeleton /></Sheet></>}>
+      <Suspense fallback={<><PageHeader title="Montar presente" back={{ href: "/combos", label: "Presentes" }} /><Sheet><ListSkeleton /></Sheet></>}>
         <ComboView params={params} searchParams={searchParams} />
       </Suspense>
     </main>
@@ -40,7 +40,7 @@ async function ComboView({ params, searchParams }: { params: PageProps<"/combos/
   return (
     <>
       <PageHeader title={combo.status === "dado" ? "Presente dado" : "Montar presente"} avatar={user.partner.avatar}
-        subtitle={`Para ${user.partner.displayName}. Só você vê.`} back={{ href: "/combos", label: "Meus combos" }} />
+        subtitle={`Para ${user.partner.displayName}. Só você vê.`} back={{ href: "/combos", label: "Presentes" }} />
       <Sheet>
         <ComboEditor key={`${combo.id}:${startBuilding ? montar : ""}`} combo={combo} available={available} purchasedElsewhere={elsewhere} occasions={giftable} recipientName={user.partner.displayName} startBuilding={startBuilding} />
       </Sheet>
