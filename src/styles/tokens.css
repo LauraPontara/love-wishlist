@@ -38,9 +38,9 @@
     #D61F69;
 
   /* estados do item */
-  --tag-sempre: #FFFBEE;
+  --tag-sempre: #FFF6D9;
   --tag-comprado: #F4F6FF;
-  --badge-sempre: #FFF2CC;
+  --badge-sempre: #FFE08A;
   --badge-info: #E1E7FF;
 
   /* avisos da extração */
@@ -51,6 +51,8 @@
   --stripe-a: #D61F69; --stripe-b: #E8457F;
   --heart-echo: .32;
   --shadow: 0 18px 40px -24px rgba(28, 26, 74, .35);
+  /* etiquetas: contorno + sombra seguindo o recorte (clip-path) */
+  --tag-lift: drop-shadow(0 0 1px rgba(168, 18, 79, .35)) drop-shadow(0 6px 10px rgba(168, 18, 79, .14));
 }
 
 [data-theme="dark"] {
@@ -91,6 +93,7 @@
   --stripe-a: #FF6AA3; --stripe-b: #E0337A;
   --heart-echo: .45;
   --shadow: 0 18px 40px -24px rgba(0, 0, 0, .6);
+  --tag-lift: none;
 }
 
 /* grão sutil sobre a aurora (aplicar como ::after com mix-blend-mode: overlay; opacity: .35) */
@@ -170,5 +173,6 @@
   --stripe-a: #FF6AA3; --stripe-b: #E0337A;
   --heart-echo: .45;
   --shadow: 0 18px 40px -24px rgba(0, 0, 0, .6);
+  --tag-lift: none;
   }
 }

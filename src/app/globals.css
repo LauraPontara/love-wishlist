@@ -62,14 +62,34 @@ body {
   transition: translate var(--t-fast) var(--ease-out), box-shadow var(--t-fast) var(--ease-out), opacity var(--t-fast);
 }
 .btn:disabled { opacity: .6; cursor: progress; }
-.btn-primary { background: var(--primary); color: var(--on-primary); box-shadow: 0 5px 0 var(--primary-edge); }
-.btn-primary:active:not(:disabled) { translate: 0 3px; box-shadow: 0 2px 0 var(--primary-edge); }
 .btn-ghost { background: var(--surface); color: var(--ink); border: 2px solid var(--line); }
-.btn-ribbon { background: var(--ribbon); color: var(--on-ribbon); box-shadow: 0 5px 0 var(--ribbon-edge); }
-.btn-ribbon:active { translate: 0 3px; box-shadow: 0 2px 0 var(--ribbon-edge); }
 .btn-sm { padding: 8px 12px; font-size: .85rem; border-radius: 12px; }
-.btn-danger { background: #C81E4A; color: #FFFFFF; box-shadow: 0 5px 0 #8E1233; }
-.btn-danger:active { translate: 0 3px; box-shadow: 0 2px 0 #8E1233; }
+
+/* botões 3D: a "borda" embaixo é a lateral do botão. No clique ele desce até o chão
+   (a borda some) bem rápido; ao soltar, volta com uma molinha. */
+.btn-primary { --edge: var(--primary-edge); background: var(--primary); color: var(--on-primary); }
+.btn-ribbon  { --edge: var(--ribbon-edge);  background: var(--ribbon);  color: var(--on-ribbon); }
+.btn-danger  { --edge: #8E1233;             background: #C81E4A;        color: #FFFFFF; }
+.btn-primary, .btn-ribbon, .btn-danger {
+  --depth: 5px;
+  position: relative;
+  box-shadow: 0 var(--depth) 0 var(--edge), 0 calc(var(--depth) + 4px) 10px -4px rgba(28, 26, 74, .35),
+              inset 0 2px 0 rgba(255, 255, 255, .28);
+  transition: translate 260ms var(--spring), box-shadow 260ms var(--spring), filter 120ms, opacity var(--t-fast);
+}
+.btn-sm:is(.btn-primary, .btn-ribbon, .btn-danger) { --depth: 3px; }
+@media (hover: hover) {
+  :is(.btn-primary, .btn-ribbon, .btn-danger):hover:not(:disabled) {
+    translate: 0 -1px; filter: brightness(1.05);
+    box-shadow: 0 calc(var(--depth) + 1px) 0 var(--edge), 0 calc(var(--depth) + 6px) 12px -4px rgba(28, 26, 74, .35),
+                inset 0 2px 0 rgba(255, 255, 255, .28);
+  }
+}
+:is(.btn-primary, .btn-ribbon, .btn-danger):active:not(:disabled) {
+  translate: 0 var(--depth); filter: brightness(.96);
+  box-shadow: 0 0 0 var(--edge), 0 1px 2px rgba(28, 26, 74, .3), inset 0 2px 4px rgba(0, 0, 0, .18);
+  transition-duration: 60ms; transition-timing-function: ease-out;
+}
 
 /* ---------- diálogo de confirmação ---------- */
 @media (prefers-reduced-motion: no-preference) {
@@ -101,6 +121,8 @@ body {
   border-radius: 50%; background: var(--bg); box-shadow: inset 0 0 0 2px var(--line);
 }
 .tag.sempre { --tag-bg: var(--tag-sempre); }
+/* o recorte da etiqueta corta sombras: a sombra fica na lista (segue o formato de cada etiqueta) */
+ul:has(> li > .tag, > li > .swipe .tag, > li.tag) { filter: var(--tag-lift, none); }
 .tag.dim { --tag-bg: var(--tag-comprado); }
 .tag.linked:hover { translate: 3px 0; }
 .tag:has(.tag-link:focus-visible) { outline: 3px solid var(--ribbon); outline-offset: -3px; }
