@@ -17,7 +17,7 @@ export function HeartGlow({ className = "" }: { className?: string }) {
 /**
  * Desktop (estilo Lovable): o topo de um coração gigante de luz. Dois lóbulos sobem pelas laterais
  * (borda azul, miolo rosa) e se encontram embaixo no centro, deixando um "V" escuro no meio. Pulsa.
- * Geometria em 1440x800: lóbulos com raio 474 centrados em x=250/1190, y=624 → encostam em x=720, y≈560.
+ * Geometria em 1440x800: lóbulos largos (raio 700, centros x=240/1200, y=880): montes baixos e um V suave até ~60% da altura.
  */
 export function HeartAura({ className = "" }: { className?: string }) {
   return (
@@ -42,12 +42,12 @@ export function HeartAura({ className = "" }: { className?: string }) {
             <stop offset=".55" stopColor="#6F86FF" stopOpacity=".7" />
             <stop offset="1" stopColor="#3F6BFF" stopOpacity="0" />
           </radialGradient>
-          <filter id="soft" x="-20%" y="-20%" width="140%" height="140%"><feGaussianBlur stdDeviation="34" /></filter>
+          <filter id="soft" x="-20%" y="-20%" width="140%" height="140%"><feGaussianBlur stdDeviation="44" /></filter>
         </defs>
         <g filter="url(#soft)">
-          <ellipse cx="720" cy="690" rx="260" ry="170" fill="url(#tip)" />
-          <circle cx="170" cy="720" r="580" fill="url(#lobe)" />
-          <circle cx="1270" cy="720" r="580" fill="url(#lobe)" />
+          <ellipse cx="720" cy="640" rx="250" ry="160" fill="url(#tip)" />
+          <circle cx="240" cy="880" r="700" fill="url(#lobe)" />
+          <circle cx="1200" cy="880" r="700" fill="url(#lobe)" />
           <rect x="-100" y="640" width="1640" height="260" fill="url(#floor)" />
         </g>
       </svg>
