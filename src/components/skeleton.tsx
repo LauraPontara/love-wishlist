@@ -198,20 +198,20 @@ export function SettingsSkeleton() {
     </div>
   );
   return (
-    <Loading className="grid gap-5 lg:grid-cols-2 items-start max-w-[1000px]">
-      <Card className="p-5 flex flex-col gap-4">
+    <Loading className="grid gap-5 lg:grid-cols-2 lg:grid-rows-[1fr_auto] max-w-[1000px]">
+      <Card className="p-5 flex flex-col gap-4 lg:col-start-1 lg:row-start-1">
         <div className="flex flex-col gap-1.5"><Bone className="h-6 w-32 rounded-md" /><Bone className="h-3.5 w-40 rounded-md" /></div>
         <Bone className="h-[52px] rounded-2xl" />
         {toggle(0)}
       </Card>
-      <Card className="p-5 flex flex-col gap-4">
+      <Card className="p-5 flex flex-col gap-4 lg:col-start-2 lg:row-start-1 lg:row-span-2">
         <div className="flex flex-col gap-1.5"><Bone className="h-6 w-24 rounded-md" /><Bone className="h-3.5 w-3/4 rounded-md" /></div>
         <Bone className="h-[52px] w-full sm:w-[240px] rounded-2xl" />
         {toggle(1)}{toggle(2)}
       </Card>
-      <Card className="p-5 flex flex-col gap-4">
-        <Bone className="h-6 w-20 rounded-md" />
-        <Bone className="h-[52px] w-full sm:w-[140px] rounded-2xl" />
+      <Card className="px-5 py-4 flex items-center justify-between gap-4 lg:col-start-1 lg:row-start-2">
+        <div className="flex flex-col gap-1.5 flex-1"><Bone className="h-6 w-20 rounded-md" /><Bone className="h-3.5 w-3/5 rounded-md" /></div>
+        <Bone className="h-[52px] w-[84px] rounded-2xl" />
       </Card>
     </Loading>
   );
