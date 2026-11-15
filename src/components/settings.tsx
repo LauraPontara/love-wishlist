@@ -99,13 +99,18 @@ export function Settings({ notifyNewItems, notifyOccasions, vapidKey, partnerNam
       <Card tour="notify" className="lg:col-start-2 lg:row-start-1 lg:row-span-2" title="Avisos" hint="Chegam como notificação no celular, com o app instalado.">
         {push === "unsupported" && <Note>Este navegador não aceita avisos. No Android, instale o app pela tela inicial do Chrome.</Note>}
         {push === "denied" && <Note>As notificações estão bloqueadas para este site. Libere nas configurações do navegador e volte aqui.</Note>}
-        {(push === "off" || push === "unknown") && <button className="btn btn-primary w-full sm:w-auto sm:self-start" onClick={enablePush} disabled={push === "unknown"}>Ativar avisos neste aparelho</button>}
-        {push === "on" && <button className="btn btn-ghost w-full sm:w-auto sm:self-start" onClick={disablePush}>Desligar avisos neste aparelho</button>}
-        {message && <p role="status" className="text-sm font-semibold" style={{ color: "var(--ink-2)" }}>{message}</p>}
+        {/* botão no meio do espaço livre; os interruptores descem para a base do card */}
+        <div className="my-auto py-3 flex flex-col items-center gap-2 text-center">
+          {(push === "off" || push === "unknown") && <button className="btn btn-primary w-full sm:w-auto" onClick={enablePush} disabled={push === "unknown"}>Ativar avisos neste aparelho</button>}
+          {push === "on" && <button className="btn btn-ghost w-full sm:w-auto" onClick={disablePush}>Desligar avisos neste aparelho</button>}
+          {message && <p role="status" className="text-sm font-semibold" style={{ color: "var(--ink-2)" }}>{message}</p>}
+        </div>
+        <div className="flex flex-col gap-1">
         <Toggle label={`Item novo na lista ${partnerName.endsWith("a") ? "da" : "do"} ${partnerName}`} on={notifyNewItems} disabled={pending}
           onChange={() => start(async () => { await setNotify("new_items", !notifyNewItems); })} />
         <Toggle label="Lembrete 7 dias antes das datas" on={notifyOccasions} disabled={pending}
           onChange={() => start(async () => { await setNotify("occasions", !notifyOccasions); })} />
+        </div>
       </Card>
 
       <section data-tour="account" className="lg:col-start-1 lg:row-start-2 rounded-[20px] border-2 px-5 py-4 flex items-center justify-between gap-4"
