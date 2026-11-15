@@ -22,7 +22,9 @@ export default function ComboPage({ params, searchParams }: PageProps<"/combos/[
 
 async function ComboView({ params, searchParams }: { params: PageProps<"/combos/[id]">["params"]; searchParams: PageProps<"/combos/[id]">["searchParams"] }) {
   const { id } = await params;
-  const startBuilding = (await searchParams).montar === "1";
+  // ?montar=<qualquer valor> abre editando; o valor muda a cada clique para a tela recomeçar
+  const montar = (await searchParams).montar;
+  const startBuilding = typeof montar === "string" && montar !== "";
   const user = await getCurrentUser();
   const combo = await getMyCombo(id, user.id);
   if (!combo || !user.partner) notFound();
@@ -40,7 +42,7 @@ async function ComboView({ params, searchParams }: { params: PageProps<"/combos/
       <PageHeader title={combo.status === "dado" ? "Presente dado" : "Montar presente"} avatar={user.partner.avatar}
         subtitle={`Para ${user.partner.displayName}. Só você vê.`} back={{ href: "/combos", label: "Meus combos" }} />
       <Sheet>
-        <ComboEditor combo={combo} available={available} purchasedElsewhere={elsewhere} occasions={giftable} recipientName={user.partner.displayName} startBuilding={startBuilding} />
+        <ComboEditor key={`${combo.id}:${startBuilding ? montar : ""}`} combo={combo} available={available} purchasedElsewhere={elsewhere} occasions={giftable} recipientName={user.partner.displayName} startBuilding={startBuilding} />
       </Sheet>
     </>
   );

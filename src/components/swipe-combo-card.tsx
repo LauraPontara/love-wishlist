@@ -18,7 +18,7 @@ export function SwipeComboCard({ combo }: { combo: Combo }) {
   const actions: SwipeAction[] = [];
   if (combo.status === "montado") {
     actions.push({ label: "Editar", icon: <PencilIcon />, style: { background: "var(--secondary)", color: "var(--on-secondary)" },
-      onClick: () => router.push(`/combos/${combo.id}?montar=1`) });
+      onClick: () => router.push(`/combos/${combo.id}?montar=${Date.now()}`) });
   }
   if (combo.status !== "dado") {
     actions.push({ label: "Excluir", icon: <TrashIcon />, style: { background: "#C81E4A", color: "#fff" }, disabled: pending,
