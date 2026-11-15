@@ -53,13 +53,13 @@ export const LESSONS: Lesson[] = [
       { target: CARD, gesture: "hold", text: "Segure o dedo num item para começar a selecionar.", doText: "Agora você: segure um item!", wait: "grouping-on" },
       { target: ".tag-select:not(:disabled):not(.is-on)", gesture: "tap", text: "Toque nas outras opções parecidas.", wait: "two-selected" },
       { target: '[data-tour="group-btn"]', gesture: "tap", text: "Toque em Agrupar e dê um nome ao grupo.", wait: "naming" },
-      { target: '[data-tour="group-dialog"]', text: "Agora é só dar um nome, como “Mouse”, e criar o grupo.", wait: "group-created", doneText: "Grupo criado! Você já sabe agrupar 🎉" },
+      { target: '[data-tour="group-dialog"]', text: "Agora é só dar um nome e criar o grupo.", wait: "group-created", doneText: "Grupo criado! Você já sabe agrupar 🎉" },
     ],
     mouse: [
       { target: '[data-tour="select-btn"]', gesture: "tap", text: "Clique em Selecionar itens.", wait: "grouping-on" },
       { target: ".tag-select:not(:disabled):not(.is-on)", gesture: "tap", text: "Escolha as opções parecidas (duas ou mais).", wait: "two-selected" },
       { target: '[data-tour="group-btn"]', gesture: "tap", text: "Clique em Agrupar e dê um nome ao grupo.", wait: "naming" },
-      { target: '[data-tour="group-dialog"]', text: "Agora é só dar um nome, como “Mouse”, e criar o grupo.", wait: "group-created", doneText: "Grupo criado! Você já sabe agrupar 🎉" },
+      { target: '[data-tour="group-dialog"]', text: "Agora é só dar um nome e criar o grupo.", wait: "group-created", doneText: "Grupo criado! Você já sabe agrupar 🎉" },
     ],
   },
   {
