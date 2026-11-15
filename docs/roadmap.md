@@ -47,12 +47,14 @@
 - [x] "Dar este", selo "Você já comprou", aviso vago, alerta "já comprou", Recebidos e contador de sempre bem-vindo
 - [x] Calendário do casal (próxima data, adicionar, editar, excluir)
 
-## Fase 5: App no celular
+## Fase 5: App no celular ✅
 - [x] PWA instalável + Share Target (`/share`) + ícone de coração
 - [x] Esqueletos de carregamento, botões de ícone e ações largas no celular
 - [x] Link repetido permitido (migration `20261115010000`) e botão Duplicar na revisão
-- [ ] Web Push: item novo + lembrete de ocasião
-- [ ] Polimento de motion, estados vazios, onboarding
+- [x] Web Push: aviso de item novo e lembrete 7 dias antes das datas (cron diário)
+- [x] Ajustes: tema Automático/Claro/Escuro, liga/desliga dos coelhos e dos avisos, sair
+- [x] Coelhinhos passeando no app (calmos no celular; reagem a itens salvos e combo dado)
+- [ ] Testar em aparelho real: compartilhar para o app e receber um aviso
 
 ## Depois (ideias)
 - Checagem semanal de links quebrados

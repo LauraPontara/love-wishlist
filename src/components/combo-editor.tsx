@@ -7,6 +7,7 @@ import {
 } from "@/app/actions/combos";
 import { boughtByOwnerAlerts, budgetState, comboTotal, countdownLabel, daysBetween, formatDayMonth, lineTotal, todayInSaoPaulo, type Combo, type ComboLine } from "@/lib/combos/domain";
 import { CATEGORY_EMOJI, formatPrice, matchesSearch, type Category, type Item } from "@/lib/items/domain";
+import { bunnyCheer } from "./bunnies";
 import { Heart } from "./heart";
 import { IconButton, TrashIcon } from "./icons";
 import { StageSteps } from "./stage-steps";
@@ -135,7 +136,7 @@ export function ComboEditor({ combo, available, purchasedElsewhere, occasions, r
               onConfirm={() => start(async () => {
                 setError(null);
                 const res = await setComboStage(combo.id, "dado");
-                if (res.ok) setCelebrate(true); else setError(res.error);
+                if (res.ok) { setCelebrate(true); bunnyCheer("combo:dado"); } else setError(res.error);
               })} />
           )}
           {combo.status !== "dado" && (

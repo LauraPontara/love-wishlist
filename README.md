@@ -92,7 +92,7 @@ Ficam **só** no `.env.local` (git-ignored) e na Vercel.
 | `PHONE_PEPPER` | Segredo usado no HMAC dos telefones |
 | `ALLOWED_PHONE_HASHES` | `perfil:hash,perfil:hash` |
 | `SESSION_SECRET` | Assina o cookie de sessão |
-| `VAPID_PUBLIC_KEY` / `VAPID_PRIVATE_KEY` | Web Push |
+| `NEXT_PUBLIC_VAPID_PUBLIC_KEY` / `VAPID_PRIVATE_KEY` / `VAPID_SUBJECT` | Web Push (avisos) |
 | `CRON_SECRET` | Protege o cron diário |
 
 Gerar o hash de um telefone (roda local, nada sai da sua máquina):

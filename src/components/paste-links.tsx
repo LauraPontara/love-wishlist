@@ -5,6 +5,7 @@ import { useEffect, useMemo, useRef, useState, useTransition } from "react";
 import { createItems, type Draft } from "@/app/actions/items";
 import { CATEGORIES, CATEGORY_EMOJI, type Category } from "@/lib/items/domain";
 import { extractUrls } from "@/lib/scrape/parse";
+import { bunnyCheer } from "./bunnies";
 import { CopyIcon, IconButton, TrashIcon } from "./icons";
 import type { ScrapeResult } from "@/lib/scrape/scrape";
 
@@ -82,6 +83,7 @@ export function PasteLinks({ initialText = "", autoFetch = false, onManual }: { 
         variant: c.variant, notes: c.notes, imageUrl: c.imageUrl, scrapeStatus: c.scrapeStatus,
       }));
       const { savedIndexes, errors } = await createItems(drafts);
+      if (savedIndexes.length) bunnyCheer("item:salvo");
       const remaining = cards.map((c, i) => ({ ...c, errors: errors[i] })).filter((_, i) => !savedIndexes.includes(i));
       if (!remaining.length) { setCards([]); setText(""); setMessage(null); router.push("/"); return; }
       setCards(remaining);

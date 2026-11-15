@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import type { ReactNode } from "react";
-import { LogoutButton } from "./logout-button";
+import { GearIcon } from "./icons";
 
 type Person = { id: string; displayName: string; avatar: string | null };
 type NavItem = { href: string; label: string; short: string; icon: ReactNode; active: boolean };
@@ -45,7 +45,11 @@ export function NavLinks({ me, partner }: { me: Person; partner: Person | null }
           </Link>
         ))}
         <Link href="/item/novo" className="btn btn-ribbon mt-4">Adicionar item</Link>
-        <div className="mt-auto"><LogoutButton /></div>
+        <Link href="/ajustes" aria-current={path.startsWith("/ajustes") ? "page" : undefined}
+          className="mt-auto flex items-center gap-3 rounded-2xl px-3 py-2.5 font-bold"
+          style={path.startsWith("/ajustes") ? { background: "var(--bg)", color: "var(--primary)" } : { color: "var(--ink-2)" }}>
+          <span className="w-9 h-9 grid place-items-center"><GearIcon /></span>Ajustes
+        </Link>
       </aside>
 
       <nav className="lg:hidden fixed inset-x-0 bottom-0 z-40 grid grid-cols-5 border-t-2 px-1 pt-2 pb-[max(10px,env(safe-area-inset-bottom))]"

@@ -4,6 +4,8 @@ import { refresh } from "next/cache";
 import { redirect } from "next/navigation";
 import { requireProfileId } from "@/lib/auth/current-user";
 import { db } from "@/lib/db/server";
+import { newItemsMessage } from "@/lib/push/messages";
+import { sendToProfile } from "@/lib/push/send";
 import { itemFormSchema, normalizeUrl, parsePrice, parseVariant, storeFromUrl } from "@/lib/items/domain";
 
 export type FormState = { error?: string; fieldErrors?: Record<string, string> };
@@ -46,6 +48,17 @@ function fieldErrors(result: ReturnType<typeof readForm>): FormState {
 
 const DUPLICATE = "Esse link já está na sua lista.";
 
+/** RF37: avisa o outro que entraram itens na lista (um aviso por cadastro). */
+async function notifyPartner(ownerId: string, count: number): Promise<void> {
+  try {
+    const { data } = await db().from("profiles").select("id, display_name, notify_new_items");
+    const me = data?.find((p) => p.id === ownerId);
+    const partner = data?.find((p) => p.id !== ownerId);
+    if (!me || !partner?.notify_new_items) return;
+    await sendToProfile(partner.id, newItemsMessage(me.display_name, me.id, count));
+  } catch { /* aviso é melhor esforço */ }
+}
+
 export type Draft = {
   url: string; title: string; price: string; store: string; category: string; kind: string;
   variant: string; notes: string; imageUrl: string;
@@ -73,7 +86,7 @@ export async function createItems(drafts: Draft[]): Promise<{ savedIndexes: numb
     if (error) errors[i] = error.code === "23505" ? { url: DUPLICATE } : { form: "Não deu para salvar este item." };
     else savedIndexes.push(i);
   }
-  if (savedIndexes.length) refresh();
+  if (savedIndexes.length) { await notifyPartner(profileId, savedIndexes.length); refresh(); }
   return { savedIndexes, errors };
 }
 
@@ -89,6 +102,7 @@ export async function createItem(_prev: FormState, formData: FormData): Promise<
     if (error.code === "23505") return { error: DUPLICATE, fieldErrors: { url: DUPLICATE } };
     return { error: "Não deu para salvar agora. Tente de novo." };
   }
+  await notifyPartner(profileId, 1);
   redirect("/");
 }
 
