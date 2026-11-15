@@ -1,13 +1,14 @@
 "use client";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState, useTransition } from "react";
 import { giveThis, shouldWaitBeforeOwning } from "@/app/actions/combos";
 import { deleteItem, restoreItem, setOwned } from "@/app/actions/items";
 import { shortDate } from "@/lib/combos/domain";
 import { CATEGORIES, matchesSearch, parsePrice, type Item } from "@/lib/items/domain";
 import { useConfirm } from "./confirm";
-import { TrashIcon } from "./icons";
+import { PencilIcon, TrashIcon } from "./icons";
 import { Swipe } from "./swipe";
 import { TagCard } from "./tag-card";
 
@@ -24,6 +25,7 @@ export function ItemBrowser({ items, mode, ownerName, gifts = {}, purchasedByMe 
   gifts?: Record<string, Gift>; purchasedByMe?: string[];
 }) {
   const ask = useConfirm();
+  const router = useRouter();
   const purchased = useMemo(() => new Set(purchasedByMe), [purchasedByMe]);
   const [tab, setTab] = useState<Tab>("desejado");
   const [query, setQuery] = useState("");
@@ -146,8 +148,9 @@ export function ItemBrowser({ items, mode, ownerName, gifts = {}, purchasedByMe 
             <li key={item.id}>
               {mode === "mine" ? (
                 <Swipe radius="0 16px 16px 0" label={`Ações de ${item.title}`}
-                  actions={[{ label: "Excluir", icon: <TrashIcon />, style: { background: "#C81E4A", color: "#fff" }, disabled: pending, onClick: () => remove(item) }]}>
-                <TagCard item={item} href={`/item/${item.id}`} dim={item.status !== "desejado"} storeLink
+                  actions={[{ label: "Editar", icon: <PencilIcon />, style: { background: "var(--secondary)", color: "var(--on-secondary)" }, onClick: () => router.push(`/item/${item.id}`) },
+                    { label: "Excluir", icon: <TrashIcon />, style: { background: "#C81E4A", color: "#fff" }, disabled: pending, onClick: () => remove(item) }]}>
+                <TagCard item={item} href={item.url || `/item/${item.id}`} external={Boolean(item.url)} dim={item.status !== "desejado"}
                   badge={item.kind === "sempre"
                     ? <span className="badge sempre">{gifts[item.id] ? `Sempre bem-vindo, ganhou ${gifts[item.id].times}x, última em ${shortDate(gifts[item.id].lastAt)}` : "Sempre bem-vindo"}</span>
                     : item.status === "recebido"
