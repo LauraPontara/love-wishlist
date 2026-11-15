@@ -22,14 +22,19 @@ export function tourSignal(name: string) {
   if (typeof window !== "undefined") window.dispatchEvent(new CustomEvent(SIGNAL, { detail: name }));
 }
 
-type Ctx = { screens: string[]; register: (id: string) => () => void; start: (lessons: Lesson[]) => void; running: boolean };
+type Ctx = { screens: string[]; register: (id: string) => () => void; start: (lessons: Lesson[]) => void; running: boolean; ready: boolean };
 const TourCtx = createContext<Ctx | null>(null);
 
 function readSeen(): string[] {
   try { return JSON.parse(localStorage.getItem(SEEN_KEY) ?? "[]"); } catch { return []; }
 }
+function writeSeen(list: string[]) {
+  try { localStorage.setItem(SEEN_KEY, JSON.stringify([...new Set(list)])); } catch {}
+}
+/** Guarda no aparelho (rápido) e na conta (vale em qualquer aparelho e navegador). */
 function markSeen(id: string) {
-  try { localStorage.setItem(SEEN_KEY, JSON.stringify([...new Set([...readSeen(), id])])); } catch {}
+  writeSeen([...readSeen(), id]);
+  fetch("/api/tours", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ seen: [id] }), keepalive: true }).catch(() => {});
 }
 const isMouse = () => typeof window !== "undefined" && window.matchMedia("(hover: hover) and (pointer: fine)").matches;
 
@@ -42,7 +47,28 @@ export function TourProvider({ children }: { children: ReactNode }) {
   }, []);
   const start = useCallback((lessons: Lesson[]) => setRun({ lessons, key: Date.now() }), []);
   const end = useCallback(() => setRun(null), []);
-  const value = useMemo(() => ({ screens, register, start, running: Boolean(run) }), [screens, register, start, run]);
+
+  // antes de decidir se mostra um tutorial sozinho, junta o que a conta já viu com o que este aparelho já viu
+  const [ready, setReady] = useState(false);
+  useEffect(() => {
+    let alive = true;
+    (async () => {
+      try {
+        const res = await fetch("/api/tours", { cache: "no-store" });
+        if (res.ok) {
+          const { seen } = (await res.json()) as { seen: string[] };
+          const local = readSeen();
+          writeSeen([...seen, ...local]);
+          const missing = local.filter((s) => !seen.includes(s));
+          if (missing.length) fetch("/api/tours", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ seen: missing }) }).catch(() => {});
+        }
+      } catch {}
+      if (alive) setReady(true);
+    })();
+    return () => { alive = false; };
+  }, []);
+
+  const value = useMemo(() => ({ screens, register, start, running: Boolean(run), ready }), [screens, register, start, run, ready]);
   return (
     <TourCtx.Provider value={value}>
       {children}
@@ -52,16 +78,17 @@ export function TourProvider({ children }: { children: ReactNode }) {
 }
 
 /**
- * Marca a tela atual. Na primeira vez que a pessoa chega nela (neste aparelho),
+ * Marca a tela atual. Na primeira vez que a pessoa chega nela (vale para a conta, em qualquer aparelho),
  * o tutorial da tela começa sozinho, se houver o que mostrar.
  */
 export function TourScreen({ id }: { id: string }) {
   const ctx = useContext(TourCtx);
   const register = ctx?.register;
   const start = ctx?.start;
+  const ready = ctx?.ready;
   useEffect(() => register?.(id), [register, id]);
   useEffect(() => {
-    if (!start) return;
+    if (!start || !ready) return;
     let cont = false;
     try { cont = sessionStorage.getItem(CONTINUE_KEY) === id; } catch {}
     if (!cont && readSeen().includes(id)) return;
@@ -75,7 +102,7 @@ export function TourScreen({ id }: { id: string }) {
       start(lessons);
     }, 900);
     return () => clearTimeout(t);
-  }, [start, id]);
+  }, [start, id, ready]);
   return null;
 }
 
