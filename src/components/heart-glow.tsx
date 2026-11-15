@@ -42,12 +42,13 @@ export function HeartAura({ className = "" }: { className?: string }) {
             <stop offset=".55" stopColor="#6F86FF" stopOpacity=".7" />
             <stop offset="1" stopColor="#3F6BFF" stopOpacity="0" />
           </radialGradient>
-          <filter id="soft" x="-20%" y="-20%" width="140%" height="140%"><feGaussianBlur stdDeviation="44" /></filter>
+          <filter id="soft" x="-20%" y="-20%" width="140%" height="140%"><feGaussianBlur stdDeviation="52" /></filter>
         </defs>
-        <g filter="url(#soft)">
+        <g filter="url(#soft)" style={{ isolation: "isolate" }}>
           <ellipse cx="720" cy="640" rx="250" ry="160" fill="url(#tip)" />
-          <circle cx="240" cy="880" r="700" fill="url(#lobe)" />
-          <circle cx="1200" cy="880" r="700" fill="url(#lobe)" />
+          {/* "lighten" mistura os dois lóbulos sem depender de qual vem por cima: a curva do meio fica simétrica */}
+          <circle cx="240" cy="880" r="700" fill="url(#lobe)" style={{ mixBlendMode: "lighten" }} />
+          <circle cx="1200" cy="880" r="700" fill="url(#lobe)" style={{ mixBlendMode: "lighten" }} />
           <rect x="-100" y="640" width="1640" height="260" fill="url(#floor)" />
         </g>
       </svg>
