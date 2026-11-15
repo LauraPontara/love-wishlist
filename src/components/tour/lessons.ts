@@ -19,6 +19,8 @@ export type Step = {
   wait?: string;
   /** um toque/clique no alvo conclui o passo */
   waitClick?: boolean;
+  /** frase de comemoração quando a pessoa faz o gesto (no último passo, o tutorial fecha sozinho depois dela) */
+  doneText?: string;
   /** abre o primeiro cartão deslizante dentro deste seletor (se a pessoa pulou o gesto) */
   open?: string;
 };
@@ -40,8 +42,8 @@ export const LESSONS: Lesson[] = [
       { target: OWNED, text: "Comprou por conta própria? Toque em “Já tenho”." },
     ],
     mouse: [
-      { target: CARD, gesture: "tap", text: "Clique no item para ver os detalhes. Lá dentro dá pra editar ou excluir." },
-      { target: `${CARD} .tag-photo-link`, gesture: "tap", text: "Clique na foto para abrir a loja." },
+      { target: CARD, gesture: "tap", text: "Um clique no item abre os detalhes. Lá dentro dá pra editar ou excluir." },
+      { target: `${CARD} .tag-photo-link`, gesture: "tap", text: "Um clique na foto abre o site da loja." },
       { target: OWNED, text: "Comprou por conta própria? Clique em “Já tenho”." },
     ],
   },
@@ -51,13 +53,13 @@ export const LESSONS: Lesson[] = [
       { target: CARD, gesture: "hold", text: "Segure o dedo num item para começar a selecionar.", doText: "Agora você: segure um item!", wait: "grouping-on" },
       { target: ".tag-select:not(:disabled):not(.is-on)", gesture: "tap", text: "Toque nas outras opções parecidas.", wait: "two-selected" },
       { target: '[data-tour="group-btn"]', gesture: "tap", text: "Toque em Agrupar e dê um nome ao grupo.", wait: "naming" },
-      { target: '[data-tour="group-dialog"]', text: "Agora é só dar um nome, como “Mouse”, e criar o grupo." },
+      { target: '[data-tour="group-dialog"]', text: "Agora é só dar um nome, como “Mouse”, e criar o grupo.", wait: "group-created", doneText: "Grupo criado! Você já sabe agrupar 🎉" },
     ],
     mouse: [
       { target: '[data-tour="select-btn"]', gesture: "tap", text: "Clique em Selecionar itens.", wait: "grouping-on" },
       { target: ".tag-select:not(:disabled):not(.is-on)", gesture: "tap", text: "Escolha as opções parecidas (duas ou mais).", wait: "two-selected" },
       { target: '[data-tour="group-btn"]', gesture: "tap", text: "Clique em Agrupar e dê um nome ao grupo.", wait: "naming" },
-      { target: '[data-tour="group-dialog"]', text: "Agora é só dar um nome, como “Mouse”, e criar o grupo." },
+      { target: '[data-tour="group-dialog"]', text: "Agora é só dar um nome, como “Mouse”, e criar o grupo.", wait: "group-created", doneText: "Grupo criado! Você já sabe agrupar 🎉" },
     ],
   },
   {
@@ -68,7 +70,7 @@ export const LESSONS: Lesson[] = [
       { target: COMBO, gesture: "tap", text: "Um toque abre o presente inteiro." },
     ],
     mouse: [
-      { target: COMBO, gesture: "tap", text: "Clique no presente para abrir. Lá dentro tem Editar itens e Excluir presente." },
+      { target: COMBO, gesture: "tap", text: "Um clique no presente abre ele inteiro. Lá dentro tem Editar itens e Excluir presente." },
     ],
   },
   {
@@ -78,7 +80,7 @@ export const LESSONS: Lesson[] = [
       { target: '[data-tour="add-from-list"]', gesture: "tap", text: "Toque aqui para escolher itens da lista.", waitClick: true },
       { target: '[data-tour="gift-summary"]', text: "O resumo fica aqui em cima. Toque nele para ver e mexer nos itens." },
       { target: '[data-tour="add-item"]', gesture: "tap", text: "Toque no + para pôr no presente.", wait: "item-added" },
-      { target: '[data-tour="list-done"]', text: "Terminou? Toque em Pronto. Tudo já fica salvo." },
+      { target: '[data-tour="list-done"]', text: "Terminou? Toque em Pronto. Tudo já fica salvo.", waitClick: true, doneText: "Prontinho! Presente montado 🎉" },
     ],
     mouse: [
       { target: '[data-tour="budget"]', text: "Aqui você acompanha o total do presente e quanto ainda cabe no orçamento." },

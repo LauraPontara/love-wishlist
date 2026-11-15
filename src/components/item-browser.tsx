@@ -156,7 +156,7 @@ export function ItemBrowser({ items, mode, ownerName, gifts = {}, purchasedByMe 
   const submitGroup = () => startTransition(async () => {
     setGroupError(null);
     const res = await createGroup([...selected], groupName);
-    if (res.ok) { setToast({ text: `Grupo "${groupName.trim()}" criado. Se quiser, marque um preferido na edição do item.` }); stopGrouping(); }
+    if (res.ok) { tourSignal("group-created"); setToast({ text: `Grupo "${groupName.trim()}" criado. Se quiser, marque um preferido na edição do item.` }); stopGrouping(); }
     else setGroupError(res.error);
   });
 

@@ -57,7 +57,7 @@ export function Swipe({ actions, radius = 20, label, children }: { actions: Swip
     if (!d.locked && Math.hypot(dx, dy) > 8) d.locked = Math.abs(dx) > Math.abs(dy) ? "x" : "y";
     if (d.locked !== "x") return;
     d.moved = true;
-    if (!dragging) { setDragging(true); (e.currentTarget as HTMLElement).setPointerCapture?.(e.pointerId); }
+    if (!dragging) { setDragging(true); try { (e.currentTarget as HTMLElement).setPointerCapture?.(e.pointerId); } catch { /* ponteiro já solto */ } }
     d.last = Math.max(-width - 24, Math.min(0, d.base + dx));
     setX(d.last);
   }

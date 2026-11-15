@@ -39,11 +39,12 @@ export function TourProvider({ children }: { children: ReactNode }) {
     return () => setScreens((s) => { const i = s.indexOf(id); return i < 0 ? s : [...s.slice(0, i), ...s.slice(i + 1)]; });
   }, []);
   const start = useCallback((lessons: Lesson[]) => setRun({ lessons, key: Date.now() }), []);
+  const end = useCallback(() => setRun(null), []);
   const value = useMemo(() => ({ screens, register, start, running: Boolean(run) }), [screens, register, start, run]);
   return (
     <TourCtx.Provider value={value}>
       {children}
-      {run && <TourRunner key={run.key} lessons={run.lessons} onEnd={() => setRun(null)} />}
+      {run && <TourRunner key={run.key} lessons={run.lessons} onEnd={end} />}
     </TourCtx.Provider>
   );
 }
@@ -152,6 +153,7 @@ function TourRunner({ lessons, onEnd }: { lessons: Lesson[]; onEnd: () => void }
   const [vp, setVp] = useState({ w: 0, h: 0 });
   const el = useRef<Element | null>(null);
   const textRef = useRef<HTMLDivElement>(null);
+  const startPath = useRef(typeof window === "undefined" ? "" : window.location.pathname);
   const { step, lesson } = steps[index] ?? {};
   const waits = Boolean(step?.wait || step?.waitClick);
   const reduced = useMemo(() => typeof window !== "undefined" && window.matchMedia("(prefers-reduced-motion: reduce)").matches, []);
@@ -168,6 +170,7 @@ function TourRunner({ lessons, onEnd }: { lessons: Lesson[]; onEnd: () => void }
     el.current = null;
     let raf = 0, scrolled = false;
     const tick = () => {
+      if (window.location.pathname !== startPath.current) { onEnd(); return; } // mudou de tela: o tutorial daquela tela acabou
       if (step.target && (!el.current || !el.current.isConnected || el.current.getBoundingClientRect().width === 0)) el.current = findVisible(step.target);
       const r = el.current ? toRect(el.current.getBoundingClientRect()) : null;
       if (r && !scrolled) {
@@ -182,7 +185,7 @@ function TourRunner({ lessons, onEnd }: { lessons: Lesson[]; onEnd: () => void }
     };
     raf = requestAnimationFrame(tick);
     return () => cancelAnimationFrame(raf);
-  }, [step, reduced]);
+  }, [step, reduced, onEnd]);
 
   // a pessoa pulou o gesto: o tutorial abre o cartão para mostrar as ações
   useEffect(() => {
@@ -209,9 +212,9 @@ function TourRunner({ lessons, onEnd }: { lessons: Lesson[]; onEnd: () => void }
   // "Isso!" fica um instante e segue
   useEffect(() => {
     if (phase !== "done") return;
-    const t = setTimeout(next, 1100);
+    const t = setTimeout(next, index === steps.length - 1 ? 2000 : 1100); // no fim, comemora um pouco mais e fecha sozinho
     return () => clearTimeout(t);
-  }, [phase, next]);
+  }, [phase, next, index, steps.length]);
 
   // depois de duas demonstrações, é a vez da pessoa
   useEffect(() => {
@@ -250,11 +253,14 @@ function TourRunner({ lessons, onEnd }: { lessons: Lesson[]; onEnd: () => void }
 
   if (!step || !vp.w) return <div ref={textRef} hidden />;
 
-  const text = phase === "done" ? "Isso! ✓" : phase === "try" && step.doText ? step.doText : step.text;
+  const isLast = index === steps.length - 1;
+  const text = phase === "done" ? (step.doneText ?? (isLast ? "Isso! Você aprendeu 🎉" : "Isso! ✓")) : phase === "try" && step.doText ? step.doText : step.text;
   const pad = 10;
   const hole = rect && { x: rect.left - pad, y: rect.top - pad, w: rect.width + pad * 2, h: rect.height + pad * 2 };
   // a frase vai para o lado com mais espaço (sem cair atrás dos botões de baixo)
-  const barSpace = 170;
+  // alvo lá embaixo (ex.: botões de um diálogo): a barra do tutorial sobe para não cobrir
+  const barTop = Boolean(rect && rect.top + rect.height > vp.h - 170);
+  const barSpace = barTop ? 24 : 170;
   const textH = textBox?.height ?? 90;
   let place: "above" | "below" | "center" = "center";
   if (rect) {
@@ -298,7 +304,7 @@ function TourRunner({ lessons, onEnd }: { lessons: Lesson[]; onEnd: () => void }
           from={step.target?.includes("tag-photo-link") ? "photo" : "center"} />
       )}
 
-      <div className="tour-bar pointer-events-auto absolute left-1/2 -translate-x-1/2 flex items-center gap-2 rounded-full border-2 p-1.5 pl-2 shadow-lg"
+      <div className={`tour-bar ${barTop ? "is-top" : ""} pointer-events-auto absolute left-1/2 -translate-x-1/2 flex items-center gap-2 rounded-full border-2 p-1.5 pl-2 shadow-lg`}
         style={{ background: "var(--surface)", borderColor: "var(--line)", color: "var(--ink)" }}>
         <button type="button" className="px-3 py-2 rounded-full font-bold text-sm" style={{ color: "var(--ink-2)" }} onClick={onEnd}>Pular</button>
         <span className="text-xs font-bold tabular-nums whitespace-nowrap px-1" style={{ color: "var(--ink-2)" }} title={lesson?.title}>{index + 1} de {steps.length}</span>
@@ -365,7 +371,7 @@ function Hand({ gesture, rect, faded, reduced, from }: { gesture: Gesture; rect:
   const w = Math.round(rect.width), h = Math.round(rect.height);
 
   // pontos relativos ao alvo
-  const point = from === "photo" ? { x: Math.min(56, w / 2), y: h / 2 } : gesture === "swipe" ? { x: w - 40, y: h / 2 } : { x: w / 2, y: h / 2 };
+  const point = from === "photo" ? { x: Math.min(56, w / 2), y: h / 2 } : gesture === "swipe" ? { x: Math.round(w * 0.62), y: h / 2 } : { x: w / 2, y: h / 2 };
 
   useEffect(() => {
     const el = hand.current, rg = ring.current;

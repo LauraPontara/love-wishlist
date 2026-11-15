@@ -21,6 +21,7 @@ export const StarIcon = ({ filled = false, size = 20 }: { filled?: boolean; size
   </svg>
 );
 export const HelpIcon = () => svg(<><circle cx="12" cy="12" r="9.5" /><path d="M9.4 9.3a2.7 2.7 0 0 1 5.2 1c0 1.8-2.6 2.3-2.6 3.9" /><path d="M12 17.4h.01" strokeWidth="2.6" /></>);
+export const BackIcon = () => svg(<path d="M15 5.5 8.5 12l6.5 6.5" strokeWidth="2.6" />);
 export const CloseIcon = () => svg(<path d="M18 6 6 18M6 6l12 12" />);
 
 /** Botão só com ícone: alvo de toque de 44px e nome acessível obrigatório. */

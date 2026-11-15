@@ -273,6 +273,7 @@ input.field[class*="!py-"], select.field[class*="!py-"] { min-height: 0; }
 .tour-draw-arrow { animation-duration: .5s; animation-delay: .7s; }
 .tour-bar { bottom: calc(96px + env(safe-area-inset-bottom)); animation: tour-fade .3s ease both; }
 @media (min-width: 1024px) { .tour-bar { bottom: 28px; } }
+.tour-bar.is-top { bottom: auto; top: calc(14px + env(safe-area-inset-top)); }
 .help-pop { animation: tour-pop .18s ease-out both; transform-origin: top right; }
 @keyframes tour-draw { to { stroke-dashoffset: 0; } }
 @keyframes tour-ink { from { opacity: 0; filter: blur(2px); transform: translateY(2px); } }
@@ -282,3 +283,8 @@ input.field[class*="!py-"], select.field[class*="!py-"] { min-height: 0; }
   .tour-draw { animation: none; stroke-dashoffset: 0; }
   .tour-ch, .tour-dim, .tour-bar, .help-pop { animation: none; }
 }
+
+/* voltar no cabeçalho: seta de verdade num botão translúcido */
+.back-link { background: rgba(255,255,255,.14); backdrop-filter: blur(6px); transition: background .15s; }
+.back-link:hover { background: rgba(255,255,255,.24); }
+.back-link:focus-visible { outline: 3px solid var(--ribbon); outline-offset: 2px; }

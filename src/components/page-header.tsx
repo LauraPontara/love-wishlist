@@ -1,6 +1,6 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
-import { GearIcon } from "./icons";
+import { BackIcon, GearIcon } from "./icons";
 import { HelpButton } from "./tour/tour";
 
 /** Cabeçalho Aurora + folha que "sobe" sobre ele (design-system §4). */
@@ -10,10 +10,10 @@ export function PageHeader({ title, subtitle, avatar, back, action }: {
   return (
     <header className="aurora px-5 sm:px-8 lg:px-12 pt-6 sm:pt-9 pb-14 sm:pb-16">
       <div className="mx-auto max-w-[1200px]">
-        <div className="flex items-center justify-between min-h-[28px] mb-2 lg:mb-0 lg:min-h-0">
+        <div className={`flex items-center justify-between min-h-[28px] ${back ? "mb-3" : "mb-2 lg:mb-0 lg:min-h-0"}`}>
           {back ? (
-            <Link href={back.href} className="inline-flex items-center gap-1 font-bold text-sm py-2 opacity-95 hover:opacity-100">
-              <span aria-hidden="true">‹</span> {back.label}
+            <Link href={back.href} className="back-link inline-flex items-center gap-1.5 font-bold text-sm min-h-[40px] pl-2 pr-4 -ml-2 rounded-full">
+              <BackIcon /> {back.label}
             </Link>
           ) : <span />}
           <div className="flex items-center gap-1 -mr-2">
