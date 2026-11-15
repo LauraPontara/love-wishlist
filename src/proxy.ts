@@ -16,6 +16,6 @@ export async function proxy(request: NextRequest) {
 export const config = {
   matcher: [
     // tudo, menos API, arquivos do Next e arquivos públicos (avatares, ícones…)
-    "/((?!api|_next/static|_next/image|avatars|favicon.ico|icon|apple-icon|manifest|sw\.js|.*\\.(?:svg|png|jpg|jpeg|webp|ico|txt)$).*)",
+    "/((?!api|_next/static|_next/image|avatars|favicon.ico|icon|apple-icon|manifest|sw\.js|.*\\.(?:svg|png|jpg|jpeg|webp|ico|txt|js|webmanifest)$).*)",
   ],
 };
