@@ -98,6 +98,7 @@ export const LESSONS: Lesson[] = [
     id: "build", title: "Montar o presente", screen: "build",
     touch: [
       { target: '[data-tour="budget"]', text: "Aqui você acompanha o total do presente e quanto ainda cabe no orçamento." },
+      { target: '[data-tour="add-extra"]', gesture: "tap", text: "Em Extra você põe no presente o que não está na lista: um chocolate, uma cartinha, flores, uma foto… o que quiser." },
       { target: '[data-tour="add-from-list"]', gesture: "tap", text: "Toque aqui para escolher itens da lista.", waitClick: true },
       { target: '[data-tour="gift-summary"]', text: "O resumo fica aqui em cima. Toque nele para ver e mexer nos itens." },
       { target: '[data-tour="add-item"]', gesture: "tap", text: "Toque no + para pôr no presente.", wait: "item-added" },
@@ -107,6 +108,7 @@ export const LESSONS: Lesson[] = [
       { target: '[data-tour="budget"]', text: "Aqui você acompanha o total do presente e quanto ainda cabe no orçamento." },
       { target: '[data-tour="add-item"]', gesture: "tap", text: "Clique no + para pôr no presente.", wait: "item-added" },
       { target: '[data-tour="lines"]', text: "Os itens do presente aparecem aqui. Dá pra mudar a quantidade ou tirar." },
+      { target: '[data-tour="add-extra"]', gesture: "tap", text: "Em Extra você põe no presente o que não está na lista: um chocolate, uma cartinha, flores, uma foto… o que quiser." },
       { target: '[data-tour="finish"]', text: "Terminou? Clique em Concluir presente. Tudo já fica salvo." },
     ],
   },

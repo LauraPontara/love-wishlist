@@ -250,7 +250,7 @@ function ExtraForm({ onAdd, pending }: { onAdd: (e: { title: string; price: stri
   const [price, setPrice] = useState("");
   const [url, setUrl] = useState("");
   if (!open) return (
-    <button type="button" className="btn btn-soft btn-extra shrink-0 lg:ml-auto" onClick={() => setOpen(true)} aria-label="Adicionar extra (flores, cartão…)">
+    <button type="button" className="btn btn-soft btn-extra shrink-0 lg:ml-auto" data-tour="add-extra" onClick={() => setOpen(true)} aria-label="Adicionar extra (flores, cartão…)">
       <PlusIcon /><span className="lg:hidden">Extra</span><span className="hidden lg:inline">Adicionar extra</span>
     </button>
   );
