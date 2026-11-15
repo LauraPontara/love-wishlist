@@ -106,14 +106,14 @@ export function HelpButton() {
       {open && createPortal(
         <div ref={pop} role="menu" className="help-pop fixed z-[85] w-[min(300px,calc(100vw-32px))] rounded-[22px] border-2 p-4 flex flex-col gap-2 shadow-xl"
           style={{ top: pos.top, right: pos.right, background: "var(--surface)", borderColor: "var(--line)", color: "var(--ink)" }}>
-          <p className="hand text-[1.7rem] leading-none mb-1" style={{ color: "var(--pen)" }}>Quer ajuda com o quê?</p>
+          <p className="hand text-[1.7rem] leading-none mb-1 text-center" style={{ color: "var(--pen)" }}>Quer ajuda com o quê?</p>
           {lessons.length ? (
             <>
               {lessons.length > 1 && (
                 <button role="menuitem" type="button" className="btn btn-primary btn-sm w-full" onClick={() => go(lessons)}>Ver tudo desta tela</button>
               )}
               {lessons.map((l) => (
-                <button key={l.id} role="menuitem" type="button" className="chip w-full !justify-start text-left" onClick={() => go([l])}>{l.title}</button>
+                <button key={l.id} role="menuitem" type="button" className="chip w-full text-center !py-2.5" onClick={() => go([l])}>{l.title}</button>
               ))}
             </>
           ) : (
