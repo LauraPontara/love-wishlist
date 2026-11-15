@@ -32,7 +32,13 @@ export type Item = {
   status: Status;
   statusChangedAt: string | null;
   createdAt: string;
+  /** grupo "quero um desses" (só itens únicos) */
+  group?: { id: string; name: string; preferred: boolean } | null;
+  /** saiu dos desejos porque outro item do grupo foi dado ou marcado "já tenho" */
+  leftWithGroup?: boolean;
 };
+
+export type ItemGroup = { id: string; name: string; preferredItemId: string | null };
 
 // ---------- URL ----------
 const TRACKING = /^(utm_\w+|fbclid|gclid|gbraid|wbraid|mc_\w+|igshid|si|ref_?|spm|_ga|srsltid|sp_atk|xptdk|sr_\w+)$/i;

@@ -214,5 +214,9 @@ export async function refreshPrices(itemIds: string[]): Promise<{ updated: Recor
 // ---------- aviso vago (RF15) ----------
 export async function shouldWaitBeforeOwning(itemId: string): Promise<boolean> {
   const me = await requireProfileId();
-  return isReservedByPartner(itemId, me);
+  // vale para o grupo todo, sem revelar qual item foi comprado
+  const { data: item } = await db().from("items").select("group_id").eq("id", itemId).eq("owner_id", me).maybeSingle();
+  if (!item?.group_id) return isReservedByPartner(itemId, me);
+  const { data: members } = await db().from("items").select("id").eq("group_id", item.group_id);
+  return isReservedByPartner((members ?? []).map((m) => m.id), me);
 }

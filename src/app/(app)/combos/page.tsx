@@ -42,7 +42,7 @@ async function Combos() {
           {active.length > 0 ? (
             <section className="flex flex-col gap-3">
               <h2 className="text-xl font-extrabold" style={{ fontVariationSettings: "'wdth' 85" }}>Em andamento</h2>
-              <p className="text-sm -mt-1" style={{ color: "var(--ink-2)" }}>Arraste um presente para o lado para editar ou excluir.</p>
+              <p className="text-sm -mt-1 lg:hidden" style={{ color: "var(--ink-2)" }}>Arraste um presente para o lado para editar ou excluir.</p>
               <ul className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">{active.map((c) => <li key={c.id}><SwipeComboCard combo={c} /></li>)}</ul>
             </section>
           ) : (

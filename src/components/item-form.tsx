@@ -3,8 +3,8 @@
 import { useRouter } from "next/navigation";
 import { useActionState, useState, useTransition } from "react";
 import { shouldWaitBeforeOwning } from "@/app/actions/combos";
-import { deleteItem, setOwned, type FormState } from "@/app/actions/items";
-import { CATEGORIES, parsePrice, parseVariant, storeFromUrl, variantToText, type Item } from "@/lib/items/domain";
+import { deleteItem, renameGroup, setItemGroup, setOwned, setPreferred, type FormState } from "@/app/actions/items";
+import { CATEGORIES, parsePrice, parseVariant, storeFromUrl, variantToText, type Item, type ItemGroup } from "@/lib/items/domain";
 import { useConfirm } from "./confirm";
 import { ExternalIcon } from "./icons";
 import { TagCard } from "./tag-card";
@@ -14,7 +14,9 @@ type Action = (state: FormState, formData: FormData) => Promise<FormState>;
 
 // Formulário de item (RF11/RF12). Responsivo: uma coluna no celular,
 // campos em pares no tablet e prévia da etiqueta ao lado no desktop.
-export function ItemForm({ action, item }: { action: Action; item?: Item }) {
+export function ItemForm({ action, item, groups = [], groupCandidates = [] }: {
+  action: Action; item?: Item; groups?: ItemGroup[]; groupCandidates?: Array<{ id: string; title: string }>;
+}) {
   const [state, formAction, saving] = useActionState(action, {});
   const [values, setValues] = useState({
     url: item?.url ?? "",
@@ -102,6 +104,8 @@ export function ItemForm({ action, item }: { action: Action; item?: Item }) {
         <Field label="Observação" hint="Opcional. Ex.: tamanho 38, cor da segunda foto" error={err.notes}>
           <textarea name="notes" className="field min-h-[90px] resize-y" value={values.notes} onChange={set("notes")} maxLength={1000} />
         </Field>
+
+        {item && item.kind === "unico" && values.kind === "unico" && <GroupEditor item={item} groups={groups} candidates={groupCandidates} />}
 
         <div className="actions pt-2">
           <button type="submit" className="btn btn-primary" disabled={saving}>{saving ? "Salvando…" : item ? "Salvar alterações" : "Adicionar à lista"}</button>
@@ -215,5 +219,78 @@ function ItemExtraActions({ item }: { item: Item }) {
           });
         }}>Excluir</button>
     </>
+  );
+}
+
+/** "Quero um desses": colocar o item num grupo, escolher a ⭐, renomear ou tirar do grupo. */
+function GroupEditor({ item, groups, candidates }: { item: Item; groups: ItemGroup[]; candidates: Array<{ id: string; title: string }> }) {
+  const router = useRouter();
+  const [pending, start] = useTransition();
+  const [error, setError] = useState<string | null>(null);
+  const [choice, setChoice] = useState("");
+  const [newName, setNewName] = useState("");
+  const [withItem, setWithItem] = useState("");
+  const [renaming, setRenaming] = useState(false);
+  const [name, setName] = useState(item.group?.name ?? "");
+  const run = (fn: () => Promise<{ ok: boolean; error?: string }>) => start(async () => {
+    setError(null);
+    const res = await fn();
+    if (!res.ok) setError(res.error ?? "Não deu para salvar.");
+    else { setChoice(""); setRenaming(false); router.refresh(); }
+  });
+  const g = item.group;
+
+  return (
+    <fieldset className="rounded-[18px] border-2 p-4 flex flex-col gap-3" style={{ borderColor: "var(--line)" }}>
+      <legend className="font-bold px-1">Quero um desses</legend>
+      {error && <p role="alert" className="text-sm font-semibold" style={{ color: "var(--error-ink)" }}>{error}</p>}
+      {g ? (
+        <>
+          {renaming ? (
+            <div className="flex flex-col sm:flex-row gap-2">
+              <input className="field !text-base !py-3 flex-1" value={name} onChange={(e) => setName(e.target.value)} maxLength={60} aria-label="Nome do grupo" />
+              <div className="grid grid-cols-2 gap-2 sm:flex">
+                <button type="button" className="btn btn-ghost btn-sm" onClick={() => { setRenaming(false); setName(g.name); }}>Cancelar</button>
+                <button type="button" className="btn btn-primary btn-sm" disabled={pending || !name.trim()} onClick={() => run(() => renameGroup(g.id, name))}>Salvar nome</button>
+              </div>
+            </div>
+          ) : (
+            <p className="text-sm" style={{ color: "var(--ink-2)" }}>
+              Faz parte do grupo <strong style={{ color: "var(--ink)" }}>{g.name}</strong>. Quando uma opção for dada, as outras saem da lista junto.
+            </p>
+          )}
+          <div className="flex flex-wrap gap-2">
+            <button type="button" className="chip" aria-pressed={g.preferred} disabled={pending}
+              onClick={() => run(() => setPreferred(item.id, !g.preferred))}>{g.preferred ? "⭐ É o preferido" : "☆ Marcar como preferido"}</button>
+            {!renaming && <button type="button" className="chip" disabled={pending} onClick={() => setRenaming(true)}>Renomear grupo</button>}
+            <button type="button" className="chip" disabled={pending} onClick={() => run(() => setItemGroup(item.id, null))}>Tirar do grupo</button>
+          </div>
+        </>
+      ) : (
+        <>
+          <p className="text-sm" style={{ color: "var(--ink-2)" }}>Junte opções parecidas (ex.: 3 mouses). {"Quem for dar vê todas juntas e escolhe uma."}</p>
+          <select className="field !text-base" value={choice} onChange={(e) => setChoice(e.target.value)} aria-label="Grupo">
+            <option value="">Não faz parte de um grupo</option>
+            {groups.map((gr) => <option key={gr.id} value={gr.id}>Grupo: {gr.name}</option>)}
+            {candidates.length > 0 && <option value="novo">Criar grupo novo…</option>}
+          </select>
+          {choice === "novo" && (
+            <div className="grid gap-2 sm:grid-cols-2">
+              <input className="field !text-base" placeholder="Nome do grupo (ex.: Mouse)" value={newName} onChange={(e) => setNewName(e.target.value)} maxLength={60} aria-label="Nome do grupo novo" />
+              <select className="field !text-base" value={withItem} onChange={(e) => setWithItem(e.target.value)} aria-label="Outra opção do grupo">
+                <option value="">Junto com qual item?</option>
+                {candidates.map((c) => <option key={c.id} value={c.id}>{c.title}</option>)}
+              </select>
+            </div>
+          )}
+          {choice && (
+            <button type="button" className="btn btn-ghost btn-sm self-start" disabled={pending || (choice === "novo" && (!newName.trim() || !withItem))}
+              onClick={() => run(() => setItemGroup(item.id, choice === "novo" ? { newName, withItemId: withItem } : { groupId: choice }))}>
+              {choice === "novo" ? "Criar grupo" : "Colocar no grupo"}
+            </button>
+          )}
+        </>
+      )}
+    </fieldset>
   );
 }

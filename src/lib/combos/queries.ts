@@ -57,10 +57,19 @@ export async function getMyPurchasedItemIds(creatorId: string): Promise<Set<stri
   return new Set((data ?? []).map((r) => r.item_id as string));
 }
 
+/** Itens do outro que já estão em algum presente meu em andamento (montado ou comprado). */
+export async function getMyActiveComboItemIds(creatorId: string): Promise<Set<string>> {
+  const { data, error } = await db().from("combo_items").select("item_id, combos!inner(creator_id, status)")
+    .eq("combos.creator_id", creatorId).in("combos.status", ["montado", "comprado"]).not("item_id", "is", null);
+  if (error) throw new Error(`presentes: ${error.message}`);
+  return new Set((data ?? []).map((r) => r.item_id as string));
+}
+
 /** RF15: o item está em algum combo comprado do OUTRO? Só devolve sim/não (RN01). */
-export async function isReservedByPartner(itemId: string, ownerId: string): Promise<boolean> {
+export async function isReservedByPartner(itemId: string | string[], ownerId: string): Promise<boolean> {
+  const ids = Array.isArray(itemId) ? itemId : [itemId];
   const { count, error } = await db().from("combo_items").select("id, combos!inner(recipient_id, status)", { count: "exact", head: true })
-    .eq("item_id", itemId).eq("combos.recipient_id", ownerId).eq("combos.status", "comprado");
+    .in("item_id", ids).eq("combos.recipient_id", ownerId).eq("combos.status", "comprado");
   if (error) throw new Error(`reserva: ${error.message}`);
   return (count ?? 0) > 0;
 }

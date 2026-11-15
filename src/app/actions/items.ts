@@ -115,23 +115,31 @@ export async function updateItem(id: string, _prev: FormState, formData: FormDat
 
   // Itens "sempre bem-vindo" nunca ficam como "já tenho" (RN03)
   const patch: Record<string, unknown> = { ...row };
-  if (row.kind === "sempre") Object.assign(patch, { status: "desejado", status_changed_at: null });
+  if (row.kind === "sempre") Object.assign(patch, { status: "desejado", status_changed_at: null, group_id: null });
 
   const { error } = await db().from("items").update(patch).eq("id", id).eq("owner_id", profileId);
   if (error) {
     if (error.code === "23505") return { error: DUPLICATE, fieldErrors: { url: DUPLICATE } };
     return { error: "Não deu para salvar agora. Tente de novo." };
   }
+  if (row.kind === "sempre") await cleanupGroups(profileId);
   redirect("/");
 }
 
 /** RF14: "Já tenho" (e desfazer). Só para itens únicos. */
 export async function setOwned(id: string, owned: boolean): Promise<{ ok: boolean; error?: string }> {
   const profileId = await requireProfileId();
+  const { data: before } = await db().from("items").select("group_id, left_with_group").eq("id", id).eq("owner_id", profileId).maybeSingle();
   const { error } = await db().from("items")
-    .update(owned ? { status: "ja_tenho", status_changed_at: new Date().toISOString() } : { status: "desejado", status_changed_at: null })
+    .update(owned ? { status: "ja_tenho", status_changed_at: new Date().toISOString() } : { status: "desejado", status_changed_at: null, left_with_group: false })
     .eq("id", id).eq("owner_id", profileId).eq("kind", "unico");
   if (error) return { ok: false, error: "Não deu para atualizar agora." };
+  if (owned) await db().rpc("settle_item_groups", { p_items: [id] });
+  else if (before?.group_id && !before.left_with_group) {
+    // voltar o item que levou o grupo junto traz as outras opções de volta
+    await db().from("items").update({ status: "desejado", status_changed_at: null, left_with_group: false })
+      .eq("group_id", before.group_id).eq("owner_id", profileId).eq("left_with_group", true);
+  }
   refresh();
   return { ok: true };
 }
@@ -141,6 +149,7 @@ export async function deleteItem(id: string): Promise<{ ok: boolean; snapshot?: 
   const profileId = await requireProfileId();
   const { data, error } = await db().from("items").delete().eq("id", id).eq("owner_id", profileId).select("*").maybeSingle();
   if (error || !data) return { ok: false };
+  await cleanupGroups(profileId);
   refresh();
   return { ok: true, snapshot: data };
 }
@@ -148,8 +157,82 @@ export async function deleteItem(id: string): Promise<{ ok: boolean; snapshot?: 
 export async function restoreItem(snapshot: Record<string, unknown>): Promise<{ ok: boolean }> {
   const profileId = await requireProfileId();
   if (snapshot.owner_id !== profileId) return { ok: false };
-  const { error } = await db().from("items").insert(snapshot);
+  let { error } = await db().from("items").insert(snapshot);
+  // o grupo pode ter sumido enquanto o item estava excluído: volta sem grupo
+  if (error?.code === "23503") ({ error } = await db().from("items").insert({ ...snapshot, group_id: null }));
   if (error) return { ok: false };
+  refresh();
+  return { ok: true };
+}
+
+// ---------- grupos "quero um desses" ----------
+type GroupResult = { ok: true; groupId?: string } | { ok: false; error: string };
+const UUID = /^[0-9a-f-]{36}$/i;
+
+/** Grupo com menos de 2 itens não faz sentido: desfaz. */
+async function cleanupGroups(ownerId: string): Promise<void> {
+  const [{ data: groups }, { data: members }] = await Promise.all([
+    db().from("item_groups").select("id").eq("owner_id", ownerId),
+    db().from("items").select("group_id").eq("owner_id", ownerId).not("group_id", "is", null),
+  ]);
+  const count = new Map<string, number>();
+  for (const m of members ?? []) count.set(m.group_id as string, (count.get(m.group_id as string) ?? 0) + 1);
+  const empty = (groups ?? []).filter((g) => (count.get(g.id) ?? 0) < 2).map((g) => g.id);
+  if (empty.length) await db().from("item_groups").delete().in("id", empty).eq("owner_id", ownerId);
+}
+
+/** Agrupa 2 ou mais itens únicos da própria lista. */
+export async function createGroup(itemIds: string[], name: string): Promise<GroupResult> {
+  const profileId = await requireProfileId();
+  const ids = [...new Set(itemIds)].filter((id) => UUID.test(id));
+  const clean = name.trim().slice(0, 60);
+  if (!clean) return { ok: false, error: "Dê um nome ao grupo (ex.: Mouse)." };
+  if (ids.length < 2) return { ok: false, error: "Escolha pelo menos 2 itens." };
+  const { data: items } = await db().from("items").select("id, kind").in("id", ids).eq("owner_id", profileId);
+  if (!items || items.length !== ids.length) return { ok: false, error: "Item não encontrado." };
+  if (items.some((i) => i.kind !== "unico")) return { ok: false, error: "Só itens únicos podem entrar num grupo." };
+  const { data: group, error } = await db().from("item_groups").insert({ owner_id: profileId, name: clean }).select("id").single();
+  if (error || !group) return { ok: false, error: "Não deu para criar o grupo." };
+  await db().from("items").update({ group_id: group.id }).in("id", ids).eq("owner_id", profileId);
+  await cleanupGroups(profileId);
+  refresh();
+  return { ok: true, groupId: group.id };
+}
+
+/** Coloca o item num grupo existente, num grupo novo (com outro item escolhido) ou tira do grupo. */
+export async function setItemGroup(itemId: string, target: { groupId: string } | { newName: string; withItemId: string } | null): Promise<GroupResult> {
+  const profileId = await requireProfileId();
+  if (!UUID.test(itemId)) return { ok: false, error: "Item não encontrado." };
+  if (target && "newName" in target) return createGroup([itemId, target.withItemId], target.newName);
+  if (target) {
+    const { data: g } = await db().from("item_groups").select("id").eq("id", target.groupId).eq("owner_id", profileId).maybeSingle();
+    if (!g) return { ok: false, error: "Grupo não encontrado." };
+  }
+  const { error } = await db().from("items").update({ group_id: target?.groupId ?? null }).eq("id", itemId).eq("owner_id", profileId).eq("kind", "unico");
+  if (error) return { ok: false, error: "Não deu para mudar o grupo." };
+  await cleanupGroups(profileId);
+  refresh();
+  return { ok: true };
+}
+
+/** ⭐ preferido do grupo (um por grupo). */
+export async function setPreferred(itemId: string, preferred: boolean): Promise<GroupResult> {
+  const profileId = await requireProfileId();
+  const { data: item } = await db().from("items").select("group_id").eq("id", itemId).eq("owner_id", profileId).maybeSingle();
+  if (!item?.group_id) return { ok: false, error: "O item não está em um grupo." };
+  const { error } = await db().from("item_groups").update({ preferred_item_id: preferred ? itemId : null }).eq("id", item.group_id).eq("owner_id", profileId);
+  if (error) return { ok: false, error: "Não deu para marcar o preferido." };
+  refresh();
+  return { ok: true };
+}
+
+/** Renomear o grupo. */
+export async function renameGroup(groupId: string, name: string): Promise<GroupResult> {
+  const profileId = await requireProfileId();
+  const clean = name.trim().slice(0, 60);
+  if (!clean) return { ok: false, error: "Dê um nome ao grupo." };
+  const { error } = await db().from("item_groups").update({ name: clean }).eq("id", groupId).eq("owner_id", profileId);
+  if (error) return { ok: false, error: "Não deu para renomear." };
   refresh();
   return { ok: true };
 }

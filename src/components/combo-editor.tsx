@@ -459,7 +459,7 @@ function ListPanel({ available, combo, purchasedElsewhere, recipientName, remain
               <div className="min-w-0 flex-1">
                 <p className="font-bold text-sm leading-tight line-clamp-2">{i.title}</p>
                 <p className="text-xs truncate" style={{ color: "var(--ink-2)" }}>
-                  {line ? (line.quantity > 1 ? `No presente, ${line.quantity}x` : "No presente") : blocked ? "Já está em outro presente comprado" : i.kind === "sempre" ? "Sempre bem-vindo" : (i.store ?? i.category)}
+                  {line ? (line.quantity > 1 ? `No presente, ${line.quantity}x` : "No presente") : blocked ? "Já está em outro presente comprado" : i.group ? `${i.group.preferred ? "⭐ " : ""}Um destes: ${i.group.name}` : i.kind === "sempre" ? "Sempre bem-vindo" : (i.store ?? i.category)}
                 </p>
               </div>
               <span className="text-sm font-extrabold whitespace-nowrap">{formatPrice(i.priceCents)}</span>

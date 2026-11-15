@@ -4,7 +4,7 @@ import { ItemBrowser } from "@/components/item-browser";
 import { PageHeader, Sheet } from "@/components/page-header";
 import { ListSkeleton } from "@/components/skeleton";
 import { getCurrentUser } from "@/lib/auth/current-user";
-import { getMyPurchasedItemIds } from "@/lib/combos/queries";
+import { getMyActiveComboItemIds, getMyPurchasedItemIds } from "@/lib/combos/queries";
 import { getPartnerItems } from "@/lib/items/queries";
 
 export default function PartnerListPage({ params }: PageProps<"/lista/[perfil]">) {
@@ -23,14 +23,14 @@ async function PartnerList({ params }: { params: PageProps<"/lista/[perfil]">["p
   // só existe a lista do outro: a própria fica em "/"
   if (!user.partner || user.partner.id !== perfil) notFound();
   const partner = user.partner;
-  const [items, purchased] = await Promise.all([getPartnerItems(partner.id), getMyPurchasedItemIds(user.id)]);
+  const [items, purchased, inCombos] = await Promise.all([getPartnerItems(partner.id), getMyPurchasedItemIds(user.id), getMyActiveComboItemIds(user.id)]);
   const article = partner.displayName.endsWith("a") ? "da" : "do";
   return (
     <>
       <PageHeader title={`Lista ${article} ${partner.displayName}`} avatar={partner.avatar}
         subtitle={`${items.length} ${items.length === 1 ? "desejo" : "desejos"} para presentear`} />
       <Sheet>
-        <ItemBrowser items={items} mode="partner" ownerName={partner.displayName} purchasedByMe={[...purchased]} />
+        <ItemBrowser items={items} mode="partner" ownerName={partner.displayName} purchasedByMe={[...purchased]} inMyCombos={[...inCombos]} />
       </Sheet>
     </>
   );

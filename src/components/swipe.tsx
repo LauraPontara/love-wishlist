@@ -31,7 +31,7 @@ export function Swipe({ actions, radius = 20, label, children }: { actions: Swip
   const close = () => setX(0);
 
   function onPointerDown(e: RPointerEvent) {
-    if (e.pointerType === "mouse" && e.button !== 0) return;
+    if (e.pointerType === "mouse") return; // deslizar é gesto de toque; no desktop o clique abre os detalhes
     suppressClick.current = false; // o clique de um arraste anterior (se houve) já passou
     drag.current = { startX: e.clientX, startY: e.clientY, base: x, locked: null, moved: false, last: x };
   }

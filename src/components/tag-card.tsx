@@ -2,14 +2,20 @@ import type { ReactNode } from "react";
 import { CATEGORY_EMOJI, formatPrice, type Item } from "@/lib/items/domain";
 
 /** Item como etiqueta de presente (design-system §5). */
-export function TagCard({ item, href, external, badge, action, dim }: {
+export function TagCard({ item, href, external, badge, action, dim, desktopHref }: {
   item: Item; href?: string; external?: boolean; badge?: ReactNode; action?: ReactNode; dim?: boolean;
+  /** no desktop (lg+) o cartão leva aqui e só a foto abre o link da loja */
+  desktopHref?: string;
 }) {
   const className = `tag ${item.kind === "sempre" ? "sempre" : ""} ${dim ? "dim" : ""}`;
   const variant = Object.values(item.variant).join(", ");
   const body = (
     <>
-      <div className="w-[58px] h-[58px] rounded-xl overflow-hidden grid place-items-center text-[28px] shrink-0" style={{ background: "var(--bg)", opacity: dim ? 0.6 : 1 }}>
+      <div className="relative w-[58px] h-[58px] rounded-xl overflow-hidden grid place-items-center text-[28px] shrink-0" style={{ background: "var(--bg)", opacity: dim ? 0.6 : 1 }}>
+        {desktopHref && external && href && (
+          <a href={href} target="_blank" rel="noopener noreferrer" className="hidden lg:block absolute inset-0 z-10 tag-photo-link"
+            aria-label={`Abrir ${item.title} na loja`} title="Abrir na loja" />
+        )}
         {item.imageUrl
           ? <img src={item.imageUrl} alt="" className="w-full h-full object-cover" loading="lazy" referrerPolicy="no-referrer" />
           : <span aria-hidden="true">{CATEGORY_EMOJI[item.category]}</span>}
@@ -33,8 +39,11 @@ export function TagCard({ item, href, external, badge, action, dim }: {
   // O link cobre o cartão inteiro; botões de ação ficam por cima (z-10), sem aninhar botão dentro de link.
   return (
     <div className={`${className} ${href ? "linked" : ""}`}>
+      {desktopHref && (
+        <a href={desktopHref} className="hidden lg:block absolute inset-0 z-[1] tag-link" aria-label={`Editar ${item.title}`} />
+      )}
       {href && (
-        <a href={href} className="absolute inset-0 z-[1] tag-link" aria-label={external ? `${item.title} (abre na loja)` : `Editar ${item.title}`}
+        <a href={href} className={`absolute inset-0 z-[1] tag-link ${desktopHref ? "lg:hidden" : ""}`} aria-label={external ? `${item.title} (abre na loja)` : `Editar ${item.title}`}
           {...(external ? { target: "_blank", rel: "noopener noreferrer" } : {})} />
       )}
       {body}

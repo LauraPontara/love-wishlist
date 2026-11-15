@@ -4,9 +4,9 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState, useTransition } from "react";
 import { giveThis, shouldWaitBeforeOwning } from "@/app/actions/combos";
-import { deleteItem, restoreItem, setOwned } from "@/app/actions/items";
+import { createGroup, deleteItem, restoreItem, setOwned } from "@/app/actions/items";
 import { shortDate } from "@/lib/combos/domain";
-import { CATEGORIES, matchesSearch, parsePrice, type Item } from "@/lib/items/domain";
+import { CATEGORIES, CATEGORY_EMOJI, formatPrice, matchesSearch, parsePrice, type Item } from "@/lib/items/domain";
 import { useConfirm } from "./confirm";
 import { PencilIcon, TrashIcon } from "./icons";
 import { Swipe } from "./swipe";
@@ -20,10 +20,18 @@ export const UNDO_KEY = "nw:undo-delete";
 
 export type Gift = { times: number; lastAt: string; fromName: string };
 
-export function ItemBrowser({ items, mode, ownerName, gifts = {}, purchasedByMe = [] }: {
+export function ItemBrowser({ items, mode, ownerName, gifts = {}, purchasedByMe = [], inMyCombos = [] }: {
   items: Item[]; mode: "mine" | "partner"; ownerName: string;
   gifts?: Record<string, Gift>; purchasedByMe?: string[];
+  /** itens do outro que já estão em algum presente meu (montado ou comprado) */
+  inMyCombos?: string[];
 }) {
+  const inCombos = useMemo(() => new Set(inMyCombos), [inMyCombos]);
+  // modo "Agrupar": escolher itens únicos para virar um grupo "quero um desses"
+  const [grouping, setGrouping] = useState(false);
+  const [selected, setSelected] = useState<Set<string>>(new Set());
+  const [groupName, setGroupName] = useState("");
+  const [groupError, setGroupError] = useState<string | null>(null);
   const ask = useConfirm();
   const router = useRouter();
   const purchased = useMemo(() => new Set(purchasedByMe), [purchasedByMe]);
@@ -88,7 +96,7 @@ export function ItemBrowser({ items, mode, ownerName, gifts = {}, purchasedByMe 
     startTransition(async () => {
       const res = await setOwned(item.id, owned);
       setToast(res.ok
-        ? { text: owned ? `"${item.title}" foi para "Já tenho".` : `"${item.title}" voltou para os desejos.`, undo: () => startTransition(async () => { await setOwned(item.id, !owned); setToast(null); }) }
+        ? { text: owned ? (item.group ? `"${item.title}" foi para "Já tenho" e o grupo ${item.group.name} saiu junto.` : `"${item.title}" foi para "Já tenho".`) : `"${item.title}" voltou para os desejos.`, undo: () => startTransition(async () => { await setOwned(item.id, !owned); setToast(null); }) }
         : { text: res.error ?? "Não deu para atualizar." });
     });
 
@@ -106,6 +114,31 @@ export function ItemBrowser({ items, mode, ownerName, gifts = {}, purchasedByMe 
 
   const filtersActive = query || category || kind !== "todos" || budget;
 
+  const toggleSelected = (id: string) => setSelected((prev) => { const n = new Set(prev); if (n.has(id)) n.delete(id); else n.add(id); return n; });
+  const stopGrouping = () => { setGrouping(false); setSelected(new Set()); setGroupName(""); setGroupError(null); };
+  const submitGroup = () => startTransition(async () => {
+    setGroupError(null);
+    const res = await createGroup([...selected], groupName);
+    if (res.ok) { setToast({ text: `Grupo "${groupName.trim()}" criado. Se quiser, marque uma ⭐ de preferido na edição do item.` }); stopGrouping(); }
+    else setGroupError(res.error);
+  });
+
+  // na lista do outro, itens do mesmo grupo viram um card só
+  type Entry = { type: "item"; item: Item } | { type: "group"; id: string; name: string; items: Item[] };
+  const entries = useMemo<Entry[]>(() => {
+    if (mode !== "partner") return visible.map((item) => ({ type: "item", item }));
+    const out: Entry[] = [];
+    const byGroup = new Map<string, Entry & { type: "group" }>();
+    for (const item of visible) {
+      if (!item.group) { out.push({ type: "item", item }); continue; }
+      let g = byGroup.get(item.group.id);
+      if (!g) { g = { type: "group", id: item.group.id, name: item.group.name, items: [] }; byGroup.set(item.group.id, g); out.push(g); }
+      g.items.push(item);
+    }
+    for (const g of byGroup.values()) g.items.sort((a, b) => Number(Boolean(b.group?.preferred)) - Number(Boolean(a.group?.preferred)));
+    return out;
+  }, [visible, mode]);
+
   return (
     <div className="flex flex-col gap-4">
       {mode === "mine" && (
@@ -117,6 +150,18 @@ export function ItemBrowser({ items, mode, ownerName, gifts = {}, purchasedByMe 
               {TAB_LABEL[t]} <span className="opacity-70">{counts[t]}</span>
             </button>
           ))}
+        </div>
+      )}
+      {mode === "mine" && tab === "desejado" && !grouping && items.filter((i) => i.kind === "unico" && i.status === "desejado").length >= 2 && (
+        <p className="text-sm -mt-1" style={{ color: "var(--ink-2)" }}>
+          Tem opções parecidas (ex.: 3 mouses)?{" "}
+          <button type="button" className="font-extrabold underline" style={{ color: "var(--ink)" }} onClick={() => setGrouping(true)}>Agrupar como “quero um desses”</button>
+        </p>
+      )}
+      {grouping && (
+        <div className="rounded-[18px] border-2 p-4 flex flex-col gap-1" style={{ background: "var(--surface)", borderColor: "var(--secondary)" }}>
+          <p className="font-extrabold">Escolha as opções do grupo</p>
+          <p className="text-sm" style={{ color: "var(--ink-2)" }}>Toque em 2 ou mais itens únicos. Quando um deles for dado (ou você marcar “Já tenho”), os outros saem da lista junto.</p>
         </div>
       )}
 
@@ -144,18 +189,49 @@ export function ItemBrowser({ items, mode, ownerName, gifts = {}, purchasedByMe 
         <EmptyState mode={mode} tab={tab} filtered={Boolean(filtersActive)} ownerName={ownerName} total={items.length} />
       ) : (
         <ul className="grid gap-3 md:grid-cols-2 2xl:grid-cols-3" aria-busy={pending}>
-          {visible.map((item) => (
+          {entries.map((entry) => {
+            if (entry.type === "group") {
+              return (
+                <li key={entry.id} className="md:col-span-2 2xl:col-span-3">
+                  <GroupCard name={entry.name} items={entry.items} inCombos={inCombos} purchased={purchased} pending={pending}
+                    onGive={(id) => startTransition(async () => { await giveThis(id); })} />
+                </li>
+              );
+            }
+            const item = entry.item;
+            if (grouping) {
+              const selectable = item.kind === "unico" && item.status === "desejado";
+              const on = selected.has(item.id);
+              return (
+                <li key={item.id}>
+                  <button type="button" disabled={!selectable} aria-pressed={on} onClick={() => toggleSelected(item.id)}
+                    className="block w-full text-left relative rounded-[16px] disabled:opacity-40"
+                    style={{ outline: on ? "3px solid var(--secondary)" : "none", outlineOffset: 2 }}>
+                    <TagCard item={item} badge={!selectable ? <span className="badge">Sempre bem-vindo não entra em grupo</span> : undefined}
+                      action={selectable && (
+                        <span aria-hidden="true" className="w-8 h-8 rounded-full grid place-items-center font-black border-2"
+                          style={on ? { background: "var(--secondary)", borderColor: "var(--secondary)", color: "var(--on-secondary)" } : { borderColor: "var(--line)" }}>{on ? "✓" : ""}</span>
+                      )} />
+                  </button>
+                </li>
+              );
+            }
+            return (
             <li key={item.id}>
               {mode === "mine" ? (
                 <Swipe radius="0 16px 16px 0" label={`Ações de ${item.title}`}
                   actions={[{ label: "Editar", icon: <PencilIcon />, style: { background: "var(--secondary)", color: "var(--on-secondary)" }, onClick: () => router.push(`/item/${item.id}`) },
                     { label: "Excluir", icon: <TrashIcon />, style: { background: "#C81E4A", color: "#fff" }, disabled: pending, onClick: () => remove(item) }]}>
-                <TagCard item={item} href={item.url || `/item/${item.id}`} external={Boolean(item.url)} dim={item.status !== "desejado"}
-                  badge={item.kind === "sempre"
-                    ? <span className="badge sempre">{gifts[item.id] ? `Sempre bem-vindo, ganhou ${gifts[item.id].times}x, última em ${shortDate(gifts[item.id].lastAt)}` : "Sempre bem-vindo"}</span>
-                    : item.status === "recebido"
-                      ? <span className="badge">{gifts[item.id] ? `Presente de ${gifts[item.id].fromName} em ${shortDate(gifts[item.id].lastAt)}` : "Recebido"}</span>
-                      : undefined}
+                <TagCard item={item} href={item.url || `/item/${item.id}`} external={Boolean(item.url)} desktopHref={`/item/${item.id}`} dim={item.status !== "desejado"}
+                  badge={<Badges>
+                    {item.kind === "sempre"
+                      ? <span className="badge sempre">{gifts[item.id] ? `Sempre bem-vindo, ganhou ${gifts[item.id].times}x, última em ${shortDate(gifts[item.id].lastAt)}` : "Sempre bem-vindo"}</span>
+                      : item.status === "recebido"
+                        ? <span className="badge">{gifts[item.id] ? `Presente de ${gifts[item.id].fromName} em ${shortDate(gifts[item.id].lastAt)}` : "Recebido"}</span>
+                        : null}
+                    {item.group && <span className="badge">{item.group.preferred ? "⭐ " : ""}Grupo: {item.group.name}</span>}
+                    {item.leftWithGroup && item.status === "ja_tenho" && <span className="badge">Saiu junto com o grupo</span>}
+                  </Badges>}
                   action={item.kind === "unico" && item.status !== "recebido" && (
                     <button type="button" className="btn btn-ghost btn-sm relative z-10" disabled={pending}
                       onClick={() => (item.status === "desejado" ? askOwned(item) : toggleOwned(item, false))}>
@@ -174,8 +250,27 @@ export function ItemBrowser({ items, mode, ownerName, gifts = {}, purchasedByMe 
                   )} />
               )}
             </li>
-          ))}
+            );
+          })}
         </ul>
+      )}
+
+      {grouping && <div aria-hidden="true" className="h-36" />}
+      {grouping && (
+        <div className="fixed inset-x-0 bottom-[76px] lg:bottom-0 lg:left-[252px] z-40 px-4 pb-4 pt-3 border-t-2 flex flex-col gap-2"
+          style={{ background: "var(--surface)", borderColor: "var(--line)" }}>
+          {groupError && <p role="alert" className="text-sm font-semibold" style={{ color: "var(--error-ink)" }}>{groupError}</p>}
+          <div className="flex flex-col sm:flex-row gap-2 max-w-[900px] w-full mx-auto">
+            <input className="field !text-base !py-3 flex-1" placeholder="Nome do grupo (ex.: Mouse)" value={groupName} maxLength={60}
+              onChange={(e) => setGroupName(e.target.value)} aria-label="Nome do grupo" />
+            <div className="grid grid-cols-2 gap-2 sm:flex">
+              <button type="button" className="btn btn-ghost" onClick={stopGrouping}>Cancelar</button>
+              <button type="button" className="btn btn-primary" disabled={pending || selected.size < 2 || !groupName.trim()} onClick={submitGroup}>
+                Agrupar{selected.size ? ` (${selected.size})` : ""}
+              </button>
+            </div>
+          </div>
+        </div>
       )}
 
       {toast && (
@@ -201,5 +296,51 @@ function EmptyState({ mode, tab, filtered, ownerName, total }: { mode: "mine" | 
       <p className="max-w-[46ch] leading-relaxed" style={{ color: "var(--ink-2)" }}>{text}</p>
       {mode === "mine" && tab === "desejado" && !filtered && <Link href="/item/novo" className="btn btn-ribbon">Adicionar item</Link>}
     </div>
+  );
+}
+
+function Badges({ children }: { children: React.ReactNode }) {
+  const list = (Array.isArray(children) ? children : [children]).filter(Boolean);
+  if (!list.length) return null;
+  return <span className="flex flex-wrap gap-1">{list}</span>;
+}
+
+/** Lista do outro: "quero um desses", com o preferido (⭐) em primeiro. */
+function GroupCard({ name, items, inCombos, purchased, pending, onGive }: {
+  name: string; items: Item[]; inCombos: Set<string>; purchased: Set<string>; pending: boolean; onGive: (itemId: string) => void;
+}) {
+  const chosen = items.find((i) => inCombos.has(i.id));
+  return (
+    <section className="rounded-[20px] border-2 p-4 flex flex-col gap-3" style={{ background: "var(--surface)", borderColor: "var(--line)" }} aria-label={`Quero um desses: ${name}`}>
+      <div>
+        <p className="text-xs font-bold" style={{ color: "var(--ink-2)" }}>Quero um desses</p>
+        <h3 className="text-lg font-extrabold leading-tight" style={{ fontVariationSettings: "'wdth' 85" }}>{name}</h3>
+        {chosen && <p className="text-sm font-semibold mt-1" style={{ color: "var(--secondary)" }}>No seu presente: {chosen.title}</p>}
+      </div>
+      <ul className="grid gap-2 md:grid-cols-2 2xl:grid-cols-3">
+        {items.map((i) => {
+          const bought = purchased.has(i.id);
+          return (
+            <li key={i.id} className="relative flex items-center gap-3 rounded-xl p-2 border-2"
+              style={{ background: "var(--bg)", borderColor: i.group?.preferred ? "var(--ribbon)" : "transparent" }}>
+              {i.url && <a href={i.url} target="_blank" rel="noopener noreferrer" className="absolute inset-0 z-[1] rounded-xl" aria-label={`${i.title} (abre na loja)`} />}
+              <div className="w-12 h-12 rounded-lg overflow-hidden grid place-items-center text-xl shrink-0" style={{ background: "var(--surface)" }}>
+                {i.imageUrl ? <img src={i.imageUrl} alt="" className="w-full h-full object-cover" referrerPolicy="no-referrer" /> : CATEGORY_EMOJI[i.category]}
+              </div>
+              <div className="min-w-0 flex-1">
+                <p className="font-bold text-sm leading-tight line-clamp-2">{i.title}</p>
+                <p className="text-xs truncate" style={{ color: i.group?.preferred ? "var(--ink)" : "var(--ink-2)" }}>
+                  {i.group?.preferred ? "⭐ Preferido" : bought ? "Você já comprou" : inCombos.has(i.id) ? "No seu presente" : (i.store ?? i.category)}
+                </p>
+              </div>
+              <div className="flex flex-col items-end gap-1">
+                <span className="text-sm font-extrabold whitespace-nowrap">{formatPrice(i.priceCents)}</span>
+                {!bought && <button type="button" className="btn btn-primary btn-sm relative z-10 !min-h-0 !py-1.5" disabled={pending} onClick={() => onGive(i.id)}>Dar este</button>}
+              </div>
+            </li>
+          );
+        })}
+      </ul>
+    </section>
   );
 }
