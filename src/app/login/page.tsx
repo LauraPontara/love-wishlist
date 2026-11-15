@@ -18,15 +18,17 @@ export default function LoginPage() {
         Nossa Wishlist
       </p>
 
-      <section className="relative z-10 flex flex-col justify-center px-6 pb-10 -mt-6 sm:px-10 lg:mt-0 lg:p-0 lg:-translate-y-[6vh]">
-        <div className="w-full max-w-[440px] sm:max-w-[520px] mx-auto lg:text-center login-card lg:rounded-[32px] lg:px-12 lg:py-10 lg:max-w-[520px]">
-          <h1 className="display text-[2.6rem] sm:text-[3.4rem] lg:text-[3.6rem] mb-3">
+      <section className="relative z-10 flex flex-col justify-center px-6 pb-10 -mt-6 sm:px-10 lg:mt-0 lg:p-0 lg:-translate-y-[9vh]">
+        <div className="w-full max-w-[440px] sm:max-w-[520px] mx-auto lg:max-w-[600px] lg:text-center">
+          <h1 className="display text-[2.6rem] sm:text-[3.4rem] lg:text-[3.4rem] mb-3">
             Oi,<br className="lg:hidden" /> quem chegou?
           </h1>
           <p className="mb-6 leading-relaxed sm:text-lg text-balance" style={{ color: "var(--ink-2)" }}>
             Digite o seu telefone para abrir a lista de vocês dois.
           </p>
-          <div className="lg:text-left"><LoginForm /></div>
+          <div className="login-card lg:text-left lg:rounded-[28px] lg:p-5">
+            <LoginForm />
+          </div>
         </div>
       </section>
     </main>

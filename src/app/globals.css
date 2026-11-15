@@ -235,17 +235,13 @@ input.field[class*="!py-"], select.field[class*="!py-"] { min-height: 0; }
 
 /* desktop: coração de luz gigante, só os lóbulos de cima aparecem (estilo Lovable) */
 .heart-aura { position: absolute; inset: 0; overflow: hidden; isolation: isolate; background: var(--bg); }
-.heart-aura-shape {
-  /* zoom no topo do meio: lóbulos saem pelas laterais, a curvinha do meio fica no centro da tela */
-  position: absolute; left: 50%; top: calc(16vh - 11.4vw); width: 190vw; height: auto;
-  translate: -50% 0; transform-origin: 50% 20%; filter: blur(56px) saturate(1.2);
-}
+.heart-aura-shape { position: absolute; inset: 0; width: 100%; height: 100%; transform-origin: 50% 100%; }
 /* topo escuro e cantos fundindo no fundo */
 .heart-aura-veil { position: absolute; inset: 0; pointer-events: none;
-  background: linear-gradient(to bottom, var(--bg) 0%, color-mix(in srgb, var(--bg) 55%, transparent) 12%, transparent 30%); }
+  background: linear-gradient(to bottom, var(--bg) 0%, transparent 22%); }
 @media (prefers-reduced-motion: no-preference) {
   .heart-aura-shape { animation: aura-pulse var(--beat) var(--ease-beat) infinite; }
-  @keyframes aura-pulse { 0% { scale: 1; } 12% { scale: 1.035; } 24% { scale: 1; } 36% { scale: 1.02; } 52%, 100% { scale: 1; } }
+  @keyframes aura-pulse { 0% { scale: 1; filter: brightness(1); } 12% { scale: 1.045; filter: brightness(1.08); } 24% { scale: 1; filter: brightness(1); } 36% { scale: 1.025; filter: brightness(1.04); } 52%, 100% { scale: 1; filter: brightness(1); } }
 }
 @media (min-width: 1024px) { .login-card { background: color-mix(in srgb, var(--bg) 72%, transparent); backdrop-filter: blur(18px); -webkit-backdrop-filter: blur(18px);
   border: 1.5px solid color-mix(in srgb, #fff 14%, transparent); box-shadow: 0 30px 80px -30px rgba(10, 8, 30, .7); } }
