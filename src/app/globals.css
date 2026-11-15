@@ -85,11 +85,13 @@ body {
                 inset 0 2px 0 rgba(255, 255, 255, .28);
   }
 }
-:is(.btn-primary, .btn-ribbon, .btn-danger):active:not(:disabled) {
+:is(.btn-primary, .btn-ribbon, .btn-danger):is(:active, .is-pressed):not(:disabled) {
   translate: 0 var(--depth); filter: brightness(.96);
   box-shadow: 0 0 0 var(--edge), 0 1px 2px rgba(28, 26, 74, .3), inset 0 2px 4px rgba(0, 0, 0, .18);
-  transition-duration: 60ms; transition-timing-function: ease-out;
+  transition-duration: 70ms; transition-timing-function: ease-out;
 }
+/* sem o realce cinza do toque no celular: quem mostra o clique é o botão afundando */
+.btn-primary, .btn-ribbon, .btn-danger { -webkit-tap-highlight-color: transparent; touch-action: manipulation; }
 
 /* ---------- diálogo de confirmação ---------- */
 @media (prefers-reduced-motion: no-preference) {
