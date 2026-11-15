@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { Suspense } from "react";
 import { ListCount, ListLoader } from "@/components/list-loader";
+import { PlusIcon } from "@/components/icons";
 import { PageHeader, Sheet } from "@/components/page-header";
 import { ListSkeleton } from "@/components/skeleton";
 import { getCurrentUser } from "@/lib/auth/current-user";
@@ -21,7 +22,7 @@ async function MyList() {
     <>
       <PageHeader title="Minha lista" avatar={user.avatar}
         subtitle={<ListCount scope="mine" userId={user.id} prefix={`${user.displayName}, `} suffix={["desejo", "desejos"]} />}
-        action={<Link href="/item/novo" className="btn btn-ribbon">Adicionar item</Link>} />
+        action={<Link href="/item/novo" className="btn btn-ribbon"><PlusIcon /> Adicionar item</Link>} />
       <Sheet>
         <ListLoader scope="mine" userId={user.id} ownerName={user.displayName} />
       </Sheet>

@@ -8,6 +8,7 @@ import { DatesSkeleton } from "@/components/skeleton";
 import { getCurrentUser } from "@/lib/auth/current-user";
 import { countdownLabel, formatDayMonth } from "@/lib/combos/domain";
 import { getMyCombos, getOccasions } from "@/lib/combos/queries";
+import { TourScreen } from "@/components/tour/tour";
 
 export const metadata: Metadata = { title: "Nossas datas · Nossa Wishlist" };
 
@@ -42,7 +43,7 @@ async function Dates() {
         <div className="grid gap-6 lg:grid-cols-[minmax(0,420px)_minmax(0,1fr)] items-start">
           {next && (
             <section className="relative isolate overflow-hidden rounded-[24px] border-2 p-6 sm:p-8 grid grid-cols-[1fr_auto] items-center gap-4 lg:sticky lg:top-6"
-              style={{ background: "var(--surface)", borderColor: "var(--line)" }} aria-label="Próxima data">
+              style={{ background: "var(--surface)", borderColor: "var(--line)" }} aria-label="Próxima data" data-tour="next-date">
               <Heart className="beat absolute -right-6 top-1/2 -translate-y-1/2 w-[200px] h-[190px] -z-10 opacity-90" blur={6} />
               <div>
                 <p className="font-semibold text-sm" style={{ color: "var(--ink-2)" }}>Próxima data</p>
@@ -59,6 +60,7 @@ async function Dates() {
           )}
 
           <section aria-label="Todas as datas">
+            {occasions.length > 0 && <TourScreen id="dates" />}
             <OccasionList people={people} occasions={occasions.map((o) => ({
               id: o.id, name: o.name, kind: o.kind, month: o.month, day: o.day, honoreeId: o.honoreeId,
               countdown: countdownLabel(o.daysUntil).replace(/^./, (c) => c.toUpperCase()), status: statusFor(o),

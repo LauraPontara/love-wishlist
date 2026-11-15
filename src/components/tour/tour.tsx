@@ -271,6 +271,9 @@ function TourRunner({ lessons, onEnd }: { lessons: Lesson[]; onEnd: () => void }
   const textStyle: React.CSSProperties = place === "center"
     ? { top: "38%", transform: "translateY(-50%)" }
     : place === "below" ? { top: Math.min(rect!.top + rect!.height + 54, vp.h - barSpace - textH) } : { bottom: Math.max(vp.h - rect!.top + 54, barSpace) };
+  // a frase fica em cima do alvo (no desktop, não no meio da tela)
+  const textW = Math.min(420, vp.w - 16);
+  const textLeft = rect ? Math.max(8, Math.min(vp.w - textW - 8, rect.left + rect.width / 2 - textW / 2)) : (vp.w - textW) / 2;
   const last = index === steps.length - 1;
   const seed = index * 7 + 3;
 
@@ -295,7 +298,7 @@ function TourRunner({ lessons, onEnd }: { lessons: Lesson[]; onEnd: () => void }
         )}
       </svg>
 
-      <div ref={textRef} className="absolute left-0 right-0 mx-auto px-6 w-full max-w-[420px] text-center" style={textStyle}>
+      <div ref={textRef} className="absolute px-6 text-center" style={{ ...textStyle, left: textLeft, width: textW }}>
         <p key={`${index}-${phase}`} className="hand tour-text">{ink(text, reduced)}</p>
       </div>
 

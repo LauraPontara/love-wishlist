@@ -10,7 +10,7 @@ import { createGroup, deleteItem, restoreItem, setOwned } from "@/app/actions/it
 import { shortDate } from "@/lib/combos/domain";
 import { CATEGORIES, CATEGORY_EMOJI, formatPrice, matchesSearch, parsePrice, type Item } from "@/lib/items/domain";
 import { useConfirm } from "./confirm";
-import { CheckIcon, CloseIcon, PencilIcon, SelectIcon, StarIcon, TrashIcon } from "./icons";
+import { CheckIcon, CloseIcon, PencilIcon, PlusIcon, SelectIcon, StarIcon, TrashIcon } from "./icons";
 import { Swipe } from "./swipe";
 import { TagCard } from "./tag-card";
 import { TourScreen, tourSignal } from "./tour/tour";
@@ -406,7 +406,7 @@ function EmptyState({ mode, tab, filtered, ownerName, total }: { mode: "mine" | 
   return (
     <div className="rounded-[20px] border-2 border-dashed p-6 sm:p-8 text-center flex flex-col items-center gap-4" style={{ borderColor: "var(--line)" }}>
       <p className="max-w-[46ch] leading-relaxed" style={{ color: "var(--ink-2)" }}>{text}</p>
-      {mode === "mine" && tab === "desejado" && !filtered && <Link href="/item/novo" className="btn btn-ribbon">Adicionar item</Link>}
+      {mode === "mine" && tab === "desejado" && !filtered && <Link href="/item/novo" className="btn btn-ribbon"><PlusIcon /> Adicionar item</Link>}
     </div>
   );
 }

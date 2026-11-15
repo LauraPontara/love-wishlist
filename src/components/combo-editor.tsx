@@ -249,7 +249,7 @@ function ExtraForm({ onAdd, pending }: { onAdd: (e: { title: string; price: stri
   const [title, setTitle] = useState("");
   const [price, setPrice] = useState("");
   const [url, setUrl] = useState("");
-  if (!open) return <button type="button" className="btn btn-ghost self-start" onClick={() => setOpen(true)}>Adicionar extra (flores, cartão…)</button>;
+  if (!open) return <button type="button" className="btn btn-soft btn-sm self-end" onClick={() => setOpen(true)}><PlusIcon /> Adicionar extra</button>;
   return (
     <form className="grid gap-3 sm:grid-cols-[1fr_130px] rounded-[18px] border-2 border-dashed p-4" style={{ borderColor: "var(--line)" }}
       onSubmit={(e) => { e.preventDefault(); onAdd({ title, price, url }); setTitle(""); setPrice(""); setUrl(""); setOpen(false); }}>

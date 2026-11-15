@@ -89,6 +89,19 @@ export const LESSONS: Lesson[] = [
       { target: '[data-tour="finish"]', text: "Terminou? Clique em Concluir presente. Tudo já fica salvo." },
     ],
   },
+  {
+    id: "dates", title: "Como usar as datas", screen: "dates",
+    touch: [
+      { target: '[data-tour="next-date"]', text: "Aqui fica a próxima data: quantos dias faltam e como está o presente. Vocês recebem um lembrete 7 dias antes." },
+      { target: '[data-tour="edit-date"]', gesture: "tap", text: "Toque no lápis para mudar o nome, o dia ou de quem é a data." },
+      { target: '[data-tour="add-date"]', gesture: "tap", text: "Aqui você cria uma data nova, como um aniversário ou uma viagem." },
+    ],
+    mouse: [
+      { target: '[data-tour="next-date"]', text: "Aqui fica a próxima data: quantos dias faltam e como está o presente. Vocês recebem um lembrete 7 dias antes." },
+      { target: '[data-tour="edit-date"]', gesture: "tap", text: "Clique no lápis para mudar o nome, o dia ou de quem é a data." },
+      { target: '[data-tour="add-date"]', gesture: "tap", text: "No + você cria uma data nova, como um aniversário ou uma viagem." },
+    ],
+  },
 ];
 
 export const lessonsFor = (screen: string) => LESSONS.filter((l) => l.screen === screen);

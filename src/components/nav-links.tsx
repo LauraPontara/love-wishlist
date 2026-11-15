@@ -44,7 +44,7 @@ export function NavLinks({ me, partner }: { me: Person; partner: Person | null }
             {l.label}
           </Link>
         ))}
-        <Link href="/item/novo" className="btn btn-ribbon mt-4">Adicionar item</Link>
+        <Link href="/item/novo" className="btn btn-ribbon mt-4"><PlusIcon /> Adicionar item</Link>
         <Link href="/ajustes" aria-current={path.startsWith("/ajustes") ? "page" : undefined}
           className="mt-auto flex items-center gap-3 rounded-2xl px-3 py-2.5 font-bold"
           style={path.startsWith("/ajustes") ? { background: "var(--bg)", color: "var(--primary)" } : { color: "var(--ink-2)" }}>

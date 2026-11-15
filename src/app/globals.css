@@ -64,6 +64,11 @@ body {
 .btn:disabled { opacity: .6; cursor: progress; }
 .btn-ghost { background: var(--surface); color: var(--ink); border: 2px solid var(--line); }
 .btn-sm { padding: 8px 12px; font-size: .85rem; border-radius: 12px; }
+/* rosa suave: ações secundárias de "adicionar" */
+.btn-soft { background: color-mix(in srgb, var(--primary) 14%, var(--surface)); color: var(--primary); border: 2px solid color-mix(in srgb, var(--primary) 32%, transparent); transition: background var(--t-fast), translate var(--t-fast) var(--ease-out); }
+.btn-soft:hover:not(:disabled) { background: color-mix(in srgb, var(--primary) 22%, var(--surface)); }
+.btn-soft:active:not(:disabled) { translate: 0 1px; }
+.btn-soft:focus-visible { outline: 3px solid var(--ribbon); outline-offset: 2px; }
 
 /* botões 3D: a "borda" embaixo é a lateral do botão. No clique ele desce até o chão
    (a borda some) bem rápido; ao soltar, volta com uma molinha. */
@@ -297,3 +302,7 @@ input.field[class*="!py-"], select.field[class*="!py-"] { min-height: 0; }
 }
 
 .gift-box.is-loading::before, .gift-box.is-loading::after { opacity: .35; }
+
+/* rolagem horizontal (chips, filtros): sem barra visível; a barra só aparece na rolagem vertical */
+.overflow-x-auto, .overflow-x-scroll { scrollbar-width: none; }
+.overflow-x-auto::-webkit-scrollbar, .overflow-x-scroll::-webkit-scrollbar { display: none; }

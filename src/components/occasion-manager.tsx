@@ -4,7 +4,7 @@ import { useState, useTransition } from "react";
 import { deleteOccasion, saveOccasion } from "@/app/actions/occasions";
 import { monthLong, monthShort } from "@/lib/combos/domain";
 import { useConfirm } from "./confirm";
-import { IconButton, PencilIcon } from "./icons";
+import { IconButton, PencilIcon, PlusIcon } from "./icons";
 import { motion } from "motion/react";
 
 type Person = { id: string; displayName: string; avatar: string | null };
@@ -36,7 +36,7 @@ export function OccasionList({ occasions, people }: { occasions: OccasionRow[]; 
               </div>
               <div className="flex items-center gap-3">
                 {person?.avatar && <img src={`/avatars/${person.avatar}.svg`} alt={person.displayName} className="w-9 h-9 hidden sm:block" />}
-                <IconButton label={`Editar ${o.name}`} onClick={() => setEditing(o.id)}><PencilIcon /></IconButton>
+                <IconButton label={`Editar ${o.name}`} data-tour="edit-date" onClick={() => setEditing(o.id)}><PencilIcon /></IconButton>
               </div>
             </motion.li>
           );
@@ -44,7 +44,11 @@ export function OccasionList({ occasions, people }: { occasions: OccasionRow[]; 
       </ul>
       {editing === "new"
         ? <OccasionForm people={people} onDone={() => setEditing(null)} />
-        : <button className="btn btn-ghost w-full sm:w-auto sm:self-end" onClick={() => setEditing("new")}>Adicionar data</button>}
+        : (
+          <button className="btn btn-soft w-full lg:w-[52px] lg:h-[52px] lg:!p-0 lg:self-end" data-tour="add-date" aria-label="Adicionar data" title="Adicionar data" onClick={() => setEditing("new")}>
+            <PlusIcon /><span className="lg:hidden">Adicionar data</span>
+          </button>
+        )}
     </div>
   );
 }
