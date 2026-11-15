@@ -1,19 +1,27 @@
-/** Lacinho amarelo no cruzamento das fitas da caixa de presente (.gift-box). */
+/**
+ * Laço amarelo no cruzamento das fitas da caixa de presente (.gift-box).
+ * O nó fica exatamente sobre o cruzamento (fitas: vertical em right 34–44px, horizontal em top 18–28px).
+ */
 export function GiftBow() {
   return (
-    <svg className="gift-bow" viewBox="0 0 34 24" width="38" height="27" aria-hidden="true"
-      style={{ position: "absolute", top: 9, right: 20, pointerEvents: "none", zIndex: 1, filter: "drop-shadow(0 1px 1px rgba(28,26,74,.25))" }}>
-      <g fill="var(--ribbon)" stroke="var(--ribbon-edge)" strokeWidth="1.3" strokeLinejoin="round">
-        <path d="M15.2 13.4 11 22.6l3.2-.8L16.6 14z" />
-        <path d="M18.8 13.4 23 22.6l-3.2-.8L17.4 14z" />
-        <path d="M17 12C11.2 2.6 1.6 2.4 2.6 9.8 3.4 16 11 15.4 17 12z" />
-        <path d="M17 12c5.8-9.4 15.4-9.6 14.4-2.2C30.6 16 23 15.4 17 12z" />
+    <svg className="gift-bow" viewBox="0 0 48 40" width="48" height="40" aria-hidden="true"
+      style={{ position: "absolute", top: 9, right: 15, pointerEvents: "none", zIndex: 1, overflow: "visible", filter: "drop-shadow(0 1.5px 1px rgba(28,26,74,.28))" }}>
+      <g fill="var(--ribbon)" stroke="var(--ribbon-edge)" strokeWidth="1.4" strokeLinejoin="round" strokeLinecap="round">
+        {/* rabinhos compridos, com ponta em V */}
+        <path d="M22.2 15.5 13.4 36.6l4-1.7 1.9 4L25.4 16.6z" />
+        <path d="M25.8 15.5l8.8 21.1-4-1.7-1.9 4L22.6 16.6z" />
+        {/* voltas do laço */}
+        <path d="M24 14C19.6 5.2 6.8.6 4.4 6.6c-2.3 5.8 4.3 12.6 19.6 7.4z" />
+        <path d="M24 14c4.4-8.8 17.2-13.4 19.6-7.4 2.3 5.8-4.3 12.6-19.6 7.4z" />
       </g>
-      <g fill="var(--ribbon-edge)" opacity=".35">
-        <path d="M16 11.6C12 6.4 6.6 5.8 6.4 9.2c-.1 2.4 4.4 3.2 9.6 2.4z" />
-        <path d="M18 11.6c4-5.2 9.4-5.8 9.6-2.4.1 2.4-4.4 3.2-9.6 2.4z" />
+      {/* dobrinhas por dentro das voltas */}
+      <g fill="none" stroke="var(--ribbon-edge)" strokeWidth="1.2" strokeLinecap="round" opacity=".55">
+        <path d="M22.4 13.2C17.6 8.4 11 6.4 9 8.4" />
+        <path d="M25.6 13.2c4.8-4.8 11.4-6.8 13.4-4.8" />
       </g>
-      <rect x="13.6" y="8.6" width="6.8" height="6.8" rx="2.2" fill="var(--ribbon)" stroke="var(--ribbon-edge)" strokeWidth="1.3" />
+      {/* nó */}
+      <rect x="20.2" y="9.8" width="7.6" height="8.4" rx="3.2" fill="var(--ribbon)" stroke="var(--ribbon-edge)" strokeWidth="1.4" />
+      <path d="M22.4 12.4c1.1-.6 2.1-.6 3.2 0" fill="none" stroke="#fff" strokeOpacity=".55" strokeWidth="1.1" strokeLinecap="round" />
     </svg>
   );
 }

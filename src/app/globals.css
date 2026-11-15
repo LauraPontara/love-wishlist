@@ -68,6 +68,7 @@ body {
 .btn-soft { background: color-mix(in srgb, var(--primary) 14%, var(--surface)); color: var(--primary); border: 2px solid color-mix(in srgb, var(--primary) 32%, transparent); transition: background var(--t-fast), translate var(--t-fast) var(--ease-out); }
 .btn-soft:hover:not(:disabled) { background: color-mix(in srgb, var(--primary) 22%, var(--surface)); }
 .btn-soft:active:not(:disabled) { translate: 0 1px; }
+@media (min-width: 1024px) { .btn-extra { padding: 8px 12px; font-size: .85rem; border-radius: 12px; } }
 .btn-soft:focus-visible { outline: 3px solid var(--ribbon); outline-offset: 2px; }
 
 /* botões 3D: a "borda" embaixo é a lateral do botão. No clique ele desce até o chão

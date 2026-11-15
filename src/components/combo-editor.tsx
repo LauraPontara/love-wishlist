@@ -122,12 +122,12 @@ export function ComboEditor({ combo, available, purchasedElsewhere, occasions, r
         {editable ? (
           <>
             <TourScreen id="build" />
-            <div className="lg:hidden">
-              <button type="button" className="btn btn-ribbon w-full" data-tour="add-from-list" onClick={() => setListOpen(true)}>
-                <PlusIcon /> Adicionar da lista {recipientName.endsWith("a") ? "da" : "do"} {recipientName}
+            <div className="flex flex-wrap items-stretch gap-2">
+              <button type="button" className="btn btn-ribbon flex-1 min-w-0 lg:hidden" data-tour="add-from-list" onClick={() => setListOpen(true)}>
+                <PlusIcon /> Da lista {recipientName.endsWith("a") ? "da" : "do"} {recipientName}
               </button>
+              <ExtraForm onAdd={(e) => run(() => addExtra(combo.id, e))} pending={pending} />
             </div>
-            <ExtraForm onAdd={(e) => run(() => addExtra(combo.id, e))} pending={pending} />
             <p className="text-sm" style={{ color: "var(--ink-2)" }}>Tudo o que você adiciona já fica salvo no presente.</p>
             <div className="actions">
               <button className="btn btn-primary" disabled={pending} data-tour="finish" onClick={() => { setBuilding(false); router.push("/combos"); }}>Concluir presente</button>
@@ -249,9 +249,13 @@ function ExtraForm({ onAdd, pending }: { onAdd: (e: { title: string; price: stri
   const [title, setTitle] = useState("");
   const [price, setPrice] = useState("");
   const [url, setUrl] = useState("");
-  if (!open) return <button type="button" className="btn btn-soft btn-sm self-end" onClick={() => setOpen(true)}><PlusIcon /> Adicionar extra</button>;
+  if (!open) return (
+    <button type="button" className="btn btn-soft btn-extra shrink-0 lg:ml-auto" onClick={() => setOpen(true)} aria-label="Adicionar extra (flores, cartão…)">
+      <PlusIcon /><span className="lg:hidden">Extra</span><span className="hidden lg:inline">Adicionar extra</span>
+    </button>
+  );
   return (
-    <form className="grid gap-3 sm:grid-cols-[1fr_130px] rounded-[18px] border-2 border-dashed p-4" style={{ borderColor: "var(--line)" }}
+    <form className="basis-full grid gap-3 sm:grid-cols-[1fr_130px] rounded-[18px] border-2 border-dashed p-4" style={{ borderColor: "var(--line)" }}
       onSubmit={(e) => { e.preventDefault(); onAdd({ title, price, url }); setTitle(""); setPrice(""); setUrl(""); setOpen(false); }}>
       <label className="flex flex-col gap-1"><span className="text-sm font-bold">Extra</span>
         <input className="field !text-base" value={title} onChange={(e) => setTitle(e.target.value)} placeholder="Ex.: Flores do Vitório" required maxLength={120} /></label>

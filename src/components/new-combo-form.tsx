@@ -1,9 +1,21 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useState, useTransition } from "react";
+import { useEffect, useState, useTransition } from "react";
 import { createCombo } from "@/app/actions/combos";
+import { PlusIcon } from "./icons";
 import { MoneyInput } from "./money-input";
+
+const OPEN_NEW_COMBO = "nw:new-combo";
+
+/** Botão do cabeçalho (tablet/desktop): abre o formulário de novo presente na página. */
+export function NewComboButton() {
+  return (
+    <button type="button" className="btn btn-ribbon" onClick={() => window.dispatchEvent(new Event(OPEN_NEW_COMBO))}>
+      <PlusIcon /> Montar novo presente
+    </button>
+  );
+}
 
 type Occ = { id: string; name: string; label: string };
 
@@ -17,7 +29,14 @@ export function NewComboForm({ occasions, partnerName }: { occasions: Occ[]; par
   const [error, setError] = useState<string | null>(null);
   const [pending, start] = useTransition();
 
-  if (!open) return <button className="btn btn-ribbon" onClick={() => setOpen(true)}>Montar novo presente</button>;
+  // o botão do cabeçalho (desktop) abre este mesmo formulário
+  useEffect(() => {
+    const onOpen = () => setOpen(true);
+    window.addEventListener(OPEN_NEW_COMBO, onOpen);
+    return () => window.removeEventListener(OPEN_NEW_COMBO, onOpen);
+  }, []);
+
+  if (!open) return <button className="btn btn-ribbon sm:hidden" onClick={() => setOpen(true)}><PlusIcon /> Montar novo presente</button>;
 
   return (
     <form className="rounded-[20px] border-2 p-4 sm:p-5 grid gap-3 sm:grid-cols-[1fr_1fr_160px] items-end" style={{ background: "var(--surface)", borderColor: "var(--line)" }}

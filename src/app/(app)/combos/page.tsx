@@ -4,7 +4,7 @@ import { ComboCard } from "@/components/combo-card";
 import { RiseIn } from "@/components/rise-in";
 import { SwipeComboCard } from "@/components/swipe-combo-card";
 import { TourScreen } from "@/components/tour/tour";
-import { NewComboForm } from "@/components/new-combo-form";
+import { NewComboButton, NewComboForm } from "@/components/new-combo-form";
 import { PageHeader, Sheet } from "@/components/page-header";
 import { GiftsSkeleton } from "@/components/skeleton";
 import { getCurrentUser } from "@/lib/auth/current-user";
@@ -37,7 +37,7 @@ async function Combos() {
 
   return (
     <>
-      <PageHeader title="Presentes" subtitle={`Só você vê os presentes que monta para ${partnerName}.`} />
+      <PageHeader title="Presentes" subtitle={`Só você vê os presentes que monta para ${partnerName}.`} action={<NewComboButton />} />
       <Sheet>
         <div className="flex flex-col gap-6">
           <NewComboForm occasions={giftable} partnerName={partnerName} />
