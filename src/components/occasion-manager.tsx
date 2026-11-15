@@ -5,6 +5,7 @@ import { deleteOccasion, saveOccasion } from "@/app/actions/occasions";
 import { monthLong, monthShort } from "@/lib/combos/domain";
 import { useConfirm } from "./confirm";
 import { IconButton, PencilIcon } from "./icons";
+import { motion } from "motion/react";
 
 type Person = { id: string; displayName: string; avatar: string | null };
 export type OccasionRow = {
@@ -20,11 +21,12 @@ export function OccasionList({ occasions, people }: { occasions: OccasionRow[]; 
   return (
     <div className="flex flex-col gap-2">
       <ul className="grid gap-2">
-        {occasions.map((o) => {
+        {occasions.map((o, idx) => {
           if (editing === o.id) return <li key={o.id}><OccasionForm people={people} occasion={o} onDone={() => setEditing(null)} /></li>;
           const person = people.find((p) => p.id === o.honoreeId);
           return (
-            <li key={o.id} className="grid grid-cols-[56px_1fr_auto] items-center gap-3 rounded-2xl p-3 border-2" style={{ background: "var(--surface)", borderColor: "var(--line)" }}>
+            <motion.li key={o.id} className="grid grid-cols-[56px_1fr_auto] items-center gap-3 rounded-2xl p-3 border-2" style={{ background: "var(--surface)", borderColor: "var(--line)" }}
+              initial={{ opacity: 0, y: 18 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: Math.min(idx, 10) * 0.045, duration: 0.32, ease: [0.34, 1.4, 0.64, 1] }}>
               <div className="w-14 h-14 rounded-xl grid place-items-center leading-none text-center border-2" style={{ borderColor: "var(--line)", background: "var(--bg)" }}>
                 <span><b className="display block text-[1.4rem]">{String(o.day).padStart(2, "0")}</b><span className="text-[.7rem] font-bold" style={{ color: "var(--ink-2)" }}>{monthShort(o.month)}</span></span>
               </div>
@@ -36,7 +38,7 @@ export function OccasionList({ occasions, people }: { occasions: OccasionRow[]; 
                 {person?.avatar && <img src={`/avatars/${person.avatar}.svg`} alt={person.displayName} className="w-9 h-9 hidden sm:block" />}
                 <IconButton label={`Editar ${o.name}`} onClick={() => setEditing(o.id)}><PencilIcon /></IconButton>
               </div>
-            </li>
+            </motion.li>
           );
         })}
       </ul>

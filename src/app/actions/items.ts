@@ -3,6 +3,7 @@
 import { refresh } from "next/cache";
 import { redirect } from "next/navigation";
 import { requireProfileId } from "@/lib/auth/current-user";
+import { bumpLists } from "@/lib/lists/version";
 import { db } from "@/lib/db/server";
 import { newItemsMessage } from "@/lib/push/messages";
 import { sendToProfile } from "@/lib/push/send";
@@ -68,6 +69,7 @@ export type Draft = {
 /** RF07: "Salvar todos". Salva o que dá e devolve o erro de cada cartão que falhou. */
 export async function createItems(drafts: Draft[]): Promise<{ savedIndexes: number[]; errors: Record<number, Record<string, string>> }> {
   const profileId = await requireProfileId();
+  await bumpLists();
   const savedIndexes: number[] = [];
   const errors: Record<number, Record<string, string>> = {};
 
@@ -92,6 +94,7 @@ export async function createItems(drafts: Draft[]): Promise<{ savedIndexes: numb
 
 export async function createItem(_prev: FormState, formData: FormData): Promise<FormState> {
   const profileId = await requireProfileId();
+  await bumpLists();
   const parsed = readForm(formData);
   if (!parsed.success) return fieldErrors(parsed);
   const { price, row } = toRow(parsed);
@@ -108,6 +111,7 @@ export async function createItem(_prev: FormState, formData: FormData): Promise<
 
 export async function updateItem(id: string, _prev: FormState, formData: FormData): Promise<FormState> {
   const profileId = await requireProfileId();
+  await bumpLists();
   const parsed = readForm(formData);
   if (!parsed.success) return fieldErrors(parsed);
   const { price, row } = toRow(parsed);
@@ -151,6 +155,7 @@ async function applyGroupChanges(id: string, formData: FormData): Promise<GroupR
 /** RF14: "Já tenho" (e desfazer). Só para itens únicos. */
 export async function setOwned(id: string, owned: boolean): Promise<{ ok: boolean; error?: string }> {
   const profileId = await requireProfileId();
+  await bumpLists();
   const { data: before } = await db().from("items").select("group_id, left_with_group").eq("id", id).eq("owner_id", profileId).maybeSingle();
   const { error } = await db().from("items")
     .update(owned ? { status: "ja_tenho", status_changed_at: new Date().toISOString() } : { status: "desejado", status_changed_at: null, left_with_group: false })
@@ -169,6 +174,7 @@ export async function setOwned(id: string, owned: boolean): Promise<{ ok: boolea
 /** RF13: exclui e devolve a linha para o "desfazer" poder restaurar com o mesmo id. */
 export async function deleteItem(id: string): Promise<{ ok: boolean; snapshot?: Record<string, unknown> }> {
   const profileId = await requireProfileId();
+  await bumpLists();
   const { data, error } = await db().from("items").delete().eq("id", id).eq("owner_id", profileId).select("*").maybeSingle();
   if (error || !data) return { ok: false };
   await cleanupGroups(profileId);
@@ -178,6 +184,7 @@ export async function deleteItem(id: string): Promise<{ ok: boolean; snapshot?: 
 
 export async function restoreItem(snapshot: Record<string, unknown>): Promise<{ ok: boolean }> {
   const profileId = await requireProfileId();
+  await bumpLists();
   if (snapshot.owner_id !== profileId) return { ok: false };
   let { error } = await db().from("items").insert(snapshot);
   // o grupo pode ter sumido enquanto o item estava excluído: volta sem grupo
@@ -206,6 +213,7 @@ async function cleanupGroups(ownerId: string): Promise<void> {
 /** Agrupa 2 ou mais itens únicos da própria lista. */
 export async function createGroup(itemIds: string[], name: string): Promise<GroupResult> {
   const profileId = await requireProfileId();
+  await bumpLists();
   const ids = [...new Set(itemIds)].filter((id) => UUID.test(id));
   const clean = name.trim().slice(0, 60);
   if (!clean) return { ok: false, error: "Dê um nome ao grupo (ex.: Mouse)." };
@@ -224,6 +232,7 @@ export async function createGroup(itemIds: string[], name: string): Promise<Grou
 /** Coloca o item num grupo existente, num grupo novo (com outro item escolhido) ou tira do grupo. */
 export async function setItemGroup(itemId: string, target: { groupId: string } | { newName: string; withItemId: string } | null): Promise<GroupResult> {
   const profileId = await requireProfileId();
+  await bumpLists();
   if (!UUID.test(itemId)) return { ok: false, error: "Item não encontrado." };
   if (target && "newName" in target) return createGroup([itemId, target.withItemId], target.newName);
   if (target) {
@@ -240,6 +249,7 @@ export async function setItemGroup(itemId: string, target: { groupId: string } |
 /** ⭐ preferido do grupo (um por grupo). */
 export async function setPreferred(itemId: string, preferred: boolean): Promise<GroupResult> {
   const profileId = await requireProfileId();
+  await bumpLists();
   const { data: item } = await db().from("items").select("group_id").eq("id", itemId).eq("owner_id", profileId).maybeSingle();
   if (!item?.group_id) return { ok: false, error: "O item não está em um grupo." };
   const { error } = await db().from("item_groups").update({ preferred_item_id: preferred ? itemId : null }).eq("id", item.group_id).eq("owner_id", profileId);
@@ -251,6 +261,7 @@ export async function setPreferred(itemId: string, preferred: boolean): Promise<
 /** Renomear o grupo. */
 export async function renameGroup(groupId: string, name: string): Promise<GroupResult> {
   const profileId = await requireProfileId();
+  await bumpLists();
   const clean = name.trim().slice(0, 60);
   if (!clean) return { ok: false, error: "Dê um nome ao grupo." };
   const { error } = await db().from("item_groups").update({ name: clean }).eq("id", groupId).eq("owner_id", profileId);
@@ -262,6 +273,7 @@ export async function renameGroup(groupId: string, name: string): Promise<GroupR
 /** Desfaz o grupo: os itens continuam na lista, só deixam de ser "um desses". */
 export async function deleteGroup(groupId: string): Promise<GroupResult> {
   const profileId = await requireProfileId();
+  await bumpLists();
   if (!UUID.test(groupId)) return { ok: false, error: "Grupo não encontrado." };
   // sem grupo, a etiqueta "saiu junto" não faz mais sentido (o item fica onde está; dá para Voltar)
   await db().from("items").update({ left_with_group: false }).eq("group_id", groupId).eq("owner_id", profileId);

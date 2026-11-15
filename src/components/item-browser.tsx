@@ -2,6 +2,8 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { useQueryClient } from "@tanstack/react-query";
+import { AnimatePresence, motion, type Variants } from "motion/react";
 import { useEffect, useMemo, useRef, useState, useTransition, type PointerEvent as RPointerEvent } from "react";
 import { giveThis, shouldWaitBeforeOwning } from "@/app/actions/combos";
 import { createGroup, deleteItem, restoreItem, setOwned } from "@/app/actions/items";
@@ -22,12 +24,34 @@ export const UNDO_KEY = "nw:undo-delete";
 
 export type Gift = { times: number; lastAt: string; fromName: string };
 
-export function ItemBrowser({ items, mode, ownerName, gifts = {}, purchasedByMe = [], inMyCombos = [] }: {
+/** Quantos cards desenhar por vez (rolagem infinita: os próximos entram perto do fim). */
+const PAGE = 20;
+
+// movimento "brincalhão suave": sobe de baixo com um quiquezinho, em fila (no máximo ~350ms de cascata)
+const BOUNCE = [0.34, 1.4, 0.64, 1] as const;
+const rise: Variants = {
+  hidden: { opacity: 0, y: 22, scale: 0.98 },
+  show: (i: number) => ({ opacity: 1, y: 0, scale: 1, transition: { delay: Math.min(i, 10) * 0.035, duration: 0.32, ease: BOUNCE } }),
+  out: { opacity: 0, scale: 0.9, transition: { duration: 0.18, ease: [0.3, 0, 1, 1] } },
+};
+const cardMotion = (i: number) => ({
+  layout: true as const, variants: rise, custom: i % PAGE, initial: "hidden", animate: "show", exit: "out",
+  transition: { layout: { type: "spring" as const, stiffness: 520, damping: 40 } },
+});
+
+export function ItemBrowser({ items, mode, ownerName, gifts = {}, purchasedByMe = [], inMyCombos = [], queryKey }: {
   items: Item[]; mode: "mine" | "partner"; ownerName: string;
   gifts?: Record<string, Gift>; purchasedByMe?: string[];
   /** itens do outro que já estão em algum presente meu (montado ou comprado) */
   inMyCombos?: string[];
+  /** chave da lista no cache: as mudanças aparecem na hora, antes da resposta do servidor */
+  queryKey?: readonly unknown[];
 }) {
+  const qc = useQueryClient();
+  const patchItems = (fn: (list: Item[]) => Item[]) => {
+    if (queryKey) qc.setQueryData(queryKey, (d: { items: Item[] } | undefined) => (d ? { ...d, items: fn(d.items) } : d));
+  };
+  const resync = () => { if (queryKey) qc.invalidateQueries({ queryKey }); };
   const inCombos = useMemo(() => new Set(inMyCombos), [inMyCombos]);
   // modo "Agrupar": escolher itens únicos para virar um grupo "quero um desses"
   const [grouping, setGrouping] = useState(false);
@@ -90,26 +114,36 @@ export function ItemBrowser({ items, mode, ownerName, gifts = {}, purchasedByMe 
   }, [items, mode, tab, query, category, kind, budget, sort]);
 
   // RF15: antes de marcar "Já tenho", um aviso vago se o outro já comprou (sem revelar nada)
-  const askOwned = (item: Item) =>
+  // as mudanças no cache ficam FORA da transição: assim o card sai na hora, sem esperar o servidor
+  const setStatus = (item: Item, status: Item["status"]) => patchItems((list) => list.map((i) => (i.id === item.id ? { ...i, status } : i)));
+  const askOwned = (item: Item) => {
+    // o item já sai da lista; só volta se aparecer o aviso e a pessoa decidir esperar
+    setStatus(item, "ja_tenho");
     startTransition(async () => {
       if (await shouldWaitBeforeOwning(item.id)
-        && !(await ask({ title: "Tem certeza?", body: "Talvez seja melhor esperar um pouco 👀", confirmLabel: "Marcar mesmo assim", cancelLabel: "Vou esperar" }))) return;
+        && !(await ask({ title: "Tem certeza?", body: "Talvez seja melhor esperar um pouco 👀", confirmLabel: "Marcar mesmo assim", cancelLabel: "Vou esperar" }))) { setStatus(item, "desejado"); return; }
       toggleOwned(item, true);
     });
+  };
 
-  const toggleOwned = (item: Item, owned: boolean) =>
+  const toggleOwned = (item: Item, owned: boolean) => {
+    setStatus(item, owned ? "ja_tenho" : "desejado");
     startTransition(async () => {
       const res = await setOwned(item.id, owned);
+      if (!res.ok) resync();
       setToast(res.ok
         ? { text: owned ? (item.group ? `"${item.title}" foi para "Já tenho" e o grupo ${item.group.name} saiu junto.` : `"${item.title}" foi para "Já tenho".`) : `"${item.title}" voltou para os desejos.`, undo: () => startTransition(async () => { await setOwned(item.id, !owned); setToast(null); }) }
         : { text: res.error ?? "Não deu para atualizar." });
     });
+  };
 
   const remove = async (item: Item) => {
     const ok = await ask({ title: "Excluir este item?", body: <>“{item.title}” sai da sua lista. Dá para desfazer logo em seguida.</>, confirmLabel: "Excluir item", tone: "danger" });
     if (!ok) return;
+    patchItems((list) => list.filter((i) => i.id !== item.id));
     startTransition(async () => {
       const res = await deleteItem(item.id);
+      if (!res.ok) resync();
       const snapshot = res.snapshot;
       setToast(res.ok && snapshot
         ? { text: `"${item.title}" foi excluído.`, undo: () => startTransition(async () => { await restoreItem(snapshot); setToast({ text: "Item restaurado." }); }) }
@@ -176,6 +210,22 @@ export function ItemBrowser({ items, mode, ownerName, gifts = {}, purchasedByMe 
     return out;
   }, [visible, mode]);
 
+  // rolagem infinita: começa com 20 cards e desenha mais quando o fim se aproxima
+  const listSig = `${tab}|${query}|${category}|${kind}|${budget}|${sort}`;
+  const [shown, setShown] = useState(PAGE);
+  const [sig, setSig] = useState(listSig);
+  if (sig !== listSig) { setSig(listSig); setShown(PAGE); }
+  const more = entries.length > shown;
+  const sentinel = useRef<HTMLLIElement>(null);
+  useEffect(() => {
+    const el = sentinel.current;
+    if (!el || !more) return;
+    const io = new IntersectionObserver(([e]) => { if (e.isIntersecting) setShown((n) => n + PAGE); }, { rootMargin: "700px 0px" });
+    io.observe(el);
+    return () => io.disconnect();
+  }, [more, shown]);
+  const shownEntries = entries.slice(0, shown);
+
   return (
     <div className="flex flex-col gap-4">
       {mode === "mine" && tab === "desejado" && <TourScreen id="mine" />}
@@ -224,17 +274,22 @@ export function ItemBrowser({ items, mode, ownerName, gifts = {}, purchasedByMe 
         ))}
       </div>
 
+      <AnimatePresence mode="wait" initial={false}>
       {visible.length === 0 ? (
-        <EmptyState mode={mode} tab={tab} filtered={Boolean(filtersActive)} ownerName={ownerName} total={items.length} />
+        <motion.div key={`empty-${tab}`} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, transition: { duration: 0.12 } }}>
+          <EmptyState mode={mode} tab={tab} filtered={Boolean(filtersActive)} ownerName={ownerName} total={items.length} />
+        </motion.div>
       ) : (
-        <ul className="grid gap-3 md:grid-cols-2 2xl:grid-cols-3" aria-busy={pending} {...listGuards}>
-          {entries.map((entry) => {
+        <motion.ul key={`list-${tab}`} className="relative grid gap-3 md:grid-cols-2 2xl:grid-cols-3" aria-busy={pending} {...listGuards}
+          exit={{ opacity: 0, y: 8, transition: { duration: 0.14, ease: [0.3, 0, 1, 1] } }}>
+          <AnimatePresence mode="popLayout">
+          {shownEntries.map((entry, idx) => {
             if (entry.type === "group") {
               return (
-                <li key={entry.id} className="md:col-span-2 2xl:col-span-3">
+                <motion.li key={entry.id} className="md:col-span-2 2xl:col-span-3" {...cardMotion(idx)}>
                   <GroupCard name={entry.name} items={entry.items} inCombos={inCombos} purchased={purchased} pending={pending}
                     onGive={(id) => startTransition(async () => { await giveThis(id); })} />
-                </li>
+                </motion.li>
               );
             }
             const item = entry.item;
@@ -242,7 +297,7 @@ export function ItemBrowser({ items, mode, ownerName, gifts = {}, purchasedByMe 
               const selectable = item.kind === "unico" && item.status === "desejado";
               const on = selected.has(item.id);
               return (
-                <li key={item.id}>
+                <motion.li key={item.id} {...cardMotion(idx)}>
                   <button type="button" disabled={!selectable} aria-pressed={on} onClick={() => toggleSelected(item.id)}
                     className={`tag-select block w-full text-left relative disabled:opacity-40 ${on ? "is-on" : ""}`}>
                     <TagCard item={item} badge={!selectable ? <span className="badge">Sempre bem-vindo não entra em grupo</span> : undefined}
@@ -251,11 +306,11 @@ export function ItemBrowser({ items, mode, ownerName, gifts = {}, purchasedByMe 
                           style={on ? { background: "var(--secondary)", borderColor: "var(--secondary)", color: "var(--on-secondary)" } : { borderColor: "var(--line)" }}>{on ? <CheckIcon /> : null}</span>
                       )} />
                   </button>
-                </li>
+                </motion.li>
               );
             }
             return (
-            <li key={item.id} {...longPress(item)} data-tour={mode === "mine" ? "item-card" : undefined}>
+            <motion.li key={item.id} {...longPress(item)} {...cardMotion(idx)} data-tour={mode === "mine" ? "item-card" : undefined}>
               {mode === "mine" ? (
                 <Swipe radius="0 16px 16px 0" label={`Ações de ${item.title}`}
                   actions={[{ label: "Editar", icon: <PencilIcon />, style: { background: "var(--secondary)", color: "var(--on-secondary)" }, onClick: () => router.push(`/item/${item.id}`) },
@@ -287,11 +342,14 @@ export function ItemBrowser({ items, mode, ownerName, gifts = {}, purchasedByMe 
                       onClick={() => startTransition(async () => { await giveThis(item.id); })}>Dar este</button>
                   )} />
               )}
-            </li>
+            </motion.li>
             );
           })}
-        </ul>
+          </AnimatePresence>
+          {more && <li ref={sentinel} aria-hidden="true" className="h-px md:col-span-2 2xl:col-span-3" />}
+        </motion.ul>
       )}
+      </AnimatePresence>
 
       {grouping && (
         <div className="fixed right-4 bottom-[calc(92px+env(safe-area-inset-bottom))] lg:right-8 lg:bottom-8 z-[55] flex items-center gap-2">

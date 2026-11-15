@@ -1,11 +1,9 @@
 import Link from "next/link";
 import { Suspense } from "react";
-import { ItemBrowser } from "@/components/item-browser";
+import { ListCount, ListLoader } from "@/components/list-loader";
 import { PageHeader, Sheet } from "@/components/page-header";
 import { ListSkeleton } from "@/components/skeleton";
 import { getCurrentUser } from "@/lib/auth/current-user";
-import { getReceivedGifts } from "@/lib/combos/queries";
-import { getMyItems } from "@/lib/items/queries";
 
 export default function MyListPage() {
   return (
@@ -19,15 +17,13 @@ export default function MyListPage() {
 
 async function MyList() {
   const user = await getCurrentUser();
-  const [items, gifts] = await Promise.all([getMyItems(user.id), getReceivedGifts(user.id)]);
-  const wishes = items.filter((i) => i.status === "desejado").length;
   return (
     <>
       <PageHeader title="Minha lista" avatar={user.avatar}
-        subtitle={`${user.displayName}, ${wishes} ${wishes === 1 ? "desejo" : "desejos"}`}
+        subtitle={<ListCount scope="mine" userId={user.id} prefix={`${user.displayName}, `} suffix={["desejo", "desejos"]} />}
         action={<Link href="/item/novo" className="btn btn-ribbon">Adicionar item</Link>} />
       <Sheet>
-        <ItemBrowser items={items} mode="mine" ownerName={user.displayName} gifts={gifts} />
+        <ListLoader scope="mine" userId={user.id} ownerName={user.displayName} />
       </Sheet>
     </>
   );

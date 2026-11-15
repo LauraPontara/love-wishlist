@@ -4,6 +4,7 @@ import { refresh } from "next/cache";
 import { redirect } from "next/navigation";
 import { z } from "zod";
 import { requireProfileId } from "@/lib/auth/current-user";
+import { bumpLists } from "@/lib/lists/version";
 import { nextOccurrence, todayInSaoPaulo } from "@/lib/combos/domain";
 import { isReservedByPartner } from "@/lib/combos/queries";
 import { db } from "@/lib/db/server";
@@ -40,6 +41,7 @@ const comboMeta = z.object({
 
 export async function createCombo(input: { name: string; occasionId: string | null; budget?: string; itemId?: string }): Promise<Result & { id?: string }> {
   const creatorId = await requireProfileId();
+  await bumpLists();
   const parsed = comboMeta.safeParse(input);
   if (!parsed.success) return fail(parsed.error.issues[0].message);
   const budget = parsePrice(parsed.data.budget);
@@ -68,6 +70,7 @@ export async function createCombo(input: { name: string; occasionId: string | nu
 /** RF31: "Dar este" cria na hora um combo de 1 item e abre o editor. */
 export async function giveThis(itemId: string): Promise<Result> {
   await requireProfileId();
+  await bumpLists();
   const { data: item } = await db().from("items").select("title").eq("id", itemId).maybeSingle();
   if (!item) return fail("Item não encontrado.");
   const res = await createCombo({ name: `Presente: ${item.title}`.slice(0, 80), occasionId: null, itemId });
@@ -77,6 +80,7 @@ export async function giveThis(itemId: string): Promise<Result> {
 
 export async function updateComboMeta(comboId: string, input: { name: string; occasionId: string | null; budget?: string }): Promise<Result> {
   const creatorId = await requireProfileId();
+  await bumpLists();
   const parsed = comboMeta.safeParse(input);
   if (!parsed.success) return fail(parsed.error.issues[0].message);
   const budget = parsePrice(parsed.data.budget);
@@ -96,6 +100,7 @@ export async function updateComboMeta(comboId: string, input: { name: string; oc
 
 export async function deleteCombo(comboId: string): Promise<Result> {
   const creatorId = await requireProfileId();
+  await bumpLists();
   const combo = await ownCombo(comboId, creatorId);
   if (!combo) return fail("Presente não encontrado.");
   if (combo.status === "dado") return fail("Um presente já dado fica no histórico.");
@@ -107,6 +112,7 @@ export async function deleteCombo(comboId: string): Promise<Result> {
 // ---------- itens do combo ----------
 export async function addItemToCombo(comboId: string, itemId: string): Promise<Result> {
   const creatorId = await requireProfileId();
+  await bumpLists();
   const combo = await ownCombo(comboId, creatorId);
   if (!combo) return fail("Presente não encontrado.");
   const { data: item } = await db().from("items").select("title, price_cents, owner_id").eq("id", itemId).maybeSingle();
@@ -126,6 +132,7 @@ const extraSchema = z.object({
 /** RF29: extras (flores, cartão…) só existem no combo. */
 export async function addExtra(comboId: string, input: { title: string; price?: string; url?: string }): Promise<Result> {
   const creatorId = await requireProfileId();
+  await bumpLists();
   if (!(await ownCombo(comboId, creatorId))) return fail("Presente não encontrado.");
   const parsed = extraSchema.safeParse(input);
   if (!parsed.success) return fail(parsed.error.issues[0].message);
@@ -141,6 +148,7 @@ export async function addExtra(comboId: string, input: { title: string; price?: 
 
 export async function removeLine(comboId: string, lineId: string): Promise<Result> {
   const creatorId = await requireProfileId();
+  await bumpLists();
   if (!(await ownCombo(comboId, creatorId))) return fail("Presente não encontrado.");
   const { error } = await db().from("combo_items").delete().eq("id", lineId).eq("combo_id", comboId);
   if (error) return fail(dbError(error.message));
@@ -151,6 +159,7 @@ export async function removeLine(comboId: string, lineId: string): Promise<Resul
 /** RF28: quantidade só em "sempre bem-vindo" e extras (o banco garante). */
 export async function setQuantity(comboId: string, lineId: string, quantity: number): Promise<Result> {
   const creatorId = await requireProfileId();
+  await bumpLists();
   if (!(await ownCombo(comboId, creatorId))) return fail("Presente não encontrado.");
   const q = Math.max(1, Math.min(99, Math.round(quantity)));
   const { error } = await db().from("combo_items").update({ quantity: q }).eq("id", lineId).eq("combo_id", comboId);
@@ -162,6 +171,7 @@ export async function setQuantity(comboId: string, lineId: string, quantity: num
 /** RF30: "paguei R$ …" substitui o preço na soma. Vazio volta a usar o preço. */
 export async function setPaid(comboId: string, lineId: string, value: string): Promise<Result> {
   const creatorId = await requireProfileId();
+  await bumpLists();
   if (!(await ownCombo(comboId, creatorId))) return fail("Presente não encontrado.");
   const paid = parsePrice(value);
   if (paid === "invalido") return fail("Valor inválido. Use algo como 179,90.");
@@ -174,6 +184,7 @@ export async function setPaid(comboId: string, lineId: string, value: string): P
 // ---------- etapas (funções atômicas no banco) ----------
 export async function setComboStage(comboId: string, stage: "comprado" | "montado" | "dado"): Promise<Result> {
   const creatorId = await requireProfileId();
+  await bumpLists();
   const fn = stage === "comprado" ? "combo_mark_purchased" : stage === "montado" ? "combo_unmark_purchased" : "combo_mark_given";
   const { error } = await db().rpc(fn, { p_combo: comboId, p_creator: creatorId });
   if (error) return fail(dbError(error.message));
@@ -185,6 +196,7 @@ export async function setComboStage(comboId: string, stage: "comprado" | "montad
 /** Reconsulta preços antigos (> 24h) dos itens pedidos e atualiza itens e combos montados. */
 export async function refreshPrices(itemIds: string[]): Promise<{ updated: Record<string, number> }> {
   const me = await requireProfileId();
+  await bumpLists();
   const ids = itemIds.filter((id) => /^[0-9a-f-]{36}$/i.test(id)).slice(0, 10);
   if (!ids.length) return { updated: {} };
   const staleBefore = new Date(Date.now() - 24 * 3600_000).toISOString();

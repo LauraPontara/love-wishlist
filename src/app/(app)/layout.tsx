@@ -3,10 +3,12 @@ import { Bunnies } from "@/components/bunnies";
 import { ConfirmProvider } from "@/components/confirm";
 import { TourProvider } from "@/components/tour/tour";
 import { NavLinks } from "@/components/nav-links";
+import { QueryProvider } from "@/components/query-provider";
 import { getCurrentUser } from "@/lib/auth/current-user";
 
 export default function AppLayout({ children }: LayoutProps<"/">) {
   return (
+    <QueryProvider>
     <ConfirmProvider>
     <TourProvider>
     <div className="flex-1 flex flex-col lg:flex-row min-h-dvh">
@@ -18,6 +20,7 @@ export default function AppLayout({ children }: LayoutProps<"/">) {
     </div>
     </TourProvider>
     </ConfirmProvider>
+    </QueryProvider>
   );
 }
 
@@ -25,3 +28,4 @@ async function Nav() {
   const user = await getCurrentUser();
   return <NavLinks me={{ id: user.id, displayName: user.displayName, avatar: user.avatar }} partner={user.partner} />;
 }
+

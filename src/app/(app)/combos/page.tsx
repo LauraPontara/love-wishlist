@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Suspense } from "react";
 import { ComboCard } from "@/components/combo-card";
+import { RiseIn } from "@/components/rise-in";
 import { SwipeComboCard } from "@/components/swipe-combo-card";
 import { TourScreen } from "@/components/tour/tour";
 import { NewComboForm } from "@/components/new-combo-form";
@@ -45,7 +46,7 @@ async function Combos() {
               <TourScreen id="combos" />
               <h2 className="text-xl font-extrabold" style={{ fontVariationSettings: "'wdth' 85" }}>Em andamento</h2>
               <p className="text-sm -mt-1 lg:hidden" style={{ color: "var(--ink-2)" }}>Arraste um presente para o lado para editar ou excluir.</p>
-              <ul className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">{active.map((c) => <li key={c.id} data-tour="combo-card"><SwipeComboCard combo={c} /></li>)}</ul>
+              <ul className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">{active.map((c, i) => <li key={c.id} data-tour="combo-card"><RiseIn i={i}><SwipeComboCard combo={c} /></RiseIn></li>)}</ul>
             </section>
           ) : (
             <div className="rounded-[20px] border-2 border-dashed p-6 text-center" style={{ borderColor: "var(--line)", color: "var(--ink-2)" }}>
@@ -55,7 +56,7 @@ async function Combos() {
           {given.length > 0 && (
             <section className="flex flex-col gap-3">
               <h2 className="text-xl font-extrabold" style={{ fontVariationSettings: "'wdth' 85" }}>Já dados <span className="text-base" style={{ color: "var(--ink-2)" }}>{given.length}</span></h2>
-              <ul className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">{given.map((c) => <li key={c.id}><ComboCard combo={c} /></li>)}</ul>
+              <ul className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">{given.map((c, i) => <li key={c.id}><RiseIn i={active.length + i}><ComboCard combo={c} /></RiseIn></li>)}</ul>
             </section>
           )}
         </div>
