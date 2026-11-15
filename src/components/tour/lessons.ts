@@ -21,6 +21,8 @@ export type Step = {
   waitClick?: boolean;
   /** frase de comemoração quando a pessoa faz o gesto (no último passo, o tutorial fecha sozinho depois dela) */
   doneText?: string;
+  /** se o alvo não estiver na tela, o passo é pulado */
+  optional?: boolean;
   /** abre o primeiro cartão deslizante dentro deste seletor (se a pessoa pulou o gesto) */
   open?: string;
 };
@@ -33,6 +35,19 @@ const OWNED = '[data-tour="owned"]';
 const COMBO = '[data-tour="combo-card"]';
 
 export const LESSONS: Lesson[] = [
+  {
+    id: "mine-filters", title: "Abas, busca e filtros", screen: "mine",
+    touch: [
+      { target: '[data-tour="tabs"]', text: "Desejos é o que você quer ganhar, Já tenho é o que você comprou e Recebidos é o que ganhou." },
+      { target: '[data-tour="filters"]', text: "Busque pelo nome, loja ou cor. Em “Até R$” você vê só o que cabe no bolso, e ao lado escolhe a ordem." },
+      { target: '[data-tour="chips"]', text: "Filtre por tipo ou categoria. “Sempre bem-vindos” são coisas que podem ser dadas mais de uma vez; “Únicos”, só uma." },
+    ],
+    mouse: [
+      { target: '[data-tour="tabs"]', text: "Desejos é o que você quer ganhar, Já tenho é o que você comprou e Recebidos é o que ganhou." },
+      { target: '[data-tour="filters"]', text: "Busque pelo nome, loja ou cor. Em “Até R$” você vê só o que cabe no bolso, e ao lado escolhe a ordem." },
+      { target: '[data-tour="chips"]', text: "Filtre por tipo ou categoria. “Sempre bem-vindos” são coisas que podem ser dadas mais de uma vez; “Únicos”, só uma." },
+    ],
+  },
   {
     id: "mine-swipe", title: "Editar ou excluir itens", screen: "mine",
     touch: [
@@ -100,6 +115,36 @@ export const LESSONS: Lesson[] = [
       { target: '[data-tour="next-date"]', text: "Aqui fica a próxima data: quantos dias faltam e como está o presente. Vocês recebem um lembrete 7 dias antes." },
       { target: '[data-tour="edit-date"]', gesture: "tap", text: "Clique no lápis para mudar o nome, o dia ou de quem é a data." },
       { target: '[data-tour="add-date"]', gesture: "tap", text: "No + você cria uma data nova, como um aniversário ou uma viagem." },
+    ],
+  },
+  {
+    id: "partner", title: "Como usar esta lista", screen: "partner",
+    touch: [
+      { target: '[data-tour="give"]', gesture: "tap", text: "“Dar este” cria um presente com o item e abre para você montar. Só você vê." },
+      { target: '[data-tour="partner-card"]', gesture: "tap", text: "Um toque no item abre o site da loja." },
+      { target: '[data-tour="group-card"]', optional: true, text: "“Quero um desses”: são opções parecidas, basta dar uma. A estrela marca a preferida." },
+      { target: '[data-tour="filters"]', text: "Busque pelo nome, loja ou cor. Em “Até R$” você vê só o que cabe no bolso, e ao lado escolhe a ordem." },
+      { target: '[data-tour="chips"]', text: "Filtre por tipo ou categoria. “Sempre bem-vindos” são coisas que podem ser dadas mais de uma vez; “Únicos”, só uma." },
+    ],
+    mouse: [
+      { target: '[data-tour="give"]', gesture: "tap", text: "“Dar este” cria um presente com o item e abre para você montar. Só você vê." },
+      { target: '[data-tour="partner-card"]', gesture: "tap", text: "Um clique no item abre o site da loja." },
+      { target: '[data-tour="group-card"]', optional: true, text: "“Quero um desses”: são opções parecidas, basta dar uma. A estrela marca a preferida." },
+      { target: '[data-tour="filters"]', text: "Busque pelo nome, loja ou cor. Em “Até R$” você vê só o que cabe no bolso, e ao lado escolhe a ordem." },
+      { target: '[data-tour="chips"]', text: "Filtre por tipo ou categoria. “Sempre bem-vindos” são coisas que podem ser dadas mais de uma vez; “Únicos”, só uma." },
+    ],
+  },
+  {
+    id: "settings", title: "O que dá para ajustar", screen: "settings",
+    touch: [
+      { target: '[data-tour="appearance"]', text: "Escolha o tema claro, escuro ou automático, e ligue ou desligue os coelhinhos passeando." },
+      { target: '[data-tour="notify"]', text: "Ative os avisos neste aparelho e escolha o que quer receber: itens novos e lembrete das datas." },
+      { target: '[data-tour="account"]', text: "Aqui você sai da conta neste aparelho." },
+    ],
+    mouse: [
+      { target: '[data-tour="appearance"]', text: "Escolha o tema claro, escuro ou automático, e ligue ou desligue os coelhinhos passeando." },
+      { target: '[data-tour="notify"]', text: "Ative os avisos neste aparelho e escolha o que quer receber: itens novos e lembrete das datas." },
+      { target: '[data-tour="account"]', text: "Aqui você sai da conta neste aparelho." },
     ],
   },
 ];

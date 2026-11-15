@@ -4,6 +4,7 @@ import { useEffect, useState, useTransition } from "react";
 import { setNotify } from "@/app/actions/settings";
 import { BUNNIES_EVENT, BUNNIES_KEY } from "./bunnies";
 import { LogoutButton } from "./logout-button";
+import { TourScreen } from "./tour/tour";
 
 const THEME_KEY = "nw:theme";
 type Theme = "auto" | "light" | "dark";
@@ -81,7 +82,8 @@ export function Settings({ notifyNewItems, notifyOccasions, vapidKey, partnerNam
 
   return (
     <div className="grid gap-5 lg:grid-cols-2 items-start max-w-[1000px]">
-      <Card title="Aparência" hint="Vale para este aparelho.">
+      <TourScreen id="settings" />
+      <Card tour="appearance" title="Aparência" hint="Vale para este aparelho.">
         <div role="radiogroup" aria-label="Tema" className="grid grid-cols-3 p-1 rounded-2xl" style={{ background: "var(--surface-sunk)" }}>
           {([["auto", "Automático"], ["light", "Claro"], ["dark", "Escuro"]] as const).map(([v, label]) => (
             <button key={v} role="radio" aria-checked={theme === v} onClick={() => chooseTheme(v)} className="rounded-xl py-3 text-sm font-bold"
@@ -93,7 +95,7 @@ export function Settings({ notifyNewItems, notifyOccasions, vapidKey, partnerNam
         <Toggle label="Coelhinhos passeando" hint="Os dois coelhos andam e pulam pelo app." on={bunnies} onChange={toggleBunnies} />
       </Card>
 
-      <Card title="Avisos" hint="Chegam como notificação no celular, com o app instalado.">
+      <Card tour="notify" title="Avisos" hint="Chegam como notificação no celular, com o app instalado.">
         {push === "unsupported" && <Note>Este navegador não aceita avisos. No Android, instale o app pela tela inicial do Chrome.</Note>}
         {push === "denied" && <Note>As notificações estão bloqueadas para este site. Libere nas configurações do navegador e volte aqui.</Note>}
         {(push === "off" || push === "unknown") && <button className="btn btn-primary w-full sm:w-auto sm:self-start" onClick={enablePush} disabled={push === "unknown"}>Ativar avisos neste aparelho</button>}
@@ -105,14 +107,14 @@ export function Settings({ notifyNewItems, notifyOccasions, vapidKey, partnerNam
           onChange={() => start(async () => { await setNotify("occasions", !notifyOccasions); })} />
       </Card>
 
-      <Card title="Conta"><LogoutButton /></Card>
+      <Card tour="account" title="Conta"><LogoutButton /></Card>
     </div>
   );
 }
 
-function Card({ title, hint, children }: { title: string; hint?: string; children: React.ReactNode }) {
+function Card({ title, hint, tour, children }: { title: string; hint?: string; tour?: string; children: React.ReactNode }) {
   return (
-    <section className="rounded-[20px] border-2 p-5 flex flex-col gap-4" style={{ background: "var(--surface)", borderColor: "var(--line)" }}>
+    <section data-tour={tour} className="rounded-[20px] border-2 p-5 flex flex-col gap-4" style={{ background: "var(--surface)", borderColor: "var(--line)" }}>
       <div>
         <h2 className="text-xl font-extrabold" style={{ fontVariationSettings: "'wdth' 85" }}>{title}</h2>
         {hint && <p className="text-sm mt-0.5" style={{ color: "var(--ink-2)" }}>{hint}</p>}

@@ -229,9 +229,10 @@ export function ItemBrowser({ items, mode, ownerName, gifts = {}, purchasedByMe 
   return (
     <div className="flex flex-col gap-4">
       {mode === "mine" && tab === "desejado" && <TourScreen id="mine" />}
+      {mode === "partner" && <TourScreen id="partner" />}
       {mode === "mine" && (
         <div className="flex items-center gap-3">
-        <div role="tablist" aria-label="Situação dos itens" className="grid grid-cols-3 p-1 rounded-full max-w-[520px] flex-1" style={{ background: "var(--surface-sunk)" }}>
+        <div role="tablist" aria-label="Situação dos itens" data-tour="tabs" className="grid grid-cols-3 p-1 rounded-full max-w-[520px] flex-1" style={{ background: "var(--surface-sunk)" }}>
           {(Object.keys(TAB_LABEL) as Tab[]).map((t) => (
             <button key={t} role="tab" aria-selected={tab === t} onClick={() => setTab(t)}
               className="rounded-full py-2 text-[.9rem] font-bold transition-colors"
@@ -255,7 +256,7 @@ export function ItemBrowser({ items, mode, ownerName, gifts = {}, purchasedByMe 
       )}
 
       {/* busca + orçamento + ordenação: empilham no celular, ficam em linha a partir do tablet */}
-      <div className="grid gap-3 grid-cols-2 md:grid-cols-[1fr_170px_190px]">
+      <div className="grid gap-3 grid-cols-2 md:grid-cols-[1fr_170px_190px]" data-tour="filters">
         <input type="search" className="field !text-base col-span-2 md:col-span-1" placeholder="Buscar por nome, loja ou cor" value={query} onChange={(e) => setQuery(e.target.value)} aria-label="Buscar" />
         <MoneyInput className="field !text-base" placeholder="Até" label="Orçamento máximo em reais" value={budget} onChange={setBudget} />
         <select className="field !text-base" value={sort} onChange={(e) => setSort(e.target.value as Sort)} aria-label="Ordenar">
@@ -266,7 +267,7 @@ export function ItemBrowser({ items, mode, ownerName, gifts = {}, purchasedByMe 
         </select>
       </div>
 
-      <div className="flex gap-2 overflow-x-auto pb-1 -mx-1 px-1 [scrollbar-width:none]">
+      <div className="flex gap-2 overflow-x-auto pb-1 -mx-1 px-1 [scrollbar-width:none]" data-tour="chips">
         <button className="chip" aria-pressed={kind === "sempre"} onClick={() => setKind(kind === "sempre" ? "todos" : "sempre")}>Sempre bem-vindos</button>
         <button className="chip" aria-pressed={kind === "unico"} onClick={() => setKind(kind === "unico" ? "todos" : "unico")}>Únicos</button>
         {presentCategories.map((c) => (
@@ -310,7 +311,7 @@ export function ItemBrowser({ items, mode, ownerName, gifts = {}, purchasedByMe 
               );
             }
             return (
-            <motion.li key={item.id} {...longPress(item)} {...cardMotion(idx)} data-tour={mode === "mine" ? "item-card" : undefined}>
+            <motion.li key={item.id} {...longPress(item)} {...cardMotion(idx)} data-tour={mode === "mine" ? "item-card" : "partner-card"}>
               {mode === "mine" ? (
                 <Swipe radius="0 16px 16px 0" label={`Ações de ${item.title}`}
                   actions={[{ label: "Editar", icon: <PencilIcon />, style: { background: "var(--secondary)", color: "var(--on-secondary)" }, onClick: () => router.push(`/item/${item.id}`) },
@@ -339,7 +340,7 @@ export function ItemBrowser({ items, mode, ownerName, gifts = {}, purchasedByMe 
                     : item.kind === "sempre" ? <span className="badge sempre">Sempre bem-vindo</span> : undefined}
                   action={!(purchased.has(item.id) && item.kind === "unico") && (
                     <button type="button" className="btn btn-primary btn-sm relative z-10" disabled={pending}
-                      onClick={() => startTransition(async () => { await giveThis(item.id); })}>Dar este</button>
+                      data-tour="give" onClick={() => startTransition(async () => { await giveThis(item.id); })}>Dar este</button>
                   )} />
               )}
             </motion.li>
@@ -423,7 +424,7 @@ function GroupCard({ name, items, inCombos, purchased, pending, onGive }: {
 }) {
   const chosen = items.find((i) => inCombos.has(i.id));
   return (
-    <section className="rounded-[20px] border-2 p-4 flex flex-col gap-3" style={{ background: "var(--surface)", borderColor: "var(--line)" }} aria-label={`Quero um desses: ${name}`}>
+    <section className="rounded-[20px] border-2 p-4 flex flex-col gap-3" style={{ background: "var(--surface)", borderColor: "var(--line)" }} aria-label={`Quero um desses: ${name}`} data-tour="group-card">
       <div>
         <p className="text-xs font-bold" style={{ color: "var(--ink-2)" }}>Quero um desses</p>
         <h3 className="text-lg font-extrabold leading-tight" style={{ fontVariationSettings: "'wdth' 85" }}>{name}</h3>

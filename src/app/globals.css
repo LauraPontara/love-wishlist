@@ -112,6 +112,7 @@ body {
 .swipe-actions button { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; font-weight: 800; font-size: .85rem; border: 0; cursor: pointer; }
 .swipe-actions button:focus-visible { outline: 3px solid var(--ribbon); outline-offset: -4px; }
 .swipe-front { position: relative; will-change: translate; }
+.swipe.is-demo .swipe-actions { opacity: 1 !important; } /* demonstração do tutorial */
 .swipe-front.settle { transition: translate var(--t-slow) var(--spring); }
 
 /* ---------- etiqueta (item) ---------- */

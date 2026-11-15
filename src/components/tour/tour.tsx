@@ -145,7 +145,9 @@ const DURATION: Record<Gesture, number> = { swipe: 2600, tap: 2000, hold: 2400 }
 
 function TourRunner({ lessons, onEnd }: { lessons: Lesson[]; onEnd: () => void }) {
   const mouse = useMemo(() => isMouse(), []);
-  const steps = useMemo(() => lessons.flatMap((l) => l[mouse ? "mouse" : "touch"].map((s) => ({ lesson: l, step: s }))), [lessons, mouse]);
+  // passos marcados como opcionais somem quando o alvo não existe na tela (ex.: nenhum grupo criado)
+  const steps = useMemo(() => lessons.flatMap((l) => l[mouse ? "mouse" : "touch"].map((s) => ({ lesson: l, step: s })))
+    .filter(({ step }) => !step.optional || (step.target && findVisible(step.target))), [lessons, mouse]);
   const [index, setIndex] = useState(0);
   const [phase, setPhase] = useState<"show" | "try" | "done">("show");
   const [rect, setRect] = useState<Rect | null>(null);
@@ -232,14 +234,14 @@ function TourRunner({ lessons, onEnd }: { lessons: Lesson[]; onEnd: () => void }
     const actions = swipe?.querySelector<HTMLElement>(".swipe-actions");
     if (!front || !actions) return;
     const d = actions.offsetWidth;
-    const prevOpacity = actions.style.opacity;
-    actions.style.opacity = "1";
+    // classe em vez de mexer no style: o React continua dono da transparência dos botões
+    swipe!.classList.add("is-demo");
     const anim = front.animate([
       { transform: "translateX(0)", offset: 0 }, { transform: "translateX(0)", offset: 0.18 },
       { transform: `translateX(${-d}px)`, offset: 0.5, easing: "ease-out" }, { transform: `translateX(${-d}px)`, offset: 0.76 },
       { transform: "translateX(0)", offset: 0.92 }, { transform: "translateX(0)", offset: 1 },
     ], { duration: DURATION.swipe, iterations: 2, easing: "ease-in-out" });
-    const stop = () => { anim.cancel(); actions.style.opacity = prevOpacity; };
+    const stop = () => { anim.cancel(); swipe!.classList.remove("is-demo"); };
     anim.onfinish = stop;
     front.addEventListener("pointerdown", stop, { once: true }); // a pessoa começou a deslizar: sai da frente
     return () => { front.removeEventListener("pointerdown", stop); stop(); };
