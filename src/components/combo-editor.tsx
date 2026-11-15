@@ -256,14 +256,14 @@ function ExtraForm({ onAdd, pending }: { onAdd: (e: { title: string; price: stri
   );
   return (
     <form className="basis-full grid gap-3 sm:grid-cols-[1fr_130px] rounded-[18px] border-2 border-dashed p-4" style={{ borderColor: "var(--line)" }}
-      onSubmit={(e) => { e.preventDefault(); onAdd({ title, price, url }); setTitle(""); setPrice(""); setUrl(""); setOpen(false); }}>
+      onSubmit={(e) => { e.preventDefault(); onAdd({ title, price, url }); setTitle(""); setPrice(""); setUrl(""); setOpen(false); tourSignal("extra-added"); }}>
       <label className="flex flex-col gap-1"><span className="text-sm font-bold">Extra</span>
         <input className="field !text-base" value={title} onChange={(e) => setTitle(e.target.value)} placeholder="Ex.: Flores do Vitório" required maxLength={120} /></label>
       <label className="flex flex-col gap-1"><span className="text-sm font-bold">Preço</span>
         <MoneyInput className="field !text-base" label="Preço do extra" value={price} onChange={setPrice} /></label>
       <label className="flex flex-col gap-1 sm:col-span-2"><span className="text-sm font-bold">Link (opcional)</span>
         <input className="field !text-base" type="url" value={url} onChange={(e) => setUrl(e.target.value)} placeholder="https://" /></label>
-      <div className="sm:col-span-2 actions"><button className="btn btn-primary btn-sm" disabled={pending}>Adicionar extra</button><button type="button" className="btn btn-ghost btn-sm" onClick={() => setOpen(false)}>Cancelar</button></div>
+      <div className="sm:col-span-2 actions"><button className="btn btn-primary btn-sm" disabled={pending} data-tour="extra-submit">Adicionar extra</button><button type="button" className="btn btn-ghost btn-sm" onClick={() => setOpen(false)}>Cancelar</button></div>
     </form>
   );
 }
