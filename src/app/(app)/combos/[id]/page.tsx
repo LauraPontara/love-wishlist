@@ -2,7 +2,7 @@ import { notFound } from "next/navigation";
 import { Suspense } from "react";
 import { ComboEditor } from "@/components/combo-editor";
 import { PageHeader, Sheet } from "@/components/page-header";
-import { ListSkeleton } from "@/components/skeleton";
+import { BuilderSkeleton } from "@/components/skeleton";
 import { getCurrentUser } from "@/lib/auth/current-user";
 import { countdownLabel, formatDayMonth } from "@/lib/combos/domain";
 import { getMyCombo, getMyPurchasedItemIds, getOccasions } from "@/lib/combos/queries";
@@ -13,7 +13,7 @@ export const maxDuration = 60; // a atualização de preços roda nas ações de
 export default function ComboPage({ params, searchParams }: PageProps<"/combos/[id]">) {
   return (
     <main className="flex-1 flex flex-col">
-      <Suspense fallback={<><PageHeader title="Montar presente" back={{ href: "/combos", label: "Presentes" }} /><Sheet><ListSkeleton /></Sheet></>}>
+      <Suspense fallback={<><PageHeader title="Montar presente" back={{ href: "/combos", label: "Presentes" }} /><Sheet><BuilderSkeleton /></Sheet></>}>
         <ComboView params={params} searchParams={searchParams} />
       </Suspense>
     </main>

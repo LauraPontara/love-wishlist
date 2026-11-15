@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { Suspense } from "react";
 import { PageHeader, Sheet } from "@/components/page-header";
 import { Settings } from "@/components/settings";
-import { ListSkeleton } from "@/components/skeleton";
+import { SettingsSkeleton } from "@/components/skeleton";
 import { getCurrentUser } from "@/lib/auth/current-user";
 import { db } from "@/lib/db/server";
 
@@ -13,7 +13,7 @@ export default function SettingsPage() {
     <main className="flex-1 flex flex-col">
       <PageHeader title="Ajustes" subtitle="Tema, avisos e coelhinhos." />
       <Sheet>
-        <Suspense fallback={<ListSkeleton count={3} />}>
+        <Suspense fallback={<SettingsSkeleton />}>
           <Loaded />
         </Suspense>
       </Sheet>

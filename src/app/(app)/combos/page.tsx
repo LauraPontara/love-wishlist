@@ -5,7 +5,7 @@ import { SwipeComboCard } from "@/components/swipe-combo-card";
 import { TourScreen } from "@/components/tour/tour";
 import { NewComboForm } from "@/components/new-combo-form";
 import { PageHeader, Sheet } from "@/components/page-header";
-import { ListSkeleton } from "@/components/skeleton";
+import { GiftsSkeleton } from "@/components/skeleton";
 import { getCurrentUser } from "@/lib/auth/current-user";
 import { countdownLabel, formatDayMonth } from "@/lib/combos/domain";
 import { getMyCombos, getOccasions } from "@/lib/combos/queries";
@@ -15,7 +15,7 @@ export const metadata: Metadata = { title: "Presentes · Nossa Wishlist" };
 export default function CombosPage() {
   return (
     <main className="flex-1 flex flex-col">
-      <Suspense fallback={<><PageHeader title="Presentes" /><Sheet><ListSkeleton /></Sheet></>}>
+      <Suspense fallback={<><PageHeader title="Presentes" /><Sheet><GiftsSkeleton /></Sheet></>}>
         <Combos />
       </Suspense>
     </main>

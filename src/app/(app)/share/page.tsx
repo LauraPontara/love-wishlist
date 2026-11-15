@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { Suspense } from "react";
 import { NewItem } from "@/components/new-item";
 import { PageHeader, Sheet } from "@/components/page-header";
-import { ListSkeleton } from "@/components/skeleton";
+import { FormSkeleton } from "@/components/skeleton";
 
 export const metadata: Metadata = { title: "Adicionar · Nossa Wishlist" };
 export const maxDuration = 60;
@@ -14,7 +14,7 @@ export default function SharePage({ searchParams }: PageProps<"/share">) {
     <main className="flex-1 flex flex-col">
       <PageHeader title="Adicionar" subtitle="Buscando os dados do link que você compartilhou." back={{ href: "/", label: "Minha lista" }} />
       <Sheet>
-        <Suspense fallback={<ListSkeleton count={2} />}>
+        <Suspense fallback={<FormSkeleton tabs />}>
           <Shared searchParams={searchParams} />
         </Suspense>
       </Sheet>

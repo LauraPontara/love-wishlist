@@ -10,7 +10,7 @@ import { getPartnerItems } from "@/lib/items/queries";
 export default function PartnerListPage({ params }: PageProps<"/lista/[perfil]">) {
   return (
     <main className="flex-1 flex flex-col">
-      <Suspense fallback={<><PageHeader title="Lista" /><Sheet><ListSkeleton /></Sheet></>}>
+      <Suspense fallback={<><PageHeader title="Lista" /><Sheet><ListSkeleton tabs={false} /></Sheet></>}>
         <PartnerList params={params} />
       </Suspense>
     </main>

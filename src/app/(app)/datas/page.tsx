@@ -4,7 +4,7 @@ import { Suspense } from "react";
 import { Heart } from "@/components/heart";
 import { OccasionList } from "@/components/occasion-manager";
 import { PageHeader, Sheet } from "@/components/page-header";
-import { ListSkeleton } from "@/components/skeleton";
+import { DatesSkeleton } from "@/components/skeleton";
 import { getCurrentUser } from "@/lib/auth/current-user";
 import { countdownLabel, formatDayMonth } from "@/lib/combos/domain";
 import { getMyCombos, getOccasions } from "@/lib/combos/queries";
@@ -14,7 +14,7 @@ export const metadata: Metadata = { title: "Nossas datas · Nossa Wishlist" };
 export default function DatesPage() {
   return (
     <main className="flex-1 flex flex-col">
-      <Suspense fallback={<><PageHeader title="Nossas datas" /><Sheet><ListSkeleton /></Sheet></>}>
+      <Suspense fallback={<><PageHeader title="Nossas datas" /><Sheet><DatesSkeleton /></Sheet></>}>
         <Dates />
       </Suspense>
     </main>

@@ -295,3 +295,5 @@ input.field[class*="!py-"], select.field[class*="!py-"] { min-height: 0; }
   *:hover { scrollbar-color: color-mix(in srgb, var(--primary) 70%, transparent) transparent; }
   html, html:hover { scrollbar-color: color-mix(in srgb, var(--primary) 45%, transparent) var(--bg); }
 }
+
+.gift-box.is-loading::before, .gift-box.is-loading::after { opacity: .35; }

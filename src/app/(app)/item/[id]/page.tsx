@@ -3,14 +3,14 @@ import { Suspense } from "react";
 import { updateItem } from "@/app/actions/items";
 import { ItemForm } from "@/components/item-form";
 import { PageHeader, Sheet } from "@/components/page-header";
-import { ListSkeleton } from "@/components/skeleton";
+import { FormSkeleton } from "@/components/skeleton";
 import { getCurrentUser } from "@/lib/auth/current-user";
 import { getMyGroups, getMyItems, getOwnItem } from "@/lib/items/queries";
 
 export default function EditItemPage({ params }: PageProps<"/item/[id]">) {
   return (
     <main className="flex-1 flex flex-col">
-      <Suspense fallback={<><PageHeader title="Editar item" back={{ href: "/", label: "Minha lista" }} /><Sheet><ListSkeleton /></Sheet></>}>
+      <Suspense fallback={<><PageHeader title="Editar item" back={{ href: "/", label: "Minha lista" }} /><Sheet><FormSkeleton /></Sheet></>}>
         <EditItem params={params} />
       </Suspense>
     </main>
