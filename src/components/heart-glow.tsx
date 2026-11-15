@@ -14,45 +14,68 @@ export function HeartGlow({ className = "" }: { className?: string }) {
   );
 }
 
-/**
- * Desktop (estilo Lovable): o topo de um coração gigante de luz. Dois lóbulos sobem pelas laterais
- * (borda azul, miolo rosa) e se encontram embaixo no centro, deixando um "V" escuro no meio. Pulsa.
- * Geometria em 1440x800: lóbulos largos (raio 700, centros x=240/1200, y=880): montes baixos e um V suave até ~60% da altura.
- */
+// ---------- desktop: corações de luz aninhados ----------
+// Cada coração = 2 círculos (lóbulos) + 1 quadrado girado 45°, todos com borda que some numa curva suave
+// (cosseno), sem blur. Vários corações um dentro do outro formam o degradê; a tela mostra só o topo.
+
+/** Opacidade caindo de 1 a 0 numa curva suave (cosseno), de "from" até 1. */
+function fade(from: number, steps = 12) {
+  return Array.from({ length: steps + 1 }, (_, i) => {
+    const t = i / steps;
+    return { offset: from + (1 - from) * t, opacity: (1 + Math.cos(Math.PI * t)) / 2 };
+  });
+}
+/** Some nas duas pontas (0 → 1 → 0), para o quadrado ter borda macia dos dois lados. */
+function edges(edge = 0.214, steps = 12) {
+  const up = Array.from({ length: steps + 1 }, (_, i) => ({ offset: (edge * i) / steps, opacity: (1 - Math.cos((Math.PI * i) / steps)) / 2 }));
+  const down = up.map((s) => ({ offset: 1 - s.offset, opacity: s.opacity })).reverse();
+  return [...up, ...down];
+}
+
+type SoftHeart = { id: string; color: string; y: number; sx: number; lobe: { dx: number; dy: number; r: number; solid: number }; square: { half: number; ty: number; sy: number } };
+
+function SoftHeartShape({ id, color, y, sx, lobe, square }: SoftHeart) {
+  const h = square.half;
+  return (
+    <g transform={`translate(600 ${y}) scale(${sx} 1)`}>
+      <radialGradient id={`${id}-lobe`}>
+        {fade(lobe.solid).map((s, i) => <stop key={i} offset={s.offset} stopColor={color} stopOpacity={s.opacity} />)}
+      </radialGradient>
+      <linearGradient id={`${id}-x`}>
+        {edges().map((s, i) => <stop key={i} offset={s.offset} stopColor={color} stopOpacity={s.opacity} />)}
+      </linearGradient>
+      <linearGradient id={`${id}-y`} x2="0" y2="1">
+        {edges().map((s, i) => <stop key={i} offset={s.offset} stopColor="#fff" stopOpacity={s.opacity} />)}
+      </linearGradient>
+      <mask id={`${id}-mask`} maskUnits="userSpaceOnUse" x={-h} y={-h} width={2 * h} height={2 * h} style={{ maskType: "alpha" }}>
+        <rect x={-h} y={-h} width={2 * h} height={2 * h} fill={`url(#${id}-y)`} />
+      </mask>
+      <circle cx={-lobe.dx} cy={lobe.dy} r={lobe.r} fill={`url(#${id}-lobe)`} />
+      <circle cx={lobe.dx} cy={lobe.dy} r={lobe.r} fill={`url(#${id}-lobe)`} />
+      <g transform={`translate(0 ${square.ty}) scale(1 ${square.sy}) rotate(45)`}>
+        <rect x={-h} y={-h} width={2 * h} height={2 * h} fill={`url(#${id}-x)`} mask={`url(#${id}-mask)`} />
+      </g>
+    </g>
+  );
+}
+
+// de fora para dentro: azul-cobalto, rosa claro, magenta e um miolo quente (fita)
+const HEARTS: SoftHeart[] = [
+  { id: "ha-1", color: "#4A7BFF", y: 834.7, sx: 1.014, lobe: { dx: 229, dy: -226.9, r: 329, solid: 0.592 }, square: { half: 313.1, ty: 43.8, sy: 0.852 } },
+  { id: "ha-2", color: "#FF8ADF", y: 790.8, sx: 1.02, lobe: { dx: 195.4, dy: -166.1, r: 245.2, solid: 0.701 }, square: { half: 270.4, ty: 7.1, sy: 0.962 } },
+  { id: "ha-3", color: "#F0287A", y: 821.2, sx: 1.038, lobe: { dx: 151.4, dy: -148, r: 229.2, solid: 0.491 }, square: { half: 219.6, ty: 43.9, sy: 0.73 } },
+  { id: "ha-4", color: "#FF8A3D", y: 799.6, sx: 1.085, lobe: { dx: 107.1, dy: -102.4, r: 181.7, solid: 0.358 }, square: { half: 182.1, ty: 24.9, sy: 0.746 } },
+];
+
+/** Desktop: o topo de um coração de luz enorme atrás do login; o "V" escuro entre os lóbulos fica no meio. */
 export function HeartAura({ className = "" }: { className?: string }) {
   return (
     <div className={`heart-aura ${className}`} aria-hidden="true">
-      <svg className="heart-aura-shape" viewBox="0 0 1440 800" preserveAspectRatio="xMidYMid slice">
-        <defs>
-          <radialGradient id="lobe" cx="50%" cy="50%" r="50%">
-            <stop offset="0" stopColor="#FF5CAE" />
-            <stop offset=".55" stopColor="#F98BE6" />
-            <stop offset=".76" stopColor="#C58BFF" />
-            <stop offset=".88" stopColor="#4F7DFF" />
-            <stop offset=".96" stopColor="#3F6BFF" stopOpacity=".55" />
-            <stop offset="1" stopColor="#3F6BFF" stopOpacity="0" />
-          </radialGradient>
-          <linearGradient id="floor" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0" stopColor="#FF5CAE" stopOpacity="0" />
-            <stop offset=".5" stopColor="#FF4F9A" stopOpacity=".85" />
-            <stop offset="1" stopColor="#FF2D5A" />
-          </linearGradient>
-          <radialGradient id="tip" cx="50%" cy="50%" r="50%">
-            <stop offset="0" stopColor="#E99BFF" stopOpacity=".9" />
-            <stop offset=".55" stopColor="#6F86FF" stopOpacity=".7" />
-            <stop offset="1" stopColor="#3F6BFF" stopOpacity="0" />
-          </radialGradient>
-          <filter id="soft" x="-20%" y="-20%" width="140%" height="140%"><feGaussianBlur stdDeviation="52" /></filter>
-        </defs>
-        <g filter="url(#soft)" style={{ isolation: "isolate" }}>
-          <ellipse cx="720" cy="640" rx="250" ry="160" fill="url(#tip)" />
-          {/* "lighten" mistura os dois lóbulos sem depender de qual vem por cima: a curva do meio fica simétrica */}
-          <circle cx="240" cy="880" r="700" fill="url(#lobe)" style={{ mixBlendMode: "lighten" }} />
-          <circle cx="1200" cy="880" r="700" fill="url(#lobe)" style={{ mixBlendMode: "lighten" }} />
-          <rect x="-100" y="640" width="1640" height="260" fill="url(#floor)" />
-        </g>
-      </svg>
-      <div className="heart-aura-veil" />
+      <div className="heart-aura-stage">
+        <svg viewBox="0 0 1200 1210" className="heart-aura-svg">
+          {HEARTS.map((h) => <SoftHeartShape key={h.id} {...h} />)}
+        </svg>
+      </div>
     </div>
   );
 }
