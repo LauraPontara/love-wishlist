@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useQueryClient } from "@tanstack/react-query";
 import { AnimatePresence, motion, type Variants } from "motion/react";
-import { useEffect, useMemo, useRef, useState, useTransition, type PointerEvent as RPointerEvent } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState, useTransition, type PointerEvent as RPointerEvent } from "react";
 import { giveThis, shouldWaitBeforeOwning } from "@/app/actions/combos";
 import { createGroup, deleteItem, restoreItem, setOwned } from "@/app/actions/items";
 import { shortDate } from "@/lib/combos/domain";
@@ -216,14 +216,18 @@ export function ItemBrowser({ items, mode, ownerName, gifts = {}, purchasedByMe 
   const [sig, setSig] = useState(listSig);
   if (sig !== listSig) { setSig(listSig); setShown(PAGE); }
   const more = entries.length > shown;
-  const sentinel = useRef<HTMLLIElement>(null);
-  useEffect(() => {
-    const el = sentinel.current;
-    if (!el || !more) return;
-    const io = new IntersectionObserver(([e]) => { if (e.isIntersecting) setShown((n) => n + PAGE); }, { rootMargin: "700px 0px" });
-    io.observe(el);
-    return () => io.disconnect();
-  }, [more, shown]);
+  // o vigia do fim liga quando o marcador entra na tela (ref de função), e não num efeito:
+  // ao trocar de aba a lista nova monta depois da animação de saída, e o efeito já teria passado.
+  // O marcador remonta a cada página (key={shown}), então o vigia sempre reavalia a posição.
+  const io = useRef<IntersectionObserver | null>(null);
+  const sentinel = useCallback((el: HTMLLIElement | null) => {
+    io.current?.disconnect();
+    io.current = null;
+    if (!el) return;
+    io.current = new IntersectionObserver(([e]) => { if (e.isIntersecting) setShown((n) => n + PAGE); }, { rootMargin: "700px 0px" });
+    io.current.observe(el);
+  }, []);
+  useEffect(() => () => io.current?.disconnect(), []);
   const shownEntries = entries.slice(0, shown);
 
   return (
@@ -347,7 +351,7 @@ export function ItemBrowser({ items, mode, ownerName, gifts = {}, purchasedByMe 
             );
           })}
           </AnimatePresence>
-          {more && <li ref={sentinel} aria-hidden="true" className="h-px md:col-span-2 2xl:col-span-3" />}
+          {more && <li key={`more-${shown}`} ref={sentinel} aria-hidden="true" className="h-px md:col-span-2 2xl:col-span-3" />}
         </motion.ul>
       )}
       </AnimatePresence>
