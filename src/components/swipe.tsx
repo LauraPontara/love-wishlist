@@ -1,11 +1,15 @@
 "use client";
 
+import { tourSignal } from "./tour/tour";
 import { useEffect, useId, useRef, useState, type CSSProperties, type PointerEvent as RPointerEvent, type ReactNode } from "react";
 
 export type SwipeAction = { label: string; icon: ReactNode; onClick: () => void; style: CSSProperties; disabled?: boolean };
 
 const ACTION_W = 84;    // largura de cada ação
 const CLOSE_OTHERS = "nw:swipe-open";
+export const TOUR_OPEN = "nw:swipe-tour-open";
+/** Fecha todos os cartões abertos. */
+export const closeAllSwipes = () => { window.dispatchEvent(new CustomEvent(CLOSE_OTHERS, { detail: "" })); };
 
 /**
  * Desliza o conteúdo para a esquerda e revela ações por trás (dedo ou mouse).
@@ -27,7 +31,18 @@ export function Swipe({ actions, radius = 20, label, children }: { actions: Swip
     return () => window.removeEventListener(CLOSE_OTHERS, onOther);
   }, [id]);
 
-  const open = () => { setX(-width); window.dispatchEvent(new CustomEvent(CLOSE_OTHERS, { detail: id })); };
+  const root = useRef<HTMLDivElement>(null);
+  // o tutorial pede para abrir o primeiro cartão de uma lista
+  useEffect(() => {
+    const onTour = (e: Event) => {
+      const sel = (e as CustomEvent<string>).detail;
+      if (root.current && document.querySelector(`${sel} .swipe`) === root.current) { setX(-width); window.dispatchEvent(new CustomEvent(CLOSE_OTHERS, { detail: id })); }
+    };
+    window.addEventListener(TOUR_OPEN, onTour);
+    return () => window.removeEventListener(TOUR_OPEN, onTour);
+  }, [id, width]);
+
+  const open = () => { setX(-width); window.dispatchEvent(new CustomEvent(CLOSE_OTHERS, { detail: id })); tourSignal("swipe-open"); };
   const close = () => setX(0);
 
   function onPointerDown(e: RPointerEvent) {
@@ -58,7 +73,7 @@ export function Swipe({ actions, radius = 20, label, children }: { actions: Swip
   }
 
   return (
-    <div className="swipe" style={{ borderRadius: radius }}>
+    <div ref={root} className={`swipe ${isOpen ? "is-open" : ""}`} style={{ borderRadius: radius }}>
       <div className="swipe-actions" role="group" aria-label={label} style={{ width, opacity: x === 0 && !dragging ? 0 : 1 }}
         onFocus={open} onBlur={(e) => { if (!e.currentTarget.contains(e.relatedTarget as Node)) close(); }}>
         {actions.map((a) => (

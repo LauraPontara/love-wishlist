@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Suspense } from "react";
 import { ComboCard } from "@/components/combo-card";
 import { SwipeComboCard } from "@/components/swipe-combo-card";
+import { TourScreen } from "@/components/tour/tour";
 import { NewComboForm } from "@/components/new-combo-form";
 import { PageHeader, Sheet } from "@/components/page-header";
 import { ListSkeleton } from "@/components/skeleton";
@@ -41,9 +42,10 @@ async function Combos() {
           <NewComboForm occasions={giftable} partnerName={partnerName} />
           {active.length > 0 ? (
             <section className="flex flex-col gap-3">
+              <TourScreen id="combos" />
               <h2 className="text-xl font-extrabold" style={{ fontVariationSettings: "'wdth' 85" }}>Em andamento</h2>
               <p className="text-sm -mt-1 lg:hidden" style={{ color: "var(--ink-2)" }}>Arraste um presente para o lado para editar ou excluir.</p>
-              <ul className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">{active.map((c) => <li key={c.id}><SwipeComboCard combo={c} /></li>)}</ul>
+              <ul className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">{active.map((c) => <li key={c.id} data-tour="combo-card"><SwipeComboCard combo={c} /></li>)}</ul>
             </section>
           ) : (
             <div className="rounded-[20px] border-2 border-dashed p-6 text-center" style={{ borderColor: "var(--line)", color: "var(--ink-2)" }}>

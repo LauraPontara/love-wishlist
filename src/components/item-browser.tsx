@@ -11,6 +11,7 @@ import { useConfirm } from "./confirm";
 import { CheckIcon, CloseIcon, PencilIcon, SelectIcon, StarIcon, TrashIcon } from "./icons";
 import { Swipe } from "./swipe";
 import { TagCard } from "./tag-card";
+import { TourScreen, tourSignal } from "./tour/tour";
 import { MoneyInput } from "./money-input";
 
 type Tab = "desejado" | "ja_tenho" | "recebido";
@@ -119,6 +120,8 @@ export function ItemBrowser({ items, mode, ownerName, gifts = {}, purchasedByMe 
   const filtersActive = query || category || kind !== "todos" || budget;
 
   const toggleSelected = (id: string) => setSelected((prev) => { const n = new Set(prev); if (n.has(id)) n.delete(id); else n.add(id); return n; });
+  useEffect(() => { if (selected.size >= 2) tourSignal("two-selected"); }, [selected.size]);
+  const startGrouping = () => { setGrouping(true); tourSignal("grouping-on"); };
   const stopGrouping = () => { setGrouping(false); setNaming(false); setSelected(new Set()); setGroupName(""); setGroupError(null); };
   const canGroup = (i: Item) => i.kind === "unico" && i.status === "desejado";
   const longPress = (item: Item) => mode !== "mine" || tab !== "desejado" ? {} : {
@@ -129,7 +132,7 @@ export function ItemBrowser({ items, mode, ownerName, gifts = {}, purchasedByMe 
       p.x = e.clientX; p.y = e.clientY; p.fired = false;
       p.timer = setTimeout(() => {
         p.fired = true;
-        setGrouping(true);
+        startGrouping();
         if (canGroup(item)) setSelected((prev) => new Set(prev).add(item.id));
         else setToast({ text: "Itens sempre bem-vindos não entram em grupo." });
         navigator.vibrate?.(12);
@@ -175,6 +178,7 @@ export function ItemBrowser({ items, mode, ownerName, gifts = {}, purchasedByMe 
 
   return (
     <div className="flex flex-col gap-4">
+      {mode === "mine" && tab === "desejado" && <TourScreen id="mine" />}
       {mode === "mine" && (
         <div className="flex items-center gap-3">
         <div role="tablist" aria-label="Situação dos itens" className="grid grid-cols-3 p-1 rounded-full max-w-[520px] flex-1" style={{ background: "var(--surface-sunk)" }}>
@@ -188,7 +192,7 @@ export function ItemBrowser({ items, mode, ownerName, gifts = {}, purchasedByMe 
         </div>
         {/* desktop: seleção ao lado das abas (no celular é o toque longo) */}
         {tab === "desejado" && !grouping && (
-          <button type="button" className="chip hidden lg:inline-flex items-center gap-1.5 shrink-0" onClick={() => setGrouping(true)}>
+          <button type="button" className="chip hidden lg:inline-flex items-center gap-1.5 shrink-0" data-tour="select-btn" onClick={startGrouping}>
             <SelectIcon /> Selecionar itens
           </button>
         )}
@@ -251,7 +255,7 @@ export function ItemBrowser({ items, mode, ownerName, gifts = {}, purchasedByMe 
               );
             }
             return (
-            <li key={item.id} {...longPress(item)}>
+            <li key={item.id} {...longPress(item)} data-tour={mode === "mine" ? "item-card" : undefined}>
               {mode === "mine" ? (
                 <Swipe radius="0 16px 16px 0" label={`Ações de ${item.title}`}
                   actions={[{ label: "Editar", icon: <PencilIcon />, style: { background: "var(--secondary)", color: "var(--on-secondary)" }, onClick: () => router.push(`/item/${item.id}`) },
@@ -267,7 +271,7 @@ export function ItemBrowser({ items, mode, ownerName, gifts = {}, purchasedByMe 
                     {item.leftWithGroup && item.status === "ja_tenho" && <span className="badge">Saiu junto com o grupo</span>}
                   </Badges>}
                   action={item.kind === "unico" && item.status !== "recebido" && (
-                    <button type="button" className="btn btn-ghost btn-sm relative z-10" disabled={pending}
+                    <button type="button" className="btn btn-ghost btn-sm relative z-10" disabled={pending} data-tour="owned"
                       onClick={() => (item.status === "desejado" ? askOwned(item) : toggleOwned(item, false))}>
                       {item.status === "desejado" ? "Já tenho" : "Voltar"}
                     </button>
@@ -292,8 +296,8 @@ export function ItemBrowser({ items, mode, ownerName, gifts = {}, purchasedByMe 
       {grouping && (
         <div className="fixed right-4 bottom-[calc(92px+env(safe-area-inset-bottom))] lg:right-8 lg:bottom-8 z-[55] flex items-center gap-2">
           <button type="button" className="icon-btn !w-12 !h-12 !rounded-full shadow-lg" aria-label="Cancelar seleção" title="Cancelar seleção" onClick={stopGrouping}><CloseIcon /></button>
-          <button type="button" className="btn btn-primary !rounded-full shadow-lg" disabled={selected.size < 2}
-            onClick={() => { setGroupError(null); setNaming(true); }}>
+          <button type="button" className="btn btn-primary !rounded-full shadow-lg" disabled={selected.size < 2} data-tour="group-btn"
+            onClick={() => { setGroupError(null); setNaming(true); tourSignal("naming"); }}>
             Agrupar{selected.size ? ` (${selected.size})` : ""}
           </button>
         </div>
@@ -301,7 +305,7 @@ export function ItemBrowser({ items, mode, ownerName, gifts = {}, purchasedByMe 
       {naming && (
         <div className="fixed inset-0 z-[80] grid items-end sm:place-items-center sm:p-4 confirm-backdrop" style={{ background: "rgba(10,8,30,.6)" }}
           onClick={(e) => { if (e.target === e.currentTarget) setNaming(false); }}>
-          <form role="dialog" aria-modal="true" aria-labelledby="group-title"
+          <form role="dialog" aria-modal="true" aria-labelledby="group-title" data-tour="group-dialog"
             className="confirm-sheet w-full sm:max-w-[420px] rounded-t-[28px] sm:rounded-[28px] p-6 pb-[max(24px,env(safe-area-inset-bottom))] flex flex-col gap-4 border-2"
             style={{ background: "var(--surface)", borderColor: "var(--line)" }}
             onSubmit={(e) => { e.preventDefault(); submitGroup(); }}

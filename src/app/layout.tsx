@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { Bricolage_Grotesque } from "next/font/google";
+import { Bricolage_Grotesque, Caveat } from "next/font/google";
 import "./globals.css";
 import { PressFx } from "@/components/press-fx";
 
@@ -8,6 +8,9 @@ const bricolage = Bricolage_Grotesque({
   subsets: ["latin"],
   axes: ["wdth", "opsz"],
 });
+
+// letra de mão do tutorial
+const caveat = Caveat({ variable: "--font-hand", subsets: ["latin"], weight: ["600", "700"] });
 
 export const metadata: Metadata = {
   title: "Nossa Wishlist",
@@ -25,7 +28,7 @@ export const viewport: Viewport = {
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
-    <html lang="pt-BR" className={`${bricolage.variable} h-full`} suppressHydrationWarning>
+    <html lang="pt-BR" className={`${bricolage.variable} ${caveat.variable} h-full`} suppressHydrationWarning>
       <head>
         <script dangerouslySetInnerHTML={{ __html: `try{var t=localStorage.getItem("nw:theme");if(t==="light"||t==="dark")document.documentElement.setAttribute("data-theme",t)}catch(e){}` }} />
       </head>

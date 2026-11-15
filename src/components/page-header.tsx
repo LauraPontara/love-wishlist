@@ -1,6 +1,7 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
 import { GearIcon } from "./icons";
+import { HelpButton } from "./tour/tour";
 
 /** Cabeçalho Aurora + folha que "sobe" sobre ele (design-system §4). */
 export function PageHeader({ title, subtitle, avatar, back, action }: {
@@ -15,8 +16,11 @@ export function PageHeader({ title, subtitle, avatar, back, action }: {
               <span aria-hidden="true">‹</span> {back.label}
             </Link>
           ) : <span />}
+          <div className="flex items-center gap-1 -mr-2">
+          <HelpButton />
           {/* no celular não há barra lateral: os Ajustes ficam aqui */}
-          <Link href="/ajustes" aria-label="Ajustes" className="lg:hidden w-11 h-11 -mr-2 -mt-1 grid place-items-center rounded-full opacity-90"><GearIcon /></Link>
+          <Link href="/ajustes" aria-label="Ajustes" className="lg:hidden w-11 h-11 -mt-1 grid place-items-center rounded-full opacity-90"><GearIcon /></Link>
+          </div>
         </div>
         <div className="flex items-center gap-3 sm:gap-4">
           {avatar && <img src={`/avatars/${avatar}.svg`} alt="" className="w-[52px] h-[52px] sm:w-[64px] sm:h-[64px] shrink-0" />}

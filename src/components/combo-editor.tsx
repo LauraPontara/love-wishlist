@@ -13,6 +13,7 @@ import { Heart } from "./heart";
 import { CheckIcon, CloseIcon, IconButton, MinusIcon, PencilIcon, PlusIcon, StarIcon, TrashIcon } from "./icons";
 import { MoneyInput } from "./money-input";
 import { StageSteps } from "./stage-steps";
+import { TourScreen, tourSignal } from "./tour/tour";
 
 type Occ = { id: string; name: string; label: string };
 const centsToInput = centsToMoneyInput;
@@ -69,7 +70,7 @@ export function ComboEditor({ combo, available, purchasedElsewhere, occasions, r
         )}
 
         {/* fita de orçamento */}
-        <div className="rounded-[18px] border-2 p-4" style={{ background: "var(--surface)", borderColor: "var(--line)" }}>
+        <div className="rounded-[18px] border-2 p-4" style={{ background: "var(--surface)", borderColor: "var(--line)" }} data-tour="budget">
           <div className="flex items-end justify-between gap-3">
             <span className="text-sm leading-snug" style={{ color: "var(--ink-2)" }}>
               {combo.lines.length} {combo.lines.length === 1 ? "item" : "itens"}
@@ -101,7 +102,7 @@ export function ComboEditor({ combo, available, purchasedElsewhere, occasions, r
         ))}
         {error && <p role="alert" className="rounded-xl px-4 py-3 font-semibold" style={{ background: "var(--error-bg)", color: "var(--error-ink)" }}>{error}</p>}
 
-        <ul className="flex flex-col gap-3" aria-busy={pending}>
+        <ul className="flex flex-col gap-3" aria-busy={pending} data-tour="lines">
           {combo.lines.length === 0 && (
             <li className="rounded-[20px] border-2 border-dashed p-6 text-center" style={{ borderColor: "var(--line)", color: "var(--ink-2)" }}>
               O presente está vazio. Escolha itens da lista {recipientName.endsWith("a") ? "da" : "do"} {recipientName} ou adicione um extra.
@@ -120,15 +121,16 @@ export function ComboEditor({ combo, available, purchasedElsewhere, occasions, r
 
         {editable ? (
           <>
+            <TourScreen id="build" />
             <div className="lg:hidden">
-              <button type="button" className="btn btn-ribbon w-full" onClick={() => setListOpen(true)}>
+              <button type="button" className="btn btn-ribbon w-full" data-tour="add-from-list" onClick={() => setListOpen(true)}>
                 <PlusIcon /> Adicionar da lista {recipientName.endsWith("a") ? "da" : "do"} {recipientName}
               </button>
             </div>
             <ExtraForm onAdd={(e) => run(() => addExtra(combo.id, e))} pending={pending} />
             <p className="text-sm" style={{ color: "var(--ink-2)" }}>Tudo o que você adiciona já fica salvo no presente.</p>
             <div className="actions">
-              <button className="btn btn-primary" disabled={pending} onClick={() => { setBuilding(false); router.push("/combos"); }}>Concluir presente</button>
+              <button className="btn btn-primary" disabled={pending} data-tour="finish" onClick={() => { setBuilding(false); router.push("/combos"); }}>Concluir presente</button>
               <button className="btn btn-ghost" style={{ color: "var(--error-ink)" }} disabled={pending}
                 onClick={async () => {
                   if (await ask({ title: "Excluir este presente?", body: <>“{combo.name}” some de Meus combos. Os itens continuam na lista.</>, confirmLabel: "Excluir presente", tone: "danger" }))
@@ -302,14 +304,14 @@ function AddFromList({ open, onClose, ...props }: ListProps & { open: boolean; o
         <div role="dialog" aria-modal="true" aria-label={`Lista ${article} ${recipientName}`}
           className="lg:hidden fixed inset-0 z-[60] flex flex-col" style={{ background: "var(--bg)" }}>
           <div className="px-4 pt-[max(12px,env(safe-area-inset-top))] pb-3 flex items-start gap-2 border-b-2" style={{ background: "var(--surface)", borderColor: "var(--line)" }}>
-            <div className="flex-1 min-w-0"><GiftSummary {...props} expandable /></div>
+            <div className="flex-1 min-w-0" data-tour="gift-summary"><GiftSummary {...props} expandable /></div>
             <IconButton label="Fechar" onClick={() => setOpen(false)}><CloseIcon /></IconButton>
           </div>
           <div className="flex-1 min-h-0 flex flex-col gap-3 px-4 pt-3">
             <ListPanel {...props} />
           </div>
           <div className="px-4 pt-3 pb-[max(16px,env(safe-area-inset-bottom))]">
-            <button type="button" className="btn btn-primary w-full" onClick={() => setOpen(false)}>Pronto</button>
+            <button type="button" className="btn btn-primary w-full" data-tour="list-done" onClick={() => setOpen(false)}>Pronto</button>
           </div>
         </div>
       )}
@@ -470,8 +472,8 @@ function ListPanel({ available, combo, purchasedElsewhere, recipientName, remain
                   onClick={() => { setAdded(null); onRemoveLine(line); }}><CheckIcon /></button>
               ) : (
                 <button type="button" className="w-11 h-11 rounded-full grid place-items-center text-lg font-black shrink-0 disabled:opacity-40"
-                  aria-label={`Adicionar ${i.title}`} style={{ background: "var(--ribbon)", color: "var(--on-ribbon)" }} disabled={pending || blocked}
-                  onClick={() => { onAdd(i.id); setAdded(i.title); }}><PlusIcon /></button>
+                  aria-label={`Adicionar ${i.title}`} style={{ background: "var(--ribbon)", color: "var(--on-ribbon)" }} disabled={pending || blocked} data-tour={blocked ? undefined : "add-item"}
+                  onClick={() => { onAdd(i.id); setAdded(i.title); tourSignal("item-added"); }}><PlusIcon /></button>
               )}
             </li>
           );

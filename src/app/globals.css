@@ -258,3 +258,27 @@ input.field[class*="!py-"], select.field[class*="!py-"] { min-height: 0; }
 }
 
 }
+
+/* ---------- tutorial em rascunho (caneta rosa) ---------- */
+:root { --pen: #DE2477; --paper: #FFF8FB; --tour-dim: rgba(46, 16, 62, .34); }
+[data-theme="dark"] { --pen: #FF8AC4; --paper: #221E55; --tour-dim: rgba(4, 3, 20, .62); }
+@media (prefers-color-scheme: dark) { :root:not([data-theme]) { --pen: #FF8AC4; --paper: #221E55; --tour-dim: rgba(4, 3, 20, .62); } }
+.hand { font-family: var(--font-hand), "Comic Sans MS", cursive; font-weight: 700; }
+.tour-dim { animation: tour-fade .35s ease both; }
+.tour-text { font-size: 1.95rem; line-height: 1.05; color: var(--pen); text-wrap: balance;
+  text-shadow: 0 0 2px var(--paper), 0 0 6px var(--paper), 0 0 12px var(--paper), 0 0 22px var(--paper); }
+.tour-ch { animation: tour-ink .28s ease-out both; }
+.tour-draw { stroke-dasharray: 1; stroke-dashoffset: 1; animation: tour-draw .75s cubic-bezier(.6,.1,.3,1) .05s forwards; }
+.tour-draw-2 { animation-delay: .3s; }
+.tour-draw-arrow { animation-duration: .5s; animation-delay: .7s; }
+.tour-bar { bottom: calc(96px + env(safe-area-inset-bottom)); animation: tour-fade .3s ease both; }
+@media (min-width: 1024px) { .tour-bar { bottom: 28px; } }
+.help-pop { animation: tour-pop .18s ease-out both; transform-origin: top right; }
+@keyframes tour-draw { to { stroke-dashoffset: 0; } }
+@keyframes tour-ink { from { opacity: 0; filter: blur(2px); transform: translateY(2px); } }
+@keyframes tour-fade { from { opacity: 0; } }
+@keyframes tour-pop { from { opacity: 0; transform: scale(.94); } }
+@media (prefers-reduced-motion: reduce) {
+  .tour-draw { animation: none; stroke-dashoffset: 0; }
+  .tour-ch, .tour-dim, .tour-bar, .help-pop { animation: none; }
+}
