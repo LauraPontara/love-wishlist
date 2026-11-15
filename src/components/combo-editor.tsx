@@ -79,19 +79,7 @@ export function ComboEditor({ combo, available, purchasedElsewhere, occasions, r
               {combo.budgetCents ? <em className="block not-italic text-sm font-semibold" style={{ color: "var(--ink-2)" }}>de {formatPrice(combo.budgetCents)}</em> : null}
             </strong>
           </div>
-          {budget && (
-            <>
-              <div className="relative h-4 rounded mt-3 overflow-hidden" style={{ background: "var(--line)" }} aria-hidden="true">
-                <i className="absolute inset-y-0 left-0 rounded transition-[width] duration-500"
-                  style={{ width: `${Math.min(100, budget.ratio * 100)}%`, background: budget.remainingCents < 0
-                    ? "repeating-linear-gradient(-45deg, var(--secondary) 0 8px, color-mix(in srgb, var(--secondary) 70%, white) 8px 16px)"
-                    : "repeating-linear-gradient(-45deg, var(--stripe-a) 0 8px, var(--stripe-b) 8px 16px)" }} />
-              </div>
-              <p className="text-sm mt-2 font-semibold" style={{ color: budget.remainingCents < 0 ? "var(--secondary)" : "var(--ink-2)" }}>
-                {budget.remainingCents >= 0 ? `Cabem mais ${formatPrice(budget.remainingCents)}` : `Passou ${formatPrice(-budget.remainingCents)} do orçamento`}
-              </p>
-            </>
-          )}
+          {budget && <BudgetBar totalCents={totalCents} budgetCents={combo.budgetCents!} className="mt-3" />}
         </div>
 
         <div className="flex flex-col gap-3">
@@ -170,7 +158,13 @@ export function ComboEditor({ combo, available, purchasedElsewhere, occasions, r
       {editable && (
         <AddFromList available={available} combo={combo} purchasedElsewhere={purchasedElsewhere} recipientName={recipientName}
           remainingCents={budget?.remainingCents ?? null} refreshing={refreshing} pending={pending}
-          onAdd={(itemId) => run(() => addItemToCombo(combo.id, itemId))} open={listOpen} onClose={() => setListOpen(false)} />
+          onAdd={(itemId) => run(() => addItemToCombo(combo.id, itemId))}
+          onRemoveLine={async (l) => {
+            if (await ask({ title: "Tirar do presente?", body: <>“{l.title}” sai deste presente, mas continua na lista.</>, confirmLabel: "Tirar", tone: "danger" }))
+              run(() => removeLine(combo.id, l.id));
+          }}
+          onQty={(l, q) => run(() => setQuantity(combo.id, l.id, q))}
+          open={listOpen} onClose={() => setListOpen(false)} />
       )}
     </div>
   );
@@ -278,11 +272,12 @@ function GiveButton({ disabled, recipientName, ask, onConfirm }: { disabled: boo
 type ListProps = {
   available: Item[]; combo: Combo; purchasedElsewhere: string[]; recipientName: string; remainingCents: number | null;
   refreshing: boolean; pending: boolean; onAdd: (itemId: string) => void;
+  onRemoveLine: (line: ComboLine) => void; onQty: (line: ComboLine, q: number) => void;
 };
 type PriceFilter = "todos" | "cabe" | "50" | "100" | "200" | "300";
 const PRICE_CHIPS: Array<[PriceFilter, string]> = [["50", "Até R$ 50"], ["100", "Até R$ 100"], ["200", "Até R$ 200"], ["300", "Até R$ 300"]];
 
-/** Desktop: painel fixo ao lado. Celular: botão que abre a lista em tela cheia. */
+/** Desktop: painel fixo ao lado. Celular: tela cheia com o resumo do presente no topo e a lista embaixo. */
 function AddFromList({ open, onClose, ...props }: ListProps & { open: boolean; onClose: () => void }) {
   const setOpen = (v: boolean) => { if (!v) onClose(); };
   const { recipientName } = props;
@@ -304,15 +299,12 @@ function AddFromList({ open, onClose, ...props }: ListProps & { open: boolean; o
       </aside>
       {open && (
         <div role="dialog" aria-modal="true" aria-label={`Lista ${article} ${recipientName}`}
-          className="lg:hidden fixed inset-0 z-[60] flex flex-col" style={{ background: "var(--surface)" }}>
-          <div className="flex items-center justify-between gap-3 px-4 pt-[max(16px,env(safe-area-inset-top))] pb-2">
-            <p className="text-sm font-semibold" style={{ color: "var(--ink-2)" }}>
-              {props.remainingCents == null ? "Sem orçamento definido"
-                : props.remainingCents >= 0 ? `Cabem mais ${formatPrice(props.remainingCents)}` : `Passou ${formatPrice(-props.remainingCents)} do orçamento`}
-            </p>
+          className="lg:hidden fixed inset-0 z-[60] flex flex-col" style={{ background: "var(--bg)" }}>
+          <div className="px-4 pt-[max(12px,env(safe-area-inset-top))] pb-3 flex items-start gap-2 border-b-2" style={{ background: "var(--surface)", borderColor: "var(--line)" }}>
+            <div className="flex-1 min-w-0"><GiftSummary {...props} expandable /></div>
             <IconButton label="Fechar" onClick={() => setOpen(false)}><CloseIcon /></IconButton>
           </div>
-          <div className="flex-1 min-h-0 flex flex-col gap-3 px-4">
+          <div className="flex-1 min-h-0 flex flex-col gap-3 px-4 pt-3">
             <ListPanel {...props} />
           </div>
           <div className="px-4 pt-3 pb-[max(16px,env(safe-area-inset-bottom))]">
@@ -324,20 +316,89 @@ function AddFromList({ open, onClose, ...props }: ListProps & { open: boolean; o
   );
 }
 
-function ListPanel({ available, combo, purchasedElsewhere, recipientName, remainingCents, refreshing, pending, onAdd }: ListProps) {
+/** Barra do orçamento: listrada rosa, amarela a partir de 90% ("quase lá") e vermelha quando estoura. */
+function BudgetBar({ totalCents, budgetCents, compact = false, className = "" }: { totalCents: number; budgetCents: number; compact?: boolean; className?: string }) {
+  const { ratio, remainingCents } = budgetState(totalCents, budgetCents)!;
+  const level = remainingCents < 0 ? "over" : ratio >= 0.9 ? "near" : "ok";
+  const stripes = level === "over" ? ["#C81E4A", "#E0456E"] : level === "near" ? ["#FFC22E", "#FFD866"] : ["var(--stripe-a)", "var(--stripe-b)"];
+  const label = level === "over" ? `Passou ${formatPrice(-remainingCents)} do orçamento`
+    : level === "near" ? `Quase lá: cabem mais ${formatPrice(remainingCents)}` : `Cabem mais ${formatPrice(remainingCents)}`;
+  return (
+    <div className={className}>
+      <div className={`relative ${compact ? "h-2.5" : "h-4"} rounded overflow-hidden`} style={{ background: "var(--line)" }}
+        role="progressbar" aria-label="Orçamento usado" aria-valuemin={0} aria-valuemax={100} aria-valuenow={Math.round(Math.min(ratio, 1) * 100)}>
+        <i className="absolute inset-y-0 left-0 rounded transition-[width] duration-500"
+          style={{ width: `${Math.min(100, ratio * 100)}%`, background: `repeating-linear-gradient(-45deg, ${stripes[0]} 0 8px, ${stripes[1]} 8px 16px)` }} />
+      </div>
+      <p className={`${compact ? "text-xs mt-1.5" : "text-sm mt-2"} font-semibold`} aria-live="polite"
+        style={{ color: level === "over" ? "var(--error-ink)" : level === "near" ? "var(--warn-ink)" : "var(--ink-2)" }}>{label}</p>
+    </div>
+  );
+}
+
+/** Resumo do presente em cima da lista: nome, quantos itens, total e a barra. No celular, toque para ver e mexer nos itens. */
+function GiftSummary({ combo, pending, expandable, onRemoveLine, onQty }: ListProps & { expandable: boolean }) {
+  const [open, setOpen] = useState(false);
+  const { totalCents } = comboTotal(combo.lines);
+  const count = combo.lines.reduce((n, l) => n + l.quantity, 0);
+  const head = (
+    <div className="flex items-baseline justify-between gap-3">
+      <span className="min-w-0">
+        <span className="block font-extrabold truncate" style={{ fontVariationSettings: "'wdth' 85" }}>🎁 {combo.name}</span>
+        <span className="text-xs font-semibold" style={{ color: "var(--ink-2)" }}>
+          {count} {count === 1 ? "item" : "itens"}{expandable && combo.lines.length > 0 ? (open ? " · esconder" : " · ver itens") : ""}
+        </span>
+      </span>
+      <strong className="whitespace-nowrap text-right font-extrabold text-lg leading-tight" style={{ fontVariationSettings: "'wdth' 82" }}>
+        {formatPrice(totalCents)}
+        {combo.budgetCents ? <em className="block not-italic text-xs font-semibold" style={{ color: "var(--ink-2)" }}>de {formatPrice(combo.budgetCents)}</em> : null}
+      </strong>
+    </div>
+  );
+  return (
+    <div className="flex flex-col gap-2">
+      {expandable && combo.lines.length > 0
+        ? <button type="button" className="text-left w-full" aria-expanded={open} onClick={() => setOpen(!open)}>{head}</button>
+        : head}
+      {combo.budgetCents ? <BudgetBar totalCents={totalCents} budgetCents={combo.budgetCents} compact /> : null}
+      {expandable && open && (
+        <ul className="flex flex-col gap-1.5 max-h-[38dvh] overflow-y-auto overscroll-contain mt-1" aria-busy={pending}>
+          {combo.lines.map((l) => {
+            const canQty = l.isExtra || l.kind === "sempre";
+            return (
+              <li key={l.id} className="flex items-center gap-2 rounded-xl px-3 py-1.5" style={{ background: "var(--bg)" }}>
+                <span className="flex-1 min-w-0 text-sm font-bold leading-tight line-clamp-2">{l.title}</span>
+                {canQty ? (
+                  <span className="inline-flex items-center gap-1 font-extrabold text-sm">
+                    <button type="button" className="w-8 h-8 rounded-lg grid place-items-center" style={{ background: "var(--surface-sunk)" }} disabled={pending || l.quantity <= 1} onClick={() => onQty(l, l.quantity - 1)} aria-label={`Diminuir ${l.title}`}>−</button>
+                    {l.quantity}
+                    <button type="button" className="w-8 h-8 rounded-lg grid place-items-center" style={{ background: "var(--surface-sunk)" }} disabled={pending} onClick={() => onQty(l, l.quantity + 1)} aria-label={`Aumentar ${l.title}`}>+</button>
+                  </span>
+                ) : null}
+                <span className="text-sm font-extrabold whitespace-nowrap">{l.unitPriceCents == null && l.paidCents == null ? "—" : formatPrice(lineTotal(l))}</span>
+                <IconButton label={`Tirar ${l.title} do presente`} disabled={pending} onClick={() => onRemoveLine(l)} className="!w-9 !h-9"><TrashIcon /></IconButton>
+              </li>
+            );
+          })}
+        </ul>
+      )}
+    </div>
+  );
+}
+
+function ListPanel({ available, combo, purchasedElsewhere, recipientName, remainingCents, refreshing, pending, onAdd, onRemoveLine }: ListProps) {
   const [query, setQuery] = useState("");
   const [price, setPrice] = useState<PriceFilter>("todos");
   const [category, setCategory] = useState<string | null>(null);
   const [sort, setSort] = useState<"menor" | "maior" | "recentes">("menor");
   const [added, setAdded] = useState<string | null>(null);
-  const inCombo = useMemo(() => new Set(combo.lines.map((l) => l.itemId).filter(Boolean) as string[]), [combo.lines]);
+  const lineByItem = useMemo(() => new Map(combo.lines.filter((l) => l.itemId).map((l) => [l.itemId!, l])), [combo.lines]);
   const elsewhere = useMemo(() => new Set(purchasedElsewhere), [purchasedElsewhere]);
   const categories = useMemo(() => [...new Set(available.map((i) => i.category))].sort((a, b) => a.localeCompare(b, "pt-BR")), [available]);
 
   const list = useMemo(() => {
     const max = price === "todos" ? null : price === "cabe" ? remainingCents : Number(price) * 100;
     const out = available
-      .filter((i) => !inCombo.has(i.id))
       .filter((i) => matchesSearch(i, query))
       .filter((i) => !category || i.category === category)
       .filter((i) => max == null || (i.priceCents !== null && i.priceCents <= max));
@@ -345,7 +406,7 @@ function ListPanel({ available, combo, purchasedElsewhere, recipientName, remain
     if (sort === "maior") out.sort((a, b) => (b.priceCents ?? -1) - (a.priceCents ?? -1));
     if (sort === "recentes") out.sort((a, b) => b.createdAt.localeCompare(a.createdAt));
     return out;
-  }, [available, inCombo, query, category, price, sort, remainingCents]);
+  }, [available, query, category, price, sort, remainingCents]);
 
   const priceChips: Array<[PriceFilter, string]> = remainingCents != null && remainingCents > 0
     ? [["cabe", `Cabe em ${formatPrice(remainingCents)}`], ...PRICE_CHIPS]
@@ -387,23 +448,30 @@ function ListPanel({ available, combo, purchasedElsewhere, recipientName, remain
       <ul className="flex flex-col gap-2 flex-1 min-h-0 overflow-y-auto overscroll-contain pr-1">
         {list.length === 0 && <li className="text-sm py-6 text-center" style={{ color: "var(--ink-2)" }}>Nada com esses filtros.</li>}
         {list.map((i) => {
-          const fits = remainingCents == null || (i.priceCents !== null && i.priceCents <= remainingCents);
           const blocked = i.kind === "unico" && elsewhere.has(i.id);
+          const line = lineByItem.get(i.id);
           return (
-            <li key={i.id} className="flex items-center gap-3 rounded-xl p-2" style={{ background: "var(--bg)", opacity: fits ? 1 : 0.6 }}>
+            <li key={i.id} className="flex items-center gap-3 rounded-xl p-2 border-2"
+              style={{ background: "var(--bg)", borderColor: line ? "var(--secondary)" : "transparent" }}>
               <div className="w-12 h-12 rounded-lg overflow-hidden grid place-items-center text-xl shrink-0" style={{ background: "var(--surface)" }}>
                 {i.imageUrl ? <img src={i.imageUrl} alt="" className="w-full h-full object-cover" referrerPolicy="no-referrer" /> : CATEGORY_EMOJI[i.category]}
               </div>
               <div className="min-w-0 flex-1">
                 <p className="font-bold text-sm leading-tight line-clamp-2">{i.title}</p>
                 <p className="text-xs truncate" style={{ color: "var(--ink-2)" }}>
-                  {blocked ? "Já está em outro presente comprado" : i.kind === "sempre" ? "Sempre bem-vindo" : (i.store ?? i.category)}
+                  {line ? (line.quantity > 1 ? `No presente, ${line.quantity}x` : "No presente") : blocked ? "Já está em outro presente comprado" : i.kind === "sempre" ? "Sempre bem-vindo" : (i.store ?? i.category)}
                 </p>
               </div>
               <span className="text-sm font-extrabold whitespace-nowrap">{formatPrice(i.priceCents)}</span>
-              <button type="button" className="w-11 h-11 rounded-full grid place-items-center text-lg font-black shrink-0 disabled:opacity-40"
-                aria-label={`Adicionar ${i.title}`} style={{ background: "var(--ribbon)", color: "var(--on-ribbon)" }} disabled={pending || blocked}
-                onClick={() => { onAdd(i.id); setAdded(i.title); }}>+</button>
+              {line ? (
+                <button type="button" className="w-11 h-11 rounded-full grid place-items-center text-lg font-black shrink-0 disabled:opacity-40"
+                  aria-label={`${i.title} está no presente. Tirar`} aria-pressed="true" style={{ background: "var(--secondary)", color: "var(--on-secondary)" }} disabled={pending}
+                  onClick={() => { setAdded(null); onRemoveLine(line); }}>✓</button>
+              ) : (
+                <button type="button" className="w-11 h-11 rounded-full grid place-items-center text-lg font-black shrink-0 disabled:opacity-40"
+                  aria-label={`Adicionar ${i.title}`} style={{ background: "var(--ribbon)", color: "var(--on-ribbon)" }} disabled={pending || blocked}
+                  onClick={() => { onAdd(i.id); setAdded(i.title); }}>+</button>
+              )}
             </li>
           );
         })}
