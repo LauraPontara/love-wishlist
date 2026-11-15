@@ -288,3 +288,10 @@ input.field[class*="!py-"], select.field[class*="!py-"] { min-height: 0; }
 .back-link { background: rgba(255,255,255,.14); backdrop-filter: blur(6px); transition: background .15s; }
 .back-link:hover { background: rgba(255,255,255,.24); }
 .back-link:focus-visible { outline: 3px solid var(--ribbon); outline-offset: 2px; }
+
+/* barras de rolagem no desktop: finas, sem setas, na cor da paleta */
+@media (hover: hover) and (pointer: fine) {
+  * { scrollbar-width: thin; scrollbar-color: color-mix(in srgb, var(--primary) 42%, transparent) transparent; }
+  *:hover { scrollbar-color: color-mix(in srgb, var(--primary) 70%, transparent) transparent; }
+  html, html:hover { scrollbar-color: color-mix(in srgb, var(--primary) 45%, transparent) var(--bg); }
+}
