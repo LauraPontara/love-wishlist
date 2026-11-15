@@ -1,4 +1,5 @@
 import type { CSSProperties, ReactNode } from "react";
+import { GiftBow } from "./gift-bow";
 
 /**
  * Esqueletos de carregamento: cada tela tem o seu, com a mesma forma da tela pronta
@@ -59,6 +60,7 @@ export function GiftsSkeleton({ count = 3 }: { count?: number }) {
           {Array.from({ length: count }, (_, i) => (
             <li key={i}>
               <Card className="gift-box is-loading p-4 sm:p-5 flex flex-col gap-3" style={delay(i)}>
+                <GiftBow />
                 <div className="flex flex-col gap-1.5 pr-20">
                   <Bone className="h-5 rounded-md" style={{ width: `${75 - i * 10}%` }} />
                   <Bone className="h-3.5 w-1/2 rounded-md" />

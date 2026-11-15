@@ -108,13 +108,13 @@ export const LESSONS: Lesson[] = [
     id: "dates", title: "Como usar as datas", screen: "dates",
     touch: [
       { target: '[data-tour="next-date"]', text: "Aqui fica a próxima data: quantos dias faltam e como está o presente. Vocês recebem um lembrete 7 dias antes." },
-      { target: '[data-tour="edit-date"]', gesture: "tap", text: "Toque no lápis para mudar o nome, o dia ou de quem é a data." },
-      { target: '[data-tour="add-date"]', gesture: "tap", text: "Aqui você cria uma data nova, como um aniversário ou uma viagem." },
+      { target: '[data-tour="edit-date"]', gesture: "tap", text: "Toque no lápis para mudar o nome, o dia ou de quem é a data.", waitClick: true },
+      { target: '[data-tour="add-date"]', gesture: "tap", text: "Toque aqui para criar uma data nova, como um aniversário ou uma viagem.", waitClick: true, doneText: "Isso! Agora é só preencher e salvar 🎉" },
     ],
     mouse: [
       { target: '[data-tour="next-date"]', text: "Aqui fica a próxima data: quantos dias faltam e como está o presente. Vocês recebem um lembrete 7 dias antes." },
-      { target: '[data-tour="edit-date"]', gesture: "tap", text: "Clique no lápis para mudar o nome, o dia ou de quem é a data." },
-      { target: '[data-tour="add-date"]', gesture: "tap", text: "No + você cria uma data nova, como um aniversário ou uma viagem." },
+      { target: '[data-tour="edit-date"]', gesture: "tap", text: "Clique no lápis para mudar o nome, o dia ou de quem é a data.", waitClick: true },
+      { target: '[data-tour="add-date"]', gesture: "tap", text: "Clique no + para criar uma data nova, como um aniversário ou uma viagem.", waitClick: true, doneText: "Isso! Agora é só preencher e salvar 🎉" },
     ],
   },
   {

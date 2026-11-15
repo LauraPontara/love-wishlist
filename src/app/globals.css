@@ -206,6 +206,8 @@ input.field[class*="!py-"], select.field[class*="!py-"] { min-height: 0; }
 .gift-box { position: relative; overflow: hidden; }
 .gift-box::before, .gift-box::after { content: ''; position: absolute; background: var(--ribbon); pointer-events: none; }
 .gift-box::before { top: 0; height: 52px; right: 34px; width: 10px; border-radius: 0 0 3px 3px; }
+/* lacinho no cruzamento das fitas (centro em right 39px, top 23px) */
+/* .gift-bow: tamanho e posição ficam no próprio SVG (gift-bow.tsx) */
 .gift-box::after { top: 18px; right: 0; width: 70px; height: 10px; border-radius: 3px 0 0 3px; }
 
 /* ---------- login: silhueta de coração num campo de luz ---------- */
@@ -302,7 +304,7 @@ input.field[class*="!py-"], select.field[class*="!py-"] { min-height: 0; }
   html, html:hover { scrollbar-color: color-mix(in srgb, var(--primary) 45%, transparent) var(--bg); }
 }
 
-.gift-box.is-loading::before, .gift-box.is-loading::after { opacity: .35; }
+.gift-box.is-loading::before, .gift-box.is-loading::after, .gift-box.is-loading .gift-bow { opacity: .35; }
 
 /* rolagem horizontal (chips, filtros): sem barra visível; a barra só aparece na rolagem vertical */
 .overflow-x-auto, .overflow-x-scroll { scrollbar-width: none; }

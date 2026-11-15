@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { comboTotal, countdownLabel, daysBetween, formatDayMonth, shortDate, todayInSaoPaulo, type Combo } from "@/lib/combos/domain";
 import { formatPrice } from "@/lib/items/domain";
+import { GiftBow } from "./gift-bow";
 import { StageSteps } from "./stage-steps";
 
 /** Combo como caixa de presente com fita no canto (design-system §5). */
@@ -14,6 +15,7 @@ export function ComboCard({ combo }: { combo: Combo }) {
   return (
     <Link href={`/combos/${combo.id}`} className="gift-box block rounded-[20px] border-2 p-4 sm:p-5 transition-transform hover:-translate-y-0.5 focus-visible:outline-3"
       style={{ background: "var(--surface)", borderColor: "var(--line)", opacity: combo.status === "dado" ? 0.8 : 1 }}>
+      <GiftBow />
       <h3 className="font-extrabold text-lg leading-tight pr-20">{combo.name}</h3>
       <p className="text-sm mt-0.5" style={{ color: "var(--ink-2)" }}>{when}</p>
       {combo.status !== "dado" && <div className="mt-3"><StageSteps status={combo.status} compact /></div>}
