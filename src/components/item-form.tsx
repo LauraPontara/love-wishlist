@@ -10,6 +10,7 @@ import { ExternalIcon, StarIcon } from "./icons";
 import { TagCard } from "./tag-card";
 import { UNDO_KEY } from "./item-browser";
 import { MoneyInput } from "./money-input";
+import { TourScreen } from "./tour/tour";
 
 type Action = (state: FormState, formData: FormData) => Promise<FormState>;
 
@@ -50,7 +51,7 @@ export function ItemForm({ action, item, groups = [], groupCandidates = [] }: {
         {state.error && <p role="alert" className="rounded-xl px-4 py-3 font-semibold" style={{ background: "var(--error-bg)", color: "var(--error-ink)" }}>{state.error}</p>}
 
         <Field label="Link do produto (opcional)" hint="Se tiver, cole o link com a cor e o tamanho já escolhidos no site." error={err.url}>
-          <div className="flex gap-2">
+          <div className="flex gap-2" data-tour="item-link">
             <input name="url" className="field" type="url" inputMode="url" placeholder="https://" value={values.url} onChange={set("url")} />
             {/^https?:\/\//.test(values.url.trim()) && (
               <a href={values.url.trim()} target="_blank" rel="noopener noreferrer" className="icon-btn !w-[54px] !h-auto"
@@ -82,7 +83,7 @@ export function ItemForm({ action, item, groups = [], groupCandidates = [] }: {
               {CATEGORIES.map((c) => <option key={c}>{c}</option>)}
             </select>
           </Field>
-          <fieldset>
+          <fieldset data-tour="item-kind">
             <legend className="font-bold mb-1.5">Tipo</legend>
             <div className="grid grid-cols-2 p-1 rounded-2xl" style={{ background: "var(--surface-sunk)" }}>
               {([["unico", "Único"], ["sempre", "Sempre bem-vindo"]] as const).map(([v, label]) => (
@@ -108,13 +109,14 @@ export function ItemForm({ action, item, groups = [], groupCandidates = [] }: {
 
         {item && item.kind === "unico" && values.kind === "unico" && <GroupEditor item={item} groups={groups} candidates={groupCandidates} />}
 
-        <div className="actions pt-2">
+        {item && <TourScreen id="edit-item" />}
+        <div className="actions pt-2" data-tour="item-actions">
           <button type="submit" className="btn btn-primary" disabled={saving}>{saving ? "Salvando…" : item ? "Salvar alterações" : "Adicionar à lista"}</button>
           {item && <ItemExtraActions item={item} />}
         </div>
       </form>
 
-      <aside className="hidden lg:block sticky top-8" aria-label="Prévia">
+      <aside className="hidden lg:block sticky top-8" aria-label="Prévia" data-tour="item-preview">
         <p className="font-bold mb-3" style={{ color: "var(--ink-2)" }}>Como vai aparecer</p>
         <TagCard item={preview} badge={preview.kind === "sempre" ? <span className="badge sempre">Sempre bem-vindo</span> : undefined} />
       </aside>
@@ -160,7 +162,7 @@ function RefetchPanel({ url, linkChanged, onApply }: { url: string; linkChanged:
 
   const priceText = centsToMoneyInput;
   return (
-    <div className="-mt-1 flex flex-col gap-2">
+    <div className="-mt-1 flex flex-col gap-2" data-tour="item-refresh">
       <div className="flex flex-wrap items-center gap-2">
         <button type="button" className="btn btn-ghost btn-sm" onClick={run} disabled={loading || !/^https?:\/\//.test(url)}>
           {loading ? "Buscando…" : linkChanged ? "Buscar dados do novo link" : "Atualizar preço e dados"}
@@ -244,7 +246,7 @@ function GroupEditor({ item, groups, candidates }: { item: Item; groups: ItemGro
   );
 
   return (
-    <fieldset className="rounded-[18px] border-2 p-4 flex flex-col gap-3" style={{ borderColor: "var(--line)" }}>
+    <fieldset className="rounded-[18px] border-2 p-4 flex flex-col gap-3" style={{ borderColor: "var(--line)" }} data-tour="group-editor">
       <legend className="font-bold px-1">Quero um desses</legend>
       {g ? (
         <>

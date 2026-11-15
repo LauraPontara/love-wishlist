@@ -98,14 +98,14 @@ export function PasteLinks({ initialText = "", autoFetch = false, onManual }: { 
     return (
       <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_340px] items-start">
         <div className="flex flex-col gap-3">
-          <label className="flex flex-col gap-1.5">
+          <label className="flex flex-col gap-1.5" data-tour="paste-box">
             <span className="font-bold">Links</span>
             <textarea className="field min-h-[180px] sm:min-h-[220px] resize-y !text-[.95rem] leading-relaxed" value={text} onChange={(e) => setText(e.target.value)}
               placeholder={"Cole um link por linha.\nTambém dá para colar a mensagem inteira do WhatsApp."} disabled={loading} />
           </label>
           {message && <p role="alert" className="rounded-xl px-4 py-3 font-semibold" style={TONE.err}>{message}</p>}
           <div className="actions items-center">
-            <button className="btn btn-primary" disabled={!urls.length || loading} onClick={fetchData}>
+            <button className="btn btn-primary" disabled={!urls.length || loading} onClick={fetchData} data-tour="fetch">
               {loading ? `Buscando ${Math.min(urls.length, 10)} ${urls.length === 1 ? "link" : "links"}…` : urls.length > 1 ? `Buscar dados dos ${Math.min(urls.length, 10)} links` : "Buscar dados"}
             </button>
             <span className="text-sm" style={{ color: "var(--ink-2)" }}>

@@ -21,6 +21,8 @@ export type Step = {
   waitClick?: boolean;
   /** frase de comemoração quando a pessoa faz o gesto (no último passo, o tutorial fecha sozinho depois dela) */
   doneText?: string;
+  /** se o alvo não estiver na tela, toca neste seletor para ele aparecer (ex.: abrir uma aba) */
+  ensure?: string;
   /** espera o alvo sumir (ex.: pop-up fechado) */
   waitGone?: boolean;
   /** botões que mudam o rumo: um passo próprio (e o tutorial termina depois dele) e/ou continuar em outra tela */
@@ -149,6 +151,42 @@ export const LESSONS: Lesson[] = [
       { target: '[data-tour="appearance"]', text: "Escolha o tema claro, escuro ou automático, e ligue ou desligue os coelhinhos passeando." },
       { target: '[data-tour="notify"]', text: "Ative os avisos neste aparelho e escolha o que quer receber: itens novos e lembrete das datas." },
       { target: '[data-tour="account"]', text: "Aqui você sai da conta neste aparelho." },
+    ],
+  },
+  {
+    id: "new-item", title: "Como adicionar itens", screen: "new-item",
+    touch: [
+      { target: '[data-tour="add-mode"]', text: "Dá para adicionar de dois jeitos: colando links ou preenchendo à mão." },
+      { target: '[data-tour="paste-box"]', optional: true, text: "Cole aqui um ou vários links de lojas, um por linha. Pode colar até a mensagem inteira do WhatsApp." },
+      { target: '[data-tour="fetch"]', optional: true, text: "Depois, toque aqui: a gente busca nome, foto e preço, e você confere tudo antes de salvar." },
+      { target: '[data-tour="add-manual"]', gesture: "tap", waitClick: true, text: "Sem link ou a loja não deixou ler? Toque em “Preencher à mão” e digite os dados." },
+      { target: '[data-tour="item-kind"]', ensure: '[data-tour="add-manual"]', text: "Único é algo que basta ganhar uma vez, como um livro ou um tênis. Sempre bem-vindo pode ser dado várias vezes, como chocolate ou flores." },
+      { target: '[data-tour="item-actions"]', ensure: '[data-tour="add-manual"]', text: "No fim, toque em “Adicionar à lista”. Pronto, já aparece para o outro ver." },
+    ],
+    mouse: [
+      { target: '[data-tour="add-mode"]', text: "Dá para adicionar de dois jeitos: colando links ou preenchendo à mão." },
+      { target: '[data-tour="paste-box"]', optional: true, text: "Cole aqui um ou vários links de lojas, um por linha. Pode colar até a mensagem inteira do WhatsApp." },
+      { target: '[data-tour="fetch"]', optional: true, text: "Depois, clique aqui: a gente busca nome, foto e preço, e você confere tudo antes de salvar." },
+      { target: '[data-tour="add-manual"]', gesture: "tap", waitClick: true, text: "Sem link ou a loja não deixou ler? Clique em “Preencher à mão” e digite os dados." },
+      { target: '[data-tour="item-kind"]', ensure: '[data-tour="add-manual"]', text: "Único é algo que basta ganhar uma vez, como um livro ou um tênis. Sempre bem-vindo pode ser dado várias vezes, como chocolate ou flores." },
+      { target: '[data-tour="item-actions"]', ensure: '[data-tour="add-manual"]', text: "No fim, clique em “Adicionar à lista”. Pronto, já aparece para o outro ver." },
+    ],
+  },
+  {
+    id: "edit-item", title: "Editar este item", screen: "edit-item",
+    touch: [
+      { target: '[data-tour="item-link"]', text: "Este é o link da loja. O ícone ao lado abre o produto no site." },
+      { target: '[data-tour="item-refresh"]', optional: true, text: "“Atualizar preço e dados” busca de novo na loja e mostra o que mudou antes de aplicar." },
+      { target: '[data-tour="item-kind"]', text: "Único é algo que basta ganhar uma vez, como um livro ou um tênis. Sempre bem-vindo pode ser dado várias vezes, como chocolate ou flores." },
+      { target: '[data-tour="group-editor"]', optional: true, text: "Quero um desses: junte opções parecidas, marque a preferida na estrela, renomeie, tire o item do grupo ou desfaça o grupo. Só vale quando você salva." },
+      { target: '[data-tour="item-actions"]', text: "Salvar alterações guarda tudo. Já tenho tira dos desejos, e Excluir apaga (dá pra desfazer logo depois)." },
+    ],
+    mouse: [
+      { target: '[data-tour="item-link"]', text: "Este é o link da loja. O ícone ao lado abre o produto no site." },
+      { target: '[data-tour="item-refresh"]', optional: true, text: "“Atualizar preço e dados” busca de novo na loja e mostra o que mudou antes de aplicar." },
+      { target: '[data-tour="item-kind"]', text: "Único é algo que basta ganhar uma vez, como um livro ou um tênis. Sempre bem-vindo pode ser dado várias vezes, como chocolate ou flores." },
+      { target: '[data-tour="group-editor"]', optional: true, text: "Quero um desses: junte opções parecidas, marque a preferida na estrela, renomeie, tire o item do grupo ou desfaça o grupo. Só vale quando você salva." },
+      { target: '[data-tour="item-actions"]', text: "Salvar alterações guarda tudo. Já tenho tira dos desejos, e Excluir apaga (dá pra desfazer logo depois)." },
     ],
   },
 ];

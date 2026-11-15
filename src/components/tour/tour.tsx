@@ -220,6 +220,15 @@ function TourRunner({ lessons, onEnd }: { lessons: Lesson[]; onEnd: () => void }
     return () => { window.removeEventListener(SIGNAL, onSignal); document.removeEventListener("click", onClick, true); };
   }, [step, waits, phase]);
 
+  // o alvo só existe depois de um toque (ex.: aba "Preencher à mão"): o tutorial faz esse toque
+  useEffect(() => {
+    if (!step?.ensure || !step.target) return;
+    const t = setTimeout(() => {
+      if (!findVisible(step.target!)) (document.querySelector(step.ensure!) as HTMLElement | null)?.click();
+    }, 150);
+    return () => clearTimeout(t);
+  }, [step]);
+
   // passo que espera algo sumir da tela (ex.: o pop-up de confirmação fechar)
   useEffect(() => {
     if (!step?.waitGone || !step.target || phase === "done") return;
