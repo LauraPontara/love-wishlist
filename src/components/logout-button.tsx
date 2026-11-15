@@ -8,7 +8,7 @@ export function LogoutButton() {
   const [loading, setLoading] = useState(false);
   return (
     <button
-      className="btn btn-ghost shrink-0"
+      className="btn btn-soft-danger shrink-0"
       disabled={loading}
       onClick={async () => {
         setLoading(true);

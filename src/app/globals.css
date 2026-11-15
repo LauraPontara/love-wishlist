@@ -69,6 +69,11 @@ body {
 .btn-soft:hover:not(:disabled) { background: color-mix(in srgb, var(--primary) 22%, var(--surface)); }
 .btn-soft:active:not(:disabled) { translate: 0 1px; }
 @media (min-width: 1024px) { .btn-extra { padding: 8px 12px; font-size: .85rem; border-radius: 12px; } }
+/* vermelho suave: sair, ações que encerram algo */
+.btn-soft-danger { background: color-mix(in srgb, #C81E4A 18%, var(--surface)); color: var(--error-ink); border: 2px solid color-mix(in srgb, #C81E4A 55%, transparent); transition: background var(--t-fast), translate var(--t-fast) var(--ease-out); }
+.btn-soft-danger:hover:not(:disabled) { background: color-mix(in srgb, #C81E4A 28%, var(--surface)); }
+.btn-soft-danger:active:not(:disabled) { translate: 0 1px; }
+.btn-soft-danger:focus-visible { outline: 3px solid var(--ribbon); outline-offset: 2px; }
 .btn-soft:focus-visible { outline: 3px solid var(--ribbon); outline-offset: 2px; }
 
 /* botões 3D: a "borda" embaixo é a lateral do botão. No clique ele desce até o chão
