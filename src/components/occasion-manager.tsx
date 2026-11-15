@@ -42,7 +42,7 @@ export function OccasionList({ occasions, people }: { occasions: OccasionRow[]; 
       </ul>
       {editing === "new"
         ? <OccasionForm people={people} onDone={() => setEditing(null)} />
-        : <button className="btn btn-ghost self-start" onClick={() => setEditing("new")}>Adicionar data</button>}
+        : <button className="btn btn-ghost w-full sm:w-auto sm:self-end" onClick={() => setEditing("new")}>Adicionar data</button>}
     </div>
   );
 }
