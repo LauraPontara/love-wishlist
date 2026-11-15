@@ -56,8 +56,11 @@ describe("busca", () => {
 describe("formulário", () => {
   const base = { url: "https://loja.com/p", title: "Fone", category: "Tecnologia", kind: "unico" };
   it("aceita o mínimo", () => expect(itemFormSchema.safeParse(base).success).toBe(true));
-  it("recusa link vazio ou sem https (RN05)", () => {
-    expect(itemFormSchema.safeParse({ ...base, url: "" }).success).toBe(false);
+  it.each(["", "   ", undefined])("aceita item sem link (%s)", (url) => {
+    expect(itemFormSchema.parse({ ...base, url }).url).toBe("");
+  });
+  it("recusa links inválidos quando informados", () => {
+    expect(itemFormSchema.safeParse({ ...base, url: "javascript:alert(1)" }).success).toBe(false);
     expect(itemFormSchema.safeParse({ ...base, url: "loja.com/p" }).success).toBe(false);
   });
 });

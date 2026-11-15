@@ -3,7 +3,7 @@ import { db } from "@/lib/db/server";
 import type { Category, Item, Kind, Status } from "./domain";
 
 type Row = {
-  id: string; owner_id: string; url: string; title: string; image_url: string | null;
+  id: string; owner_id: string; url: string | null; title: string; image_url: string | null;
   price_cents: number | null; price_checked_at: string | null; store: string | null; category: Category;
   variant: Record<string, string> | null; notes: string | null; kind: Kind; status: Status;
   status_changed_at: string | null; created_at: string;
@@ -13,7 +13,7 @@ const COLUMNS = "id, owner_id, url, title, image_url, price_cents, price_checked
 
 export function toItem(r: Row): Item {
   return {
-    id: r.id, ownerId: r.owner_id, url: r.url, title: r.title, imageUrl: r.image_url,
+    id: r.id, ownerId: r.owner_id, url: r.url ?? "", title: r.title, imageUrl: r.image_url,
     priceCents: r.price_cents, priceCheckedAt: r.price_checked_at, store: r.store, category: r.category,
     variant: r.variant ?? {}, notes: r.notes, kind: r.kind, status: r.status,
     statusChangedAt: r.status_changed_at, createdAt: r.created_at,

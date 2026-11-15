@@ -106,8 +106,8 @@ export function variantToText(variant: Record<string, string>): string {
 
 // ---------- formulário ----------
 export const itemFormSchema = z.object({
-  url: z.string().trim().min(1, "O link é obrigatório.").max(2000)
-    .refine((v) => normalizeUrl(v) !== null, "Esse link não parece válido. Ele precisa começar com https://"),
+  url: z.string().trim().max(2000).default("")
+    .refine((v) => !v || normalizeUrl(v) !== null, "Esse link não parece válido. Ele precisa começar com https://"),
   title: z.string().trim().min(1, "Dê um nome para o item.").max(300),
   price: z.string().trim().max(30).optional(),
   store: z.string().trim().max(80).optional(),

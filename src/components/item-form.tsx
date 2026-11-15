@@ -44,10 +44,10 @@ export function ItemForm({ action, item }: { action: Action; item?: Item }) {
       <form action={formAction} className="flex flex-col gap-4" noValidate>
         {state.error && <p role="alert" className="rounded-xl px-4 py-3 font-semibold" style={{ background: "var(--error-bg)", color: "var(--error-ink)" }}>{state.error}</p>}
 
-        <Field label="Link do produto" hint="O link exato, com a cor e o tamanho já escolhidos no site." error={err.url}>
-          <input name="url" className="field" type="url" inputMode="url" placeholder="https://" value={values.url} onChange={set("url")} required />
+        <Field label="Link do produto (opcional)" hint="Se tiver, cole o link com a cor e o tamanho já escolhidos no site." error={err.url}>
+          <input name="url" className="field" type="url" inputMode="url" placeholder="https://" value={values.url} onChange={set("url")} />
         </Field>
-        {item && (
+        {item && values.url.trim() && (
           <RefetchPanel url={values.url} linkChanged={Boolean(linkChanged)}
             onApply={(patch) => setValues((v) => ({ ...v, ...patch }))} />
         )}

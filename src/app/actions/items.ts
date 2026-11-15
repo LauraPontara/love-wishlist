@@ -24,8 +24,8 @@ function toRow(data: ReturnType<typeof readForm> & { success: true }) {
   return {
     price,
     row: {
-      url: f.url,
-      url_normalized: normalizeUrl(f.url)!,
+      url: f.url || null,
+      url_normalized: normalizeUrl(f.url),
       title: f.title,
       price_cents: price === "invalido" ? null : price,
       price_checked_at: price === null || price === "invalido" ? null : new Date().toISOString(),

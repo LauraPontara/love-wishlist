@@ -188,7 +188,7 @@ export async function refreshPrices(itemIds: string[]): Promise<{ updated: Recor
   const ids = itemIds.filter((id) => /^[0-9a-f-]{36}$/i.test(id)).slice(0, 10);
   if (!ids.length) return { updated: {} };
   const staleBefore = new Date(Date.now() - 24 * 3600_000).toISOString();
-  const { data: items } = await db().from("items").select("id, url, price_cents, price_checked_at").in("id", ids)
+  const { data: items } = await db().from("items").select("id, url, price_cents, price_checked_at").in("id", ids).not("url", "is", null)
     .or(`price_checked_at.is.null,price_checked_at.lt.${staleBefore}`);
   if (!items?.length) return { updated: {} };
 
