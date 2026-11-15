@@ -125,6 +125,10 @@ body {
 .tag.sempre { --tag-bg: var(--tag-sempre); }
 /* toque longo seleciona: sem menu do link nem seleção de texto no celular */
 .tag, .tag a { -webkit-touch-callout: none; -webkit-user-select: none; user-select: none; }
+/* seleção: contorno que acompanha o formato da etiqueta (o clip-path corta outline/borda) */
+.tag-select { --sel: transparent; filter: drop-shadow(3px 0 0 var(--sel)) drop-shadow(-3px 0 0 var(--sel)) drop-shadow(0 3px 0 var(--sel)) drop-shadow(0 -3px 0 var(--sel)); transition: filter var(--t-fast); }
+.tag-select.is-on { --sel: var(--secondary); }
+.tag-select:focus-visible { outline: none; --sel: var(--ribbon); }
 /* o recorte da etiqueta corta sombras: a sombra fica na lista (segue o formato de cada etiqueta) */
 ul:has(> li > .tag, > li > .swipe .tag, > li.tag) { filter: var(--tag-lift, none); }
 .tag.dim { --tag-bg: var(--tag-comprado); }

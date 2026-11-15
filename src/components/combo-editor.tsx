@@ -10,7 +10,7 @@ import { CATEGORY_EMOJI, formatPrice, matchesSearch, type Category, type Item } 
 import { bunnyCheer } from "./bunnies";
 import { useConfirm } from "./confirm";
 import { Heart } from "./heart";
-import { CloseIcon, IconButton, PencilIcon, TrashIcon } from "./icons";
+import { CheckIcon, CloseIcon, IconButton, MinusIcon, PencilIcon, PlusIcon, StarIcon, TrashIcon } from "./icons";
 import { StageSteps } from "./stage-steps";
 
 type Occ = { id: string; name: string; label: string };
@@ -121,7 +121,7 @@ export function ComboEditor({ combo, available, purchasedElsewhere, occasions, r
           <>
             <div className="lg:hidden">
               <button type="button" className="btn btn-ribbon w-full" onClick={() => setListOpen(true)}>
-                + Adicionar da lista {recipientName.endsWith("a") ? "da" : "do"} {recipientName}
+                <PlusIcon /> Adicionar da lista {recipientName.endsWith("a") ? "da" : "do"} {recipientName}
               </button>
             </div>
             <ExtraForm onAdd={(e) => run(() => addExtra(combo.id, e))} pending={pending} />
@@ -217,9 +217,9 @@ function ComboLineRow({ line, status, editing, pending, onQty, onPaid, onRemove 
           {!line.isExtra && line.itemId === null && <span className="badge">Removido da lista</span>}
           {canQty ? (
             <span className="inline-flex items-center gap-1.5 font-extrabold text-sm">
-              <button type="button" className="w-7 h-7 rounded-lg grid place-items-center" style={{ background: "var(--surface-sunk)" }} disabled={pending || line.quantity <= 1} onClick={() => onQty(line.quantity - 1)} aria-label="Diminuir quantidade">−</button>
+              <button type="button" className="w-7 h-7 rounded-lg grid place-items-center" style={{ background: "var(--surface-sunk)" }} disabled={pending || line.quantity <= 1} onClick={() => onQty(line.quantity - 1)} aria-label="Diminuir quantidade"><MinusIcon /></button>
               {line.quantity}
-              <button type="button" className="w-7 h-7 rounded-lg grid place-items-center" style={{ background: "var(--surface-sunk)" }} disabled={pending} onClick={() => onQty(line.quantity + 1)} aria-label="Aumentar quantidade">+</button>
+              <button type="button" className="w-7 h-7 rounded-lg grid place-items-center" style={{ background: "var(--surface-sunk)" }} disabled={pending} onClick={() => onQty(line.quantity + 1)} aria-label="Aumentar quantidade"><PlusIcon /></button>
             </span>
           ) : line.quantity > 1 ? <span className="text-sm font-bold">{line.quantity}x</span> : null}
           {status === "comprado" && (
@@ -370,9 +370,9 @@ function GiftSummary({ combo, pending, expandable, onRemoveLine, onQty }: ListPr
                 <span className="flex-1 min-w-0 text-sm font-bold leading-tight line-clamp-2">{l.title}</span>
                 {canQty ? (
                   <span className="inline-flex items-center gap-1 font-extrabold text-sm">
-                    <button type="button" className="w-8 h-8 rounded-lg grid place-items-center" style={{ background: "var(--surface-sunk)" }} disabled={pending || l.quantity <= 1} onClick={() => onQty(l, l.quantity - 1)} aria-label={`Diminuir ${l.title}`}>−</button>
+                    <button type="button" className="w-8 h-8 rounded-lg grid place-items-center" style={{ background: "var(--surface-sunk)" }} disabled={pending || l.quantity <= 1} onClick={() => onQty(l, l.quantity - 1)} aria-label={`Diminuir ${l.title}`}><MinusIcon /></button>
                     {l.quantity}
-                    <button type="button" className="w-8 h-8 rounded-lg grid place-items-center" style={{ background: "var(--surface-sunk)" }} disabled={pending} onClick={() => onQty(l, l.quantity + 1)} aria-label={`Aumentar ${l.title}`}>+</button>
+                    <button type="button" className="w-8 h-8 rounded-lg grid place-items-center" style={{ background: "var(--surface-sunk)" }} disabled={pending} onClick={() => onQty(l, l.quantity + 1)} aria-label={`Aumentar ${l.title}`}><PlusIcon /></button>
                   </span>
                 ) : null}
                 <span className="text-sm font-extrabold whitespace-nowrap">{l.unitPriceCents == null && l.paidCents == null ? "—" : formatPrice(lineTotal(l))}</span>
@@ -459,18 +459,18 @@ function ListPanel({ available, combo, purchasedElsewhere, recipientName, remain
               <div className="min-w-0 flex-1">
                 <p className="font-bold text-sm leading-tight line-clamp-2">{i.title}</p>
                 <p className="text-xs truncate" style={{ color: "var(--ink-2)" }}>
-                  {line ? (line.quantity > 1 ? `No presente, ${line.quantity}x` : "No presente") : blocked ? "Já está em outro presente comprado" : i.group ? `${i.group.preferred ? "⭐ " : ""}Um destes: ${i.group.name}` : i.kind === "sempre" ? "Sempre bem-vindo" : (i.store ?? i.category)}
+                  {line ? (line.quantity > 1 ? `No presente, ${line.quantity}x` : "No presente") : blocked ? "Já está em outro presente comprado" : i.group ? <span className="inline-flex items-center gap-1">{i.group.preferred && <StarIcon filled size={13} />}Um destes: {i.group.name}</span> : i.kind === "sempre" ? "Sempre bem-vindo" : (i.store ?? i.category)}
                 </p>
               </div>
               <span className="text-sm font-extrabold whitespace-nowrap">{formatPrice(i.priceCents)}</span>
               {line ? (
                 <button type="button" className="w-11 h-11 rounded-full grid place-items-center text-lg font-black shrink-0 disabled:opacity-40"
                   aria-label={`${i.title} está no presente. Tirar`} aria-pressed="true" style={{ background: "var(--secondary)", color: "var(--on-secondary)" }} disabled={pending}
-                  onClick={() => { setAdded(null); onRemoveLine(line); }}>✓</button>
+                  onClick={() => { setAdded(null); onRemoveLine(line); }}><CheckIcon /></button>
               ) : (
                 <button type="button" className="w-11 h-11 rounded-full grid place-items-center text-lg font-black shrink-0 disabled:opacity-40"
                   aria-label={`Adicionar ${i.title}`} style={{ background: "var(--ribbon)", color: "var(--on-ribbon)" }} disabled={pending || blocked}
-                  onClick={() => { onAdd(i.id); setAdded(i.title); }}>+</button>
+                  onClick={() => { onAdd(i.id); setAdded(i.title); }}><PlusIcon /></button>
               )}
             </li>
           );

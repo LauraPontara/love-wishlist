@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import type { ReactNode } from "react";
-import { GearIcon } from "./icons";
+import { GearIcon, PlusIcon } from "./icons";
 
 type Person = { id: string; displayName: string; avatar: string | null };
 type NavItem = { href: string; label: string; short: string; icon: ReactNode; active: boolean };
@@ -63,7 +63,7 @@ export function NavLinks({ me, partner }: { me: Person; partner: Person | null }
           </Link>
         ))}
         <Link href="/item/novo" className="flex flex-col items-center gap-1 text-[.7rem] font-bold" style={{ color: "var(--ink-2)" }}>
-          <span className="w-7 h-7 rounded-full grid place-items-center text-lg font-black" style={{ background: "var(--ribbon)", color: "var(--on-ribbon)" }} aria-hidden="true">+</span>
+          <span className="w-7 h-7 rounded-full grid place-items-center" style={{ background: "var(--ribbon)", color: "var(--on-ribbon)" }} aria-hidden="true"><PlusIcon /></span>
           Adicionar
         </Link>
       </nav>

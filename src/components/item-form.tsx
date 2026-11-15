@@ -6,7 +6,7 @@ import { shouldWaitBeforeOwning } from "@/app/actions/combos";
 import { deleteItem, setOwned, type FormState } from "@/app/actions/items";
 import { CATEGORIES, parsePrice, parseVariant, storeFromUrl, variantToText, type Item, type ItemGroup } from "@/lib/items/domain";
 import { useConfirm } from "./confirm";
-import { ExternalIcon } from "./icons";
+import { ExternalIcon, StarIcon } from "./icons";
 import { TagCard } from "./tag-card";
 import { UNDO_KEY } from "./item-browser";
 
@@ -263,8 +263,8 @@ function GroupEditor({ item, groups, candidates }: { item: Item; groups: ItemGro
                 </p>
               )}
               <div className="flex flex-wrap gap-2">
-                <button type="button" className="chip" aria-pressed={preferred} onClick={() => setPreferredValue(!preferred)}>
-                  {preferred ? "⭐ É o preferido" : "☆ Marcar como preferido"}
+                <button type="button" className="chip inline-flex items-center gap-1.5" aria-pressed={preferred} onClick={() => setPreferredValue(!preferred)}>
+                  <StarIcon filled={preferred} size={16} /> {preferred ? "É o preferido" : "Marcar como preferido"}
                 </button>
                 <button type="button" className="chip" aria-pressed={renaming} onClick={() => { setRenaming(!renaming); setName(g.name); }}>{renaming ? "Manter o nome" : "Renomear grupo"}</button>
                 <button type="button" className="chip" onClick={() => setAction("leave")}>Tirar do grupo</button>

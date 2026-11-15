@@ -8,7 +8,7 @@ import { createGroup, deleteItem, restoreItem, setOwned } from "@/app/actions/it
 import { shortDate } from "@/lib/combos/domain";
 import { CATEGORIES, CATEGORY_EMOJI, formatPrice, matchesSearch, parsePrice, type Item } from "@/lib/items/domain";
 import { useConfirm } from "./confirm";
-import { CloseIcon, PencilIcon, TrashIcon } from "./icons";
+import { CheckIcon, CloseIcon, PencilIcon, SelectIcon, StarIcon, TrashIcon } from "./icons";
 import { Swipe } from "./swipe";
 import { TagCard } from "./tag-card";
 
@@ -152,7 +152,7 @@ export function ItemBrowser({ items, mode, ownerName, gifts = {}, purchasedByMe 
   const submitGroup = () => startTransition(async () => {
     setGroupError(null);
     const res = await createGroup([...selected], groupName);
-    if (res.ok) { setToast({ text: `Grupo "${groupName.trim()}" criado. Se quiser, marque uma ⭐ de preferido na edição do item.` }); stopGrouping(); }
+    if (res.ok) { setToast({ text: `Grupo "${groupName.trim()}" criado. Se quiser, marque um preferido na edição do item.` }); stopGrouping(); }
     else setGroupError(res.error);
   });
 
@@ -187,7 +187,7 @@ export function ItemBrowser({ items, mode, ownerName, gifts = {}, purchasedByMe 
       )}
       {mode === "mine" && tab === "desejado" && !grouping && (
         <button type="button" className="chip hidden lg:inline-flex self-start items-center gap-1.5" onClick={() => setGrouping(true)}>
-          ☑ Selecionar itens
+          <SelectIcon /> Selecionar itens
         </button>
       )}
       {grouping && (
@@ -236,12 +236,11 @@ export function ItemBrowser({ items, mode, ownerName, gifts = {}, purchasedByMe 
               return (
                 <li key={item.id}>
                   <button type="button" disabled={!selectable} aria-pressed={on} onClick={() => toggleSelected(item.id)}
-                    className="block w-full text-left relative rounded-[16px] disabled:opacity-40"
-                    style={{ outline: on ? "3px solid var(--secondary)" : "none", outlineOffset: 2 }}>
+                    className={`tag-select block w-full text-left relative disabled:opacity-40 ${on ? "is-on" : ""}`}>
                     <TagCard item={item} badge={!selectable ? <span className="badge">Sempre bem-vindo não entra em grupo</span> : undefined}
                       action={selectable && (
                         <span aria-hidden="true" className="w-8 h-8 rounded-full grid place-items-center font-black border-2"
-                          style={on ? { background: "var(--secondary)", borderColor: "var(--secondary)", color: "var(--on-secondary)" } : { borderColor: "var(--line)" }}>{on ? "✓" : ""}</span>
+                          style={on ? { background: "var(--secondary)", borderColor: "var(--secondary)", color: "var(--on-secondary)" } : { borderColor: "var(--line)" }}>{on ? <CheckIcon /> : null}</span>
                       )} />
                   </button>
                 </li>
@@ -260,7 +259,7 @@ export function ItemBrowser({ items, mode, ownerName, gifts = {}, purchasedByMe 
                       : item.status === "recebido"
                         ? <span className="badge">{gifts[item.id] ? `Presente de ${gifts[item.id].fromName} em ${shortDate(gifts[item.id].lastAt)}` : "Recebido"}</span>
                         : null}
-                    {item.group && <span className="badge">{item.group.preferred ? "⭐ " : ""}Grupo: {item.group.name}</span>}
+                    {item.group && <span className="badge inline-flex items-center gap-1">{item.group.preferred && <StarIcon filled size={14} />}Grupo: {item.group.name}</span>}
                     {item.leftWithGroup && item.status === "ja_tenho" && <span className="badge">Saiu junto com o grupo</span>}
                   </Badges>}
                   action={item.kind === "unico" && item.status !== "recebido" && (
@@ -377,7 +376,7 @@ function GroupCard({ name, items, inCombos, purchased, pending, onGive }: {
               <div className="min-w-0 flex-1">
                 <p className="font-bold text-sm leading-tight line-clamp-2">{i.title}</p>
                 <p className="text-xs truncate" style={{ color: i.group?.preferred ? "var(--ink)" : "var(--ink-2)" }}>
-                  {i.group?.preferred ? "⭐ Preferido" : bought ? "Você já comprou" : inCombos.has(i.id) ? "No seu presente" : (i.store ?? i.category)}
+                  {i.group?.preferred ? <span className="inline-flex items-center gap-1"><StarIcon filled size={14} /> Preferido</span> : bought ? "Você já comprou" : inCombos.has(i.id) ? "No seu presente" : (i.store ?? i.category)}
                 </p>
               </div>
               <div className="flex flex-col items-end gap-1">
