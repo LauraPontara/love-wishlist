@@ -25,7 +25,7 @@ export function NewComboForm({ occasions, partnerName }: { occasions: Occ[]; par
         setError(null);
         start(async () => {
           const res = await createCombo({ name, occasionId: occasionId || null, budget });
-          if (res.ok && res.id) router.push(`/combos/${res.id}`);
+          if (res.ok && res.id) router.push(`/combos/${res.id}?montar=1`);
           else setError("error" in res ? res.error : "Não deu para criar.");
         });
       }}>

@@ -25,6 +25,8 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 
+/* Classes do app na camada "components": utilitárias (lg:hidden, w-full…) sempre podem sobrescrever. */
+@layer components {
 /* ---------- títulos ---------- */
 .display {
   font-weight: 800;
@@ -157,4 +159,6 @@ input.field[class*="!py-"], select.field[class*="!py-"] { min-height: 0; }
   .burst { animation: burst 1.2s var(--spring) both; }
   @keyframes burst { 0% { scale: .2; opacity: 0; } 40% { scale: 1.35; opacity: 1; } 70% { scale: .95; } 100% { scale: 1; opacity: .7; } }
   @keyframes beat-soft { 0%, 52%, 100% { scale: 1; opacity: .55; } 12% { scale: 1.06; opacity: 1; } 36% { scale: 1.03; opacity: .85; } }
+}
+
 }

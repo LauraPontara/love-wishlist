@@ -10,18 +10,19 @@ import { getPartnerItems } from "@/lib/items/queries";
 
 export const maxDuration = 60; // a atualização de preços roda nas ações desta página
 
-export default function ComboPage({ params }: PageProps<"/combos/[id]">) {
+export default function ComboPage({ params, searchParams }: PageProps<"/combos/[id]">) {
   return (
     <main className="flex-1 flex flex-col">
       <Suspense fallback={<><PageHeader title="Montar presente" back={{ href: "/combos", label: "Meus combos" }} /><Sheet><ListSkeleton /></Sheet></>}>
-        <ComboView params={params} />
+        <ComboView params={params} searchParams={searchParams} />
       </Suspense>
     </main>
   );
 }
 
-async function ComboView({ params }: { params: PageProps<"/combos/[id]">["params"] }) {
+async function ComboView({ params, searchParams }: { params: PageProps<"/combos/[id]">["params"]; searchParams: PageProps<"/combos/[id]">["searchParams"] }) {
   const { id } = await params;
+  const startBuilding = (await searchParams).montar === "1";
   const user = await getCurrentUser();
   const combo = await getMyCombo(id, user.id);
   if (!combo || !user.partner) notFound();
@@ -39,7 +40,7 @@ async function ComboView({ params }: { params: PageProps<"/combos/[id]">["params
       <PageHeader title={combo.status === "dado" ? "Presente dado" : "Montar presente"} avatar={user.partner.avatar}
         subtitle={`Para ${user.partner.displayName}. Só você vê.`} back={{ href: "/combos", label: "Meus combos" }} />
       <Sheet>
-        <ComboEditor combo={combo} available={available} purchasedElsewhere={elsewhere} occasions={giftable} recipientName={user.partner.displayName} />
+        <ComboEditor combo={combo} available={available} purchasedElsewhere={elsewhere} occasions={giftable} recipientName={user.partner.displayName} startBuilding={startBuilding} />
       </Sheet>
     </>
   );

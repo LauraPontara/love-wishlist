@@ -9,20 +9,23 @@ import { boughtByOwnerAlerts, budgetState, comboTotal, countdownLabel, daysBetwe
 import { CATEGORY_EMOJI, formatPrice, matchesSearch, type Category, type Item } from "@/lib/items/domain";
 import { bunnyCheer } from "./bunnies";
 import { Heart } from "./heart";
-import { IconButton, TrashIcon } from "./icons";
+import { CloseIcon, IconButton, PencilIcon, TrashIcon } from "./icons";
 import { StageSteps } from "./stage-steps";
 
 type Occ = { id: string; name: string; label: string };
 const centsToInput = (c: number | null) => (c == null ? "" : (c / 100).toFixed(2).replace(".", ","));
 
-export function ComboEditor({ combo, available, purchasedElsewhere, occasions, recipientName }: {
-  combo: Combo; available: Item[]; purchasedElsewhere: string[]; occasions: Occ[]; recipientName: string;
+export function ComboEditor({ combo, available, purchasedElsewhere, occasions, recipientName, startBuilding = false }: {
+  combo: Combo; available: Item[]; purchasedElsewhere: string[]; occasions: Occ[]; recipientName: string; startBuilding?: boolean;
 }) {
   const router = useRouter();
   const [pending, start] = useTransition();
   const [error, setError] = useState<string | null>(null);
   const [celebrate, setCelebrate] = useState(false);
-  const editable = combo.status === "montado";
+  const [listOpen, setListOpen] = useState(false);
+  // "Montando": adicionar/tirar itens. "Resumo": avançar etapas. Só presentes montados podem ser editados.
+  const [building, setBuilding] = useState(startBuilding && combo.status === "montado");
+  const editable = building && combo.status === "montado";
   const { totalCents, missingPrice } = comboTotal(combo.lines);
   const budget = budgetState(totalCents, combo.budgetCents);
   const alerts = boughtByOwnerAlerts(combo);
@@ -56,7 +59,7 @@ export function ComboEditor({ combo, available, purchasedElsewhere, occasions, r
   return (
     <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_minmax(320px,420px)] items-start">
       <div className="flex flex-col gap-5 min-w-0">
-        <MetaEditor combo={combo} occasions={occasions} disabled={!editable && combo.status === "dado"} onSave={(m) => run(() => updateComboMeta(combo.id, m))} />
+        <MetaEditor combo={combo} occasions={occasions} disabled={!editable} onSave={(m) => run(() => updateComboMeta(combo.id, m))} />
 
         {combo.occasionDate && (
           <p className="text-sm -mt-2" style={{ color: "var(--ink-2)" }}>{formatDayMonth(combo.occasionDate)}, {countdownLabel(days!)}</p>
@@ -114,45 +117,52 @@ export function ComboEditor({ combo, available, purchasedElsewhere, occasions, r
             </li>
           )}
           {combo.lines.map((l) => (
-            <ComboLineRow key={l.id} line={l} status={combo.status} pending={pending}
+            <ComboLineRow key={l.id} line={l} status={combo.status} editing={editable} pending={pending}
               onQty={(q) => run(() => setQuantity(combo.id, l.id, q))}
               onPaid={(v) => run(() => setPaid(combo.id, l.id, v))}
               onRemove={() => run(() => removeLine(combo.id, l.id))} />
           ))}
         </ul>
 
-        {editable && <ExtraForm onAdd={(e) => run(() => addExtra(combo.id, e))} pending={pending} />}
-
-        {/* ações de etapa */}
-        <div className="actions pt-2">
-          {combo.status === "montado" && (
-            <button className="btn btn-primary" disabled={pending || !combo.lines.length} onClick={() => run(() => setComboStage(combo.id, "comprado"))}>Marcar como comprado</button>
-          )}
-          {combo.status === "comprado" && (
-            <button className="btn btn-ghost" disabled={pending} onClick={() => run(() => setComboStage(combo.id, "montado"))}>Voltar para montado</button>
-          )}
-          {combo.status !== "dado" && (
+        {editable ? (
+          <>
+            <div className="lg:hidden">
+              <button type="button" className="btn btn-ribbon w-full" onClick={() => setListOpen(true)}>
+                + Adicionar da lista {recipientName.endsWith("a") ? "da" : "do"} {recipientName}
+              </button>
+            </div>
+            <ExtraForm onAdd={(e) => run(() => addExtra(combo.id, e))} pending={pending} />
+            <p className="text-sm" style={{ color: "var(--ink-2)" }}>Tudo o que você adiciona já fica salvo no presente.</p>
+            <div className="actions">
+              <button className="btn btn-primary" disabled={pending} onClick={() => { setBuilding(false); router.push("/combos"); }}>Concluir presente</button>
+              <button className="btn btn-ghost" style={{ color: "var(--error-ink)" }} disabled={pending}
+                onClick={() => { if (confirm("Excluir este presente? Os itens continuam na lista.")) run(() => deleteCombo(combo.id)); }}>
+                Excluir presente
+              </button>
+            </div>
+          </>
+        ) : combo.status !== "dado" && (
+          <div className="actions pt-2">
+            {combo.status === "montado" && (
+              <button className="btn btn-primary" disabled={pending || !combo.lines.length} onClick={() => run(() => setComboStage(combo.id, "comprado"))}>Marcar como comprado</button>
+            )}
             <GiveButton disabled={pending || !combo.lines.length} recipientName={recipientName}
               onConfirm={() => start(async () => {
                 setError(null);
                 const res = await setComboStage(combo.id, "dado");
                 if (res.ok) { setCelebrate(true); bunnyCheer("combo:dado"); } else setError(res.error);
               })} />
-          )}
-          {combo.status !== "dado" && (
-            <button className="btn btn-ghost" style={{ color: "var(--error-ink)" }} disabled={pending}
-              onClick={() => { if (confirm("Excluir este presente? Os itens continuam na lista.")) run(() => deleteCombo(combo.id)); }}>
-              Excluir presente
-            </button>
-          )}
-        </div>
+            {combo.status === "montado" && <button className="btn btn-ghost" disabled={pending} onClick={() => setBuilding(true)}>Editar itens</button>}
+            {combo.status === "comprado" && <button className="btn btn-ghost" disabled={pending} onClick={() => run(() => setComboStage(combo.id, "montado"))}>Voltar para montado</button>}
+          </div>
+        )}
         {combo.status === "comprado" && <p className="text-sm -mt-2" style={{ color: "var(--ink-2)" }}>Os itens únicos estão reservados em segredo: {recipientName} não vê.</p>}
       </div>
 
       {editable && (
         <AddFromList available={available} combo={combo} purchasedElsewhere={purchasedElsewhere} recipientName={recipientName}
           remainingCents={budget?.remainingCents ?? null} refreshing={refreshing} pending={pending}
-          onAdd={(itemId) => run(() => addItemToCombo(combo.id, itemId))} onDone={() => router.refresh()} />
+          onAdd={(itemId) => run(() => addItemToCombo(combo.id, itemId))} open={listOpen} onClose={() => setListOpen(false)} />
       )}
     </div>
   );
@@ -165,9 +175,9 @@ function MetaEditor({ combo, occasions, disabled, onSave }: { combo: Combo; occa
   const [budget, setBudget] = useState(centsToInput(combo.budgetCents));
   if (!open) {
     return (
-      <div className="flex flex-wrap items-center gap-3">
+      <div className="flex items-start justify-between gap-3">
         <h2 className="display text-[1.8rem] sm:text-[2.2rem] min-w-0 break-words">{combo.name}</h2>
-        {!disabled && <button className="btn btn-ghost btn-sm" onClick={() => setOpen(true)}>Editar nome, data e orçamento</button>}
+        {!disabled && <IconButton label="Editar nome, data e orçamento" onClick={() => setOpen(true)}><PencilIcon /></IconButton>}
       </div>
     );
   }
@@ -187,11 +197,11 @@ function MetaEditor({ combo, occasions, disabled, onSave }: { combo: Combo; occa
   );
 }
 
-function ComboLineRow({ line, status, pending, onQty, onPaid, onRemove }: {
-  line: ComboLine; status: Combo["status"]; pending: boolean; onQty: (q: number) => void; onPaid: (v: string) => void; onRemove: () => void;
+function ComboLineRow({ line, status, editing, pending, onQty, onPaid, onRemove }: {
+  line: ComboLine; status: Combo["status"]; editing: boolean; pending: boolean; onQty: (q: number) => void; onPaid: (v: string) => void; onRemove: () => void;
 }) {
   const [paid, setPaidValue] = useState(centsToInput(line.paidCents));
-  const canQty = status === "montado" && (line.isExtra || line.kind === "sempre");
+  const canQty = editing && (line.isExtra || line.kind === "sempre");
   const emoji = line.category ? CATEGORY_EMOJI[line.category as Category] : line.isExtra ? "✨" : "🎁";
   return (
     <li className={`tag ${line.kind === "sempre" ? "sempre" : ""}`} style={{ gridTemplateColumns: "52px 1fr auto" }}>
@@ -223,7 +233,7 @@ function ComboLineRow({ line, status, pending, onQty, onPaid, onRemove }: {
         <span className="font-extrabold whitespace-nowrap" style={{ fontVariationSettings: "'wdth' 80" }}>
           {line.paidCents == null && line.unitPriceCents == null ? "Sem preço" : formatPrice(lineTotal(line))}
         </span>
-        {status === "montado" && <IconButton label={`Tirar ${line.title} do presente`} disabled={pending} onClick={onRemove} className="relative z-10"><TrashIcon /></IconButton>}
+        {editing && <IconButton label={`Tirar ${line.title} do presente`} disabled={pending} onClick={onRemove} className="relative z-10"><TrashIcon /></IconButton>}
       </div>
     </li>
   );
@@ -261,55 +271,139 @@ function GiveButton({ disabled, recipientName, onConfirm }: { disabled: boolean;
   );
 }
 
-function AddFromList({ available, combo, purchasedElsewhere, recipientName, remainingCents, refreshing, pending, onAdd }: {
+type ListProps = {
   available: Item[]; combo: Combo; purchasedElsewhere: string[]; recipientName: string; remainingCents: number | null;
-  refreshing: boolean; pending: boolean; onAdd: (itemId: string) => void; onDone: () => void;
-}) {
+  refreshing: boolean; pending: boolean; onAdd: (itemId: string) => void;
+};
+type PriceFilter = "todos" | "cabe" | "50" | "100" | "200" | "300";
+const PRICE_CHIPS: Array<[PriceFilter, string]> = [["50", "Até R$ 50"], ["100", "Até R$ 100"], ["200", "Até R$ 200"], ["300", "Até R$ 300"]];
+
+/** Desktop: painel fixo ao lado. Celular: botão que abre a lista em tela cheia. */
+function AddFromList({ open, onClose, ...props }: ListProps & { open: boolean; onClose: () => void }) {
+  const setOpen = (v: boolean) => { if (!v) onClose(); };
+  const { recipientName } = props;
+  const article = recipientName.endsWith("a") ? "da" : "do";
+  useEffect(() => {
+    if (!open) return;
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    const onKey = (e: KeyboardEvent) => { if (e.key === "Escape") setOpen(false); };
+    window.addEventListener("keydown", onKey);
+    return () => { document.body.style.overflow = prev; window.removeEventListener("keydown", onKey); };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open]);
+  return (
+    <>
+      <aside className="hidden lg:flex flex-col gap-3 sticky top-6 rounded-[20px] border-2 p-4 max-h-[calc(100dvh-48px)]"
+        style={{ background: "var(--surface)", borderColor: "var(--line)" }} aria-label="Adicionar da lista">
+        <ListPanel {...props} />
+      </aside>
+      {open && (
+        <div role="dialog" aria-modal="true" aria-label={`Lista ${article} ${recipientName}`}
+          className="lg:hidden fixed inset-0 z-[60] flex flex-col" style={{ background: "var(--surface)" }}>
+          <div className="flex items-center justify-between gap-3 px-4 pt-[max(16px,env(safe-area-inset-top))] pb-2">
+            <p className="text-sm font-semibold" style={{ color: "var(--ink-2)" }}>
+              {props.remainingCents == null ? "Sem orçamento definido"
+                : props.remainingCents >= 0 ? `Cabem mais ${formatPrice(props.remainingCents)}` : `Passou ${formatPrice(-props.remainingCents)} do orçamento`}
+            </p>
+            <IconButton label="Fechar" onClick={() => setOpen(false)}><CloseIcon /></IconButton>
+          </div>
+          <div className="flex-1 min-h-0 flex flex-col gap-3 px-4">
+            <ListPanel {...props} />
+          </div>
+          <div className="px-4 pt-3 pb-[max(16px,env(safe-area-inset-bottom))]">
+            <button type="button" className="btn btn-primary w-full" onClick={() => setOpen(false)}>Pronto</button>
+          </div>
+        </div>
+      )}
+    </>
+  );
+}
+
+function ListPanel({ available, combo, purchasedElsewhere, recipientName, remainingCents, refreshing, pending, onAdd }: ListProps) {
   const [query, setQuery] = useState("");
-  const [onlyFits, setOnlyFits] = useState(false);
-  const inCombo = new Set(combo.lines.map((l) => l.itemId).filter(Boolean) as string[]);
-  const elsewhere = new Set(purchasedElsewhere);
-  const list = useMemo(() => available
-    .filter((i) => !inCombo.has(i.id))
-    .filter((i) => matchesSearch(i, query))
-    .filter((i) => !onlyFits || remainingCents == null || (i.priceCents !== null && i.priceCents <= remainingCents))
-    .sort((a, b) => (a.priceCents ?? Infinity) - (b.priceCents ?? Infinity)),
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  [available, query, onlyFits, remainingCents, combo.lines]);
+  const [price, setPrice] = useState<PriceFilter>("todos");
+  const [category, setCategory] = useState<string | null>(null);
+  const [sort, setSort] = useState<"menor" | "maior" | "recentes">("menor");
+  const [added, setAdded] = useState<string | null>(null);
+  const inCombo = useMemo(() => new Set(combo.lines.map((l) => l.itemId).filter(Boolean) as string[]), [combo.lines]);
+  const elsewhere = useMemo(() => new Set(purchasedElsewhere), [purchasedElsewhere]);
+  const categories = useMemo(() => [...new Set(available.map((i) => i.category))].sort((a, b) => a.localeCompare(b, "pt-BR")), [available]);
+
+  const list = useMemo(() => {
+    const max = price === "todos" ? null : price === "cabe" ? remainingCents : Number(price) * 100;
+    const out = available
+      .filter((i) => !inCombo.has(i.id))
+      .filter((i) => matchesSearch(i, query))
+      .filter((i) => !category || i.category === category)
+      .filter((i) => max == null || (i.priceCents !== null && i.priceCents <= max));
+    if (sort === "menor") out.sort((a, b) => (a.priceCents ?? Infinity) - (b.priceCents ?? Infinity));
+    if (sort === "maior") out.sort((a, b) => (b.priceCents ?? -1) - (a.priceCents ?? -1));
+    if (sort === "recentes") out.sort((a, b) => b.createdAt.localeCompare(a.createdAt));
+    return out;
+  }, [available, inCombo, query, category, price, sort, remainingCents]);
+
+  const priceChips: Array<[PriceFilter, string]> = remainingCents != null && remainingCents > 0
+    ? [["cabe", `Cabe em ${formatPrice(remainingCents)}`], ...PRICE_CHIPS]
+    : PRICE_CHIPS;
 
   return (
-    <aside className="flex flex-col gap-3 lg:sticky lg:top-6 rounded-[20px] border-2 p-4" style={{ background: "var(--surface)", borderColor: "var(--line)" }} aria-label="Adicionar da lista">
+    <>
       <div className="flex items-baseline justify-between gap-2">
         <h2 className="text-lg font-extrabold" style={{ fontVariationSettings: "'wdth' 85" }}>Da lista {recipientName.endsWith("a") ? "da" : "do"} {recipientName}</h2>
         {refreshing && <span className="text-xs font-semibold" style={{ color: "var(--ink-2)" }}>atualizando preços…</span>}
       </div>
-      <input type="search" className="field !text-base" placeholder="Buscar na lista" value={query} onChange={(e) => setQuery(e.target.value)} aria-label="Buscar na lista" />
-      {remainingCents != null && (
-        <button type="button" className="chip self-start" aria-pressed={onlyFits} onClick={() => setOnlyFits(!onlyFits)}>
-          {remainingCents >= 0 ? `Só o que cabe em ${formatPrice(remainingCents)}` : "Só o que cabe no orçamento"}
-        </button>
-      )}
-      <ul className="flex flex-col gap-2 max-h-[60vh] overflow-y-auto pr-1">
-        {list.length === 0 && <li className="text-sm py-4 text-center" style={{ color: "var(--ink-2)" }}>Nada para adicionar aqui.</li>}
+      <div className="grid grid-cols-[1fr_auto] gap-2">
+        <input type="search" className="field !text-base min-w-0" placeholder="Buscar" value={query} onChange={(e) => setQuery(e.target.value)} aria-label="Buscar por nome, loja ou cor" />
+        <select className="field !text-base" value={sort} onChange={(e) => setSort(e.target.value as typeof sort)} aria-label="Ordenar">
+          <option value="menor">Menor preço</option>
+          <option value="maior">Maior preço</option>
+          <option value="recentes">Recentes</option>
+        </select>
+      </div>
+      <div className="flex flex-col gap-2">
+        <div className="flex gap-2 overflow-x-auto pb-1 -mx-1 px-1 [scrollbar-width:none]" role="group" aria-label="Preço">
+          {priceChips.map(([v, label]) => (
+            <button key={v} type="button" className="chip" aria-pressed={price === v} onClick={() => setPrice(price === v ? "todos" : v)}>{label}</button>
+          ))}
+        </div>
+        {categories.length > 1 && (
+          <div className="flex gap-2 overflow-x-auto pb-1 -mx-1 px-1 [scrollbar-width:none]" role="group" aria-label="Categoria">
+            {categories.map((c) => (
+              <button key={c} type="button" className="chip" aria-pressed={category === c} onClick={() => setCategory(category === c ? null : c)}>
+                {CATEGORY_EMOJI[c]} {c}
+              </button>
+            ))}
+          </div>
+        )}
+      </div>
+      <p className="text-xs font-semibold" style={{ color: "var(--ink-2)" }} aria-live="polite">
+        {added ? `“${added}” entrou no presente.` : `${list.length} ${list.length === 1 ? "item" : "itens"}`}
+      </p>
+      <ul className="flex flex-col gap-2 flex-1 min-h-0 overflow-y-auto overscroll-contain pr-1">
+        {list.length === 0 && <li className="text-sm py-6 text-center" style={{ color: "var(--ink-2)" }}>Nada com esses filtros.</li>}
         {list.map((i) => {
           const fits = remainingCents == null || (i.priceCents !== null && i.priceCents <= remainingCents);
           const blocked = i.kind === "unico" && elsewhere.has(i.id);
           return (
             <li key={i.id} className="flex items-center gap-3 rounded-xl p-2" style={{ background: "var(--bg)", opacity: fits ? 1 : 0.6 }}>
-              <div className="w-11 h-11 rounded-lg overflow-hidden grid place-items-center text-xl shrink-0" style={{ background: "var(--surface)" }}>
+              <div className="w-12 h-12 rounded-lg overflow-hidden grid place-items-center text-xl shrink-0" style={{ background: "var(--surface)" }}>
                 {i.imageUrl ? <img src={i.imageUrl} alt="" className="w-full h-full object-cover" referrerPolicy="no-referrer" /> : CATEGORY_EMOJI[i.category]}
               </div>
               <div className="min-w-0 flex-1">
                 <p className="font-bold text-sm leading-tight line-clamp-2">{i.title}</p>
-                <p className="text-xs" style={{ color: "var(--ink-2)" }}>{blocked ? "Já está em outro presente comprado" : i.kind === "sempre" ? "Sempre bem-vindo" : (i.store ?? "")}</p>
+                <p className="text-xs truncate" style={{ color: "var(--ink-2)" }}>
+                  {blocked ? "Já está em outro presente comprado" : i.kind === "sempre" ? "Sempre bem-vindo" : (i.store ?? i.category)}
+                </p>
               </div>
               <span className="text-sm font-extrabold whitespace-nowrap">{formatPrice(i.priceCents)}</span>
-              <button type="button" className="w-9 h-9 rounded-full grid place-items-center font-black shrink-0" aria-label={`Adicionar ${i.title}`}
-                style={{ background: "var(--ribbon)", color: "var(--on-ribbon)" }} disabled={pending || blocked} onClick={() => onAdd(i.id)}>+</button>
+              <button type="button" className="w-11 h-11 rounded-full grid place-items-center text-lg font-black shrink-0 disabled:opacity-40"
+                aria-label={`Adicionar ${i.title}`} style={{ background: "var(--ribbon)", color: "var(--on-ribbon)" }} disabled={pending || blocked}
+                onClick={() => { onAdd(i.id); setAdded(i.title); }}>+</button>
             </li>
           );
         })}
       </ul>
-    </aside>
+    </>
   );
 }

@@ -72,7 +72,7 @@ export async function giveThis(itemId: string): Promise<Result> {
   if (!item) return fail("Item não encontrado.");
   const res = await createCombo({ name: `Presente: ${item.title}`.slice(0, 80), occasionId: null, itemId });
   if (!res.id) return fail("error" in res ? res.error : "Não deu para criar o presente.");
-  redirect(`/combos/${res.id}`);
+  redirect(`/combos/${res.id}?montar=1`);
 }
 
 export async function updateComboMeta(comboId: string, input: { name: string; occasionId: string | null; budget?: string }): Promise<Result> {
