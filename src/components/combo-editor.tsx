@@ -8,6 +8,7 @@ import {
 import { boughtByOwnerAlerts, budgetState, comboTotal, countdownLabel, daysBetween, formatDayMonth, lineTotal, todayInSaoPaulo, type Combo, type ComboLine } from "@/lib/combos/domain";
 import { CATEGORY_EMOJI, formatPrice, matchesSearch, type Category, type Item } from "@/lib/items/domain";
 import { bunnyCheer } from "./bunnies";
+import { useConfirm } from "./confirm";
 import { Heart } from "./heart";
 import { CloseIcon, IconButton, PencilIcon, TrashIcon } from "./icons";
 import { StageSteps } from "./stage-steps";
@@ -23,6 +24,7 @@ export function ComboEditor({ combo, available, purchasedElsewhere, occasions, r
   const [error, setError] = useState<string | null>(null);
   const [celebrate, setCelebrate] = useState(false);
   const [listOpen, setListOpen] = useState(false);
+  const ask = useConfirm();
   // "Montando": adicionar/tirar itens. "Resumo": avançar etapas. Só presentes montados podem ser editados.
   const [building, setBuilding] = useState(startBuilding && combo.status === "montado");
   const editable = building && combo.status === "montado";
@@ -120,7 +122,10 @@ export function ComboEditor({ combo, available, purchasedElsewhere, occasions, r
             <ComboLineRow key={l.id} line={l} status={combo.status} editing={editable} pending={pending}
               onQty={(q) => run(() => setQuantity(combo.id, l.id, q))}
               onPaid={(v) => run(() => setPaid(combo.id, l.id, v))}
-              onRemove={() => run(() => removeLine(combo.id, l.id))} />
+              onRemove={async () => {
+                if (await ask({ title: "Tirar do presente?", body: <>“{l.title}” sai deste presente, mas continua na lista.</>, confirmLabel: "Tirar", tone: "danger" }))
+                  run(() => removeLine(combo.id, l.id));
+              }} />
           ))}
         </ul>
 
@@ -136,7 +141,10 @@ export function ComboEditor({ combo, available, purchasedElsewhere, occasions, r
             <div className="actions">
               <button className="btn btn-primary" disabled={pending} onClick={() => { setBuilding(false); router.push("/combos"); }}>Concluir presente</button>
               <button className="btn btn-ghost" style={{ color: "var(--error-ink)" }} disabled={pending}
-                onClick={() => { if (confirm("Excluir este presente? Os itens continuam na lista.")) run(() => deleteCombo(combo.id)); }}>
+                onClick={async () => {
+                  if (await ask({ title: "Excluir este presente?", body: <>“{combo.name}” some de Meus combos. Os itens continuam na lista.</>, confirmLabel: "Excluir presente", tone: "danger" }))
+                    run(() => deleteCombo(combo.id));
+                }}>
                 Excluir presente
               </button>
             </div>
@@ -146,7 +154,7 @@ export function ComboEditor({ combo, available, purchasedElsewhere, occasions, r
             {combo.status === "montado" && (
               <button className="btn btn-primary" disabled={pending || !combo.lines.length} onClick={() => run(() => setComboStage(combo.id, "comprado"))}>Marcar como comprado</button>
             )}
-            <GiveButton disabled={pending || !combo.lines.length} recipientName={recipientName}
+            <GiveButton disabled={pending || !combo.lines.length} recipientName={recipientName} ask={ask}
               onConfirm={() => start(async () => {
                 setError(null);
                 const res = await setComboStage(combo.id, "dado");
@@ -259,15 +267,11 @@ function ExtraForm({ onAdd, pending }: { onAdd: (e: { title: string; price: stri
   );
 }
 
-function GiveButton({ disabled, recipientName, onConfirm }: { disabled: boolean; recipientName: string; onConfirm: () => void }) {
-  const [confirming, setConfirming] = useState(false);
-  if (!confirming) return <button className="btn btn-ghost" disabled={disabled} onClick={() => setConfirming(true)}>Marcar como dado</button>;
+function GiveButton({ disabled, recipientName, ask, onConfirm }: { disabled: boolean; recipientName: string; ask: ReturnType<typeof useConfirm>; onConfirm: () => void }) {
   return (
-    <span className="flex flex-wrap items-center gap-2 rounded-2xl px-3 py-2" style={{ background: "var(--surface)", border: "2px solid var(--line)" }}>
-      <span className="font-semibold text-sm">Já entregou para {recipientName}? Isso não dá para desfazer.</span>
-      <button className="btn btn-primary btn-sm" onClick={() => { setConfirming(false); onConfirm(); }}>Sim, já dei</button>
-      <button className="btn btn-ghost btn-sm" onClick={() => setConfirming(false)}>Ainda não</button>
-    </span>
+    <button className="btn btn-ghost" disabled={disabled} onClick={async () => {
+      if (await ask({ title: `Já entregou para ${recipientName}?`, body: "Os itens únicos vão para os Recebidos e isso não dá para desfazer.", confirmLabel: "Sim, já dei" })) onConfirm();
+    }}>Marcar como dado</button>
   );
 }
 

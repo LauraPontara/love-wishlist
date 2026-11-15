@@ -3,9 +3,12 @@
 import Link from "next/link";
 import { useEffect, useMemo, useState, useTransition } from "react";
 import { giveThis, shouldWaitBeforeOwning } from "@/app/actions/combos";
-import { restoreItem, setOwned } from "@/app/actions/items";
+import { deleteItem, restoreItem, setOwned } from "@/app/actions/items";
 import { shortDate } from "@/lib/combos/domain";
 import { CATEGORIES, matchesSearch, parsePrice, type Item } from "@/lib/items/domain";
+import { useConfirm } from "./confirm";
+import { TrashIcon } from "./icons";
+import { Swipe } from "./swipe";
 import { TagCard } from "./tag-card";
 
 type Tab = "desejado" | "ja_tenho" | "recebido";
@@ -20,7 +23,7 @@ export function ItemBrowser({ items, mode, ownerName, gifts = {}, purchasedByMe 
   items: Item[]; mode: "mine" | "partner"; ownerName: string;
   gifts?: Record<string, Gift>; purchasedByMe?: string[];
 }) {
-  const [confirmWait, setConfirmWait] = useState<Item | null>(null);
+  const ask = useConfirm();
   const purchased = useMemo(() => new Set(purchasedByMe), [purchasedByMe]);
   const [tab, setTab] = useState<Tab>("desejado");
   const [query, setQuery] = useState("");
@@ -74,8 +77,9 @@ export function ItemBrowser({ items, mode, ownerName, gifts = {}, purchasedByMe 
   // RF15: antes de marcar "Já tenho", um aviso vago se o outro já comprou (sem revelar nada)
   const askOwned = (item: Item) =>
     startTransition(async () => {
-      if (await shouldWaitBeforeOwning(item.id)) setConfirmWait(item);
-      else toggleOwned(item, true);
+      if (await shouldWaitBeforeOwning(item.id)
+        && !(await ask({ title: "Tem certeza?", body: "Talvez seja melhor esperar um pouco 👀", confirmLabel: "Marcar mesmo assim", cancelLabel: "Vou esperar" }))) return;
+      toggleOwned(item, true);
     });
 
   const toggleOwned = (item: Item, owned: boolean) =>
@@ -85,6 +89,18 @@ export function ItemBrowser({ items, mode, ownerName, gifts = {}, purchasedByMe 
         ? { text: owned ? `"${item.title}" foi para "Já tenho".` : `"${item.title}" voltou para os desejos.`, undo: () => startTransition(async () => { await setOwned(item.id, !owned); setToast(null); }) }
         : { text: res.error ?? "Não deu para atualizar." });
     });
+
+  const remove = async (item: Item) => {
+    const ok = await ask({ title: "Excluir este item?", body: <>“{item.title}” sai da sua lista. Dá para desfazer logo em seguida.</>, confirmLabel: "Excluir item", tone: "danger" });
+    if (!ok) return;
+    startTransition(async () => {
+      const res = await deleteItem(item.id);
+      const snapshot = res.snapshot;
+      setToast(res.ok && snapshot
+        ? { text: `"${item.title}" foi excluído.`, undo: () => startTransition(async () => { await restoreItem(snapshot); setToast({ text: "Item restaurado." }); }) }
+        : { text: "Não deu para excluir." });
+    });
+  };
 
   const filtersActive = query || category || kind !== "todos" || budget;
 
@@ -129,7 +145,9 @@ export function ItemBrowser({ items, mode, ownerName, gifts = {}, purchasedByMe 
           {visible.map((item) => (
             <li key={item.id}>
               {mode === "mine" ? (
-                <TagCard item={item} href={`/item/${item.id}`} dim={item.status !== "desejado"}
+                <Swipe radius="0 16px 16px 0" label={`Ações de ${item.title}`}
+                  actions={[{ label: "Excluir", icon: <TrashIcon />, style: { background: "#C81E4A", color: "#fff" }, disabled: pending, onClick: () => remove(item) }]}>
+                <TagCard item={item} href={`/item/${item.id}`} dim={item.status !== "desejado"} storeLink
                   badge={item.kind === "sempre"
                     ? <span className="badge sempre">{gifts[item.id] ? `Sempre bem-vindo, ganhou ${gifts[item.id].times}x, última em ${shortDate(gifts[item.id].lastAt)}` : "Sempre bem-vindo"}</span>
                     : item.status === "recebido"
@@ -141,6 +159,7 @@ export function ItemBrowser({ items, mode, ownerName, gifts = {}, purchasedByMe 
                       {item.status === "desejado" ? "Já tenho" : "Voltar"}
                     </button>
                   )} />
+                </Swipe>
               ) : (
                 <TagCard item={item} href={item.url} external dim={purchased.has(item.id) && item.kind === "unico"}
                   badge={purchased.has(item.id)
@@ -154,19 +173,6 @@ export function ItemBrowser({ items, mode, ownerName, gifts = {}, purchasedByMe 
             </li>
           ))}
         </ul>
-      )}
-
-      {confirmWait && (
-        <div role="alertdialog" aria-modal="true" aria-labelledby="wait-title" className="fixed inset-0 z-50 grid place-items-center p-4" style={{ background: "rgba(14,12,38,.55)" }}>
-          <div className="w-full max-w-[420px] rounded-[24px] p-6 flex flex-col gap-4" style={{ background: "var(--surface)" }}>
-            <h2 id="wait-title" className="text-xl font-extrabold">Tem certeza?</h2>
-            <p style={{ color: "var(--ink-2)" }}>Talvez seja melhor esperar um pouco 👀</p>
-            <div className="flex flex-wrap gap-2 justify-end">
-              <button className="btn btn-ghost" onClick={() => setConfirmWait(null)}>Vou esperar</button>
-              <button className="btn btn-primary" onClick={() => { const item = confirmWait; setConfirmWait(null); toggleOwned(item, true); }}>Marcar mesmo assim</button>
-            </div>
-          </div>
-        </div>
       )}
 
       {toast && (

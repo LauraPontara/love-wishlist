@@ -1,9 +1,12 @@
 import type { ReactNode } from "react";
 import { CATEGORY_EMOJI, formatPrice, type Item } from "@/lib/items/domain";
+import { ExternalIcon } from "./icons";
 
 /** Item como etiqueta de presente (design-system §5). */
-export function TagCard({ item, href, external, badge, action, dim }: {
+export function TagCard({ item, href, external, badge, action, dim, storeLink }: {
   item: Item; href?: string; external?: boolean; badge?: ReactNode; action?: ReactNode; dim?: boolean;
+  /** mostra um botão para abrir o produto na loja (quando o cartão leva para outro lugar) */
+  storeLink?: boolean;
 }) {
   const className = `tag ${item.kind === "sempre" ? "sempre" : ""} ${dim ? "dim" : ""}`;
   const variant = Object.values(item.variant).join(", ");
@@ -25,7 +28,15 @@ export function TagCard({ item, href, external, badge, action, dim }: {
         <span className="font-extrabold text-[1.05rem] whitespace-nowrap" style={{ fontVariationSettings: "'wdth' 80", color: item.priceCents === null ? "var(--ink-2)" : undefined }}>
           {formatPrice(item.priceCents)}
         </span>
-        {action}
+        {(action || (storeLink && item.url)) && (
+          <div className="flex items-center gap-1.5">
+            {storeLink && item.url && (
+              <a href={item.url} target="_blank" rel="noopener noreferrer" className="icon-btn relative z-10 !w-[42px] !h-[42px]"
+                aria-label={`Abrir ${item.title} na loja`} title="Abrir na loja"><ExternalIcon /></a>
+            )}
+            {action}
+          </div>
+        )}
       </div>
     </>
   );

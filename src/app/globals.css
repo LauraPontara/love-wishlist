@@ -68,6 +68,24 @@ body {
 .btn-ribbon { background: var(--ribbon); color: var(--on-ribbon); box-shadow: 0 5px 0 var(--ribbon-edge); }
 .btn-ribbon:active { translate: 0 3px; box-shadow: 0 2px 0 var(--ribbon-edge); }
 .btn-sm { padding: 8px 12px; font-size: .85rem; border-radius: 12px; }
+.btn-danger { background: #C81E4A; color: #FFFFFF; box-shadow: 0 5px 0 #8E1233; }
+.btn-danger:active { translate: 0 3px; box-shadow: 0 2px 0 #8E1233; }
+
+/* ---------- diálogo de confirmação ---------- */
+@media (prefers-reduced-motion: no-preference) {
+  .confirm-backdrop { animation: fade-in var(--t-base) var(--ease-out) both; }
+  .confirm-sheet { animation: sheet-up var(--t-slow) var(--spring) both; }
+  @keyframes fade-in { from { opacity: 0; } }
+  @keyframes sheet-up { from { translate: 0 40px; opacity: 0; } }
+}
+
+/* ---------- card deslizável (Meus combos) ---------- */
+.swipe { position: relative; border-radius: 20px; overflow: hidden; touch-action: pan-y; }
+.swipe-actions { position: absolute; inset: 0 0 0 auto; display: flex; width: 168px; }
+.swipe-actions button { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; font-weight: 800; font-size: .85rem; border: 0; cursor: pointer; }
+.swipe-actions button:focus-visible { outline: 3px solid var(--ribbon); outline-offset: -4px; }
+.swipe-front { position: relative; will-change: translate; }
+.swipe-front.settle { transition: translate var(--t-slow) var(--spring); }
 
 /* ---------- etiqueta (item) ---------- */
 .tag {

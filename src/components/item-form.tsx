@@ -5,6 +5,8 @@ import { useActionState, useState, useTransition } from "react";
 import { shouldWaitBeforeOwning } from "@/app/actions/combos";
 import { deleteItem, setOwned, type FormState } from "@/app/actions/items";
 import { CATEGORIES, parsePrice, parseVariant, storeFromUrl, variantToText, type Item } from "@/lib/items/domain";
+import { useConfirm } from "./confirm";
+import { ExternalIcon } from "./icons";
 import { TagCard } from "./tag-card";
 import { UNDO_KEY } from "./item-browser";
 
@@ -45,7 +47,13 @@ export function ItemForm({ action, item }: { action: Action; item?: Item }) {
         {state.error && <p role="alert" className="rounded-xl px-4 py-3 font-semibold" style={{ background: "var(--error-bg)", color: "var(--error-ink)" }}>{state.error}</p>}
 
         <Field label="Link do produto (opcional)" hint="Se tiver, cole o link com a cor e o tamanho já escolhidos no site." error={err.url}>
-          <input name="url" className="field" type="url" inputMode="url" placeholder="https://" value={values.url} onChange={set("url")} />
+          <div className="flex gap-2">
+            <input name="url" className="field" type="url" inputMode="url" placeholder="https://" value={values.url} onChange={set("url")} />
+            {/^https?:\/\//.test(values.url.trim()) && (
+              <a href={values.url.trim()} target="_blank" rel="noopener noreferrer" className="icon-btn !w-[54px] !h-auto"
+                aria-label="Abrir o link na loja" title="Abrir na loja"><ExternalIcon /></a>
+            )}
+          </div>
         </Field>
         {item && values.url.trim() && (
           <RefetchPanel url={values.url} linkChanged={Boolean(linkChanged)}
@@ -179,8 +187,8 @@ function RefetchPanel({ url, linkChanged, onApply }: { url: string; linkChanged:
 
 function ItemExtraActions({ item }: { item: Item }) {
   const router = useRouter();
+  const ask = useConfirm();
   const [pending, start] = useTransition();
-  const [confirming, setConfirming] = useState(false);
 
   return (
     <>
@@ -189,26 +197,23 @@ function ItemExtraActions({ item }: { item: Item }) {
           onClick={() => start(async () => {
             const owning = item.status === "desejado";
             // RF15: aviso vago se o outro já comprou, sem revelar nada
-            if (owning && (await shouldWaitBeforeOwning(item.id)) && !confirm("Tem certeza? Talvez seja melhor esperar um pouco 👀")) return;
+            if (owning && (await shouldWaitBeforeOwning(item.id))
+              && !(await ask({ title: "Tem certeza?", body: "Talvez seja melhor esperar um pouco 👀", confirmLabel: "Marcar mesmo assim", cancelLabel: "Vou esperar" }))) return;
             await setOwned(item.id, owning); router.push("/");
           })}>
           {item.status === "desejado" ? "Já tenho" : "Voltar para os desejos"}
         </button>
       )}
-      {!confirming ? (
-        <button type="button" className="btn btn-ghost" style={{ color: "var(--error-ink)" }} onClick={() => setConfirming(true)}>Excluir</button>
-      ) : (
-        <span className="flex flex-wrap items-center gap-2 rounded-2xl px-3 py-2" style={{ background: "var(--error-bg)", color: "var(--error-ink)" }}>
-          <span className="font-semibold">Excluir este item?</span>
-          <button type="button" className="btn btn-primary btn-sm" disabled={pending}
-            onClick={() => start(async () => {
-              const res = await deleteItem(item.id);
-              if (res.ok && res.snapshot) { try { sessionStorage.setItem(UNDO_KEY, JSON.stringify(res.snapshot)); } catch {} }
-              router.push("/");
-            })}>Sim, excluir</button>
-          <button type="button" className="btn btn-ghost btn-sm" onClick={() => setConfirming(false)}>Cancelar</button>
-        </span>
-      )}
+      <button type="button" className="btn btn-ghost" style={{ color: "var(--error-ink)" }} disabled={pending}
+        onClick={async () => {
+          const ok = await ask({ title: "Excluir este item?", body: <>“{item.title}” sai da sua lista. Dá para desfazer logo em seguida.</>, confirmLabel: "Excluir item", tone: "danger" });
+          if (!ok) return;
+          start(async () => {
+            const res = await deleteItem(item.id);
+            if (res.ok && res.snapshot) { try { sessionStorage.setItem(UNDO_KEY, JSON.stringify(res.snapshot)); } catch {} }
+            router.push("/");
+          });
+        }}>Excluir</button>
     </>
   );
 }

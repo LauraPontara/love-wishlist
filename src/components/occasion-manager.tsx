@@ -3,6 +3,7 @@
 import { useState, useTransition } from "react";
 import { deleteOccasion, saveOccasion } from "@/app/actions/occasions";
 import { monthLong, monthShort } from "@/lib/combos/domain";
+import { useConfirm } from "./confirm";
 import { IconButton, PencilIcon } from "./icons";
 
 type Person = { id: string; displayName: string; avatar: string | null };
@@ -54,6 +55,7 @@ function OccasionForm({ people, occasion, onDone }: { people: Person[]; occasion
   const [honoreeId, setHonoreeId] = useState<string>(occasion?.honoreeId ?? "");
   const [error, setError] = useState<string | null>(null);
   const [pending, start] = useTransition();
+  const ask = useConfirm();
 
   return (
     <form className="grid gap-3 sm:grid-cols-2 xl:grid-cols-[1.5fr_1fr_1fr_80px_1fr] items-end rounded-[18px] border-2 p-4"
@@ -83,7 +85,10 @@ function OccasionForm({ people, occasion, onDone }: { people: Person[]; occasion
         <button type="button" className="btn btn-ghost btn-sm" onClick={onDone}>Cancelar</button>
         {occasion && (
           <button type="button" className="btn btn-ghost btn-sm ml-auto" style={{ color: "var(--error-ink)" }} disabled={pending}
-            onClick={() => { if (confirm(`Excluir “${occasion.name}”?`)) start(async () => { const r = await deleteOccasion(occasion.id); if (r.ok) onDone(); else setError(r.error); }); }}>
+            onClick={async () => {
+              if (await ask({ title: "Excluir esta data?", body: <>“{occasion.name}” sai do calendário e para de ter lembrete.</>, confirmLabel: "Excluir data", tone: "danger" }))
+                start(async () => { const r = await deleteOccasion(occasion.id); if (r.ok) onDone(); else setError(r.error); });
+            }}>
             Excluir data
           </button>
         )}
