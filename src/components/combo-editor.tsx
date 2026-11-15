@@ -6,15 +6,16 @@ import {
   addExtra, addItemToCombo, deleteCombo, refreshPrices, removeLine, setComboStage, setPaid, setQuantity, updateComboMeta,
 } from "@/app/actions/combos";
 import { boughtByOwnerAlerts, budgetState, comboTotal, countdownLabel, daysBetween, formatDayMonth, lineTotal, todayInSaoPaulo, type Combo, type ComboLine } from "@/lib/combos/domain";
-import { CATEGORY_EMOJI, formatPrice, matchesSearch, type Category, type Item } from "@/lib/items/domain";
+import { CATEGORY_EMOJI, centsToMoneyInput, formatPrice, matchesSearch, type Category, type Item } from "@/lib/items/domain";
 import { bunnyCheer } from "./bunnies";
 import { useConfirm } from "./confirm";
 import { Heart } from "./heart";
 import { CheckIcon, CloseIcon, IconButton, MinusIcon, PencilIcon, PlusIcon, StarIcon, TrashIcon } from "./icons";
+import { MoneyInput } from "./money-input";
 import { StageSteps } from "./stage-steps";
 
 type Occ = { id: string; name: string; label: string };
-const centsToInput = (c: number | null) => (c == null ? "" : (c / 100).toFixed(2).replace(".", ","));
+const centsToInput = centsToMoneyInput;
 
 export function ComboEditor({ combo, available, purchasedElsewhere, occasions, recipientName, startBuilding = false }: {
   combo: Combo; available: Item[]; purchasedElsewhere: string[]; occasions: Occ[]; recipientName: string; startBuilding?: boolean;
@@ -193,7 +194,7 @@ function MetaEditor({ combo, occasions, disabled, onSave }: { combo: Combo; occa
           {occasions.map((o) => <option key={o.id} value={o.id}>{o.label}</option>)}<option value="">Sem ocasião</option>
         </select></label>
       <label className="flex flex-col gap-1"><span className="text-sm font-bold">Orçamento</span>
-        <input className="field !text-base" inputMode="decimal" placeholder="R$" value={budget} onChange={(e) => setBudget(e.target.value)} /></label>
+        <MoneyInput className="field !text-base" label="Orçamento" placeholder="opcional" value={budget} onChange={setBudget} /></label>
       <div className="sm:col-span-3 actions"><button className="btn btn-primary btn-sm">Salvar</button><button type="button" className="btn btn-ghost btn-sm" onClick={() => setOpen(false)}>Cancelar</button></div>
     </form>
   );
@@ -225,8 +226,8 @@ function ComboLineRow({ line, status, editing, pending, onQty, onPaid, onRemove 
           {status === "comprado" && (
             <label className="inline-flex items-center gap-1.5 text-sm">
               <span style={{ color: "var(--ink-2)" }}>Paguei</span>
-              <input className="field !py-1 !px-2 !text-sm w-[92px]" inputMode="decimal" placeholder="R$" value={paid}
-                onChange={(e) => setPaidValue(e.target.value)} onBlur={() => paid !== centsToInput(line.paidCents) && onPaid(paid)} />
+              <span className="w-[120px]"><MoneyInput className="field !py-1 !pr-2 !text-sm" label="Quanto paguei" value={paid}
+                onChange={setPaidValue} onBlur={() => paid !== centsToInput(line.paidCents) && onPaid(paid)} /></span>
             </label>
           )}
         </div>
@@ -253,7 +254,7 @@ function ExtraForm({ onAdd, pending }: { onAdd: (e: { title: string; price: stri
       <label className="flex flex-col gap-1"><span className="text-sm font-bold">Extra</span>
         <input className="field !text-base" value={title} onChange={(e) => setTitle(e.target.value)} placeholder="Ex.: Flores do Vitório" required maxLength={120} /></label>
       <label className="flex flex-col gap-1"><span className="text-sm font-bold">Preço</span>
-        <input className="field !text-base" inputMode="decimal" value={price} onChange={(e) => setPrice(e.target.value)} placeholder="R$" /></label>
+        <MoneyInput className="field !text-base" label="Preço do extra" value={price} onChange={setPrice} /></label>
       <label className="flex flex-col gap-1 sm:col-span-2"><span className="text-sm font-bold">Link (opcional)</span>
         <input className="field !text-base" type="url" value={url} onChange={(e) => setUrl(e.target.value)} placeholder="https://" /></label>
       <div className="sm:col-span-2 actions"><button className="btn btn-primary btn-sm" disabled={pending}>Adicionar extra</button><button type="button" className="btn btn-ghost btn-sm" onClick={() => setOpen(false)}>Cancelar</button></div>

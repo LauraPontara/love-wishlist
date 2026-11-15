@@ -3,6 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
 import { createCombo } from "@/app/actions/combos";
+import { MoneyInput } from "./money-input";
 
 type Occ = { id: string; name: string; label: string };
 
@@ -50,7 +51,7 @@ export function NewComboForm({ occasions, partnerName }: { occasions: Occ[]; par
       </label>
       <label className="flex flex-col gap-1.5">
         <span className="font-bold text-sm">Orçamento</span>
-        <input className="field !text-base" inputMode="decimal" placeholder="R$ (opcional)" value={budget} onChange={(e) => setBudget(e.target.value)} />
+        <MoneyInput className="field !text-base" label="Orçamento" placeholder="opcional" value={budget} onChange={setBudget} />
       </label>
       {error && <p role="alert" className="sm:col-span-3 rounded-xl px-3 py-2 text-sm font-semibold" style={{ background: "var(--error-bg)", color: "var(--error-ink)" }}>{error}</p>}
       <div className="sm:col-span-3 actions">

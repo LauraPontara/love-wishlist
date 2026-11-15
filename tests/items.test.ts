@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { formatPrice, itemFormSchema, matchesSearch, normalizeUrl, parsePrice, parseVariant, storeFromUrl, variantToText } from "../src/lib/items/domain";
+import { centsToMoneyInput, formatPrice, itemFormSchema, maskMoney, matchesSearch, normalizeUrl, parsePrice, parseVariant, storeFromUrl, variantToText } from "../src/lib/items/domain";
 
 describe("normalizeUrl", () => {
   it("ignora www, barra final e rastreadores, mas mantém a variação", () => {
@@ -23,7 +23,7 @@ describe("storeFromUrl", () => {
 
 describe("preço", () => {
   it.each([
-    ["R$ 129,90", 12990], ["129,9", 12990], ["1.234,56", 123456], ["1234.56", 123456], ["1.234.567", 123456700], ["40", 4000],
+    ["R$ 129,90", 12990], ["129,9", 12990], ["1.234,56", 123456], ["1234.56", 123456], ["1.234.567", 123456700], ["40", 4000], ["1.234", 123400], ["60.5", 6050],
   ])("%s → %d centavos", (input, cents) => expect(parsePrice(input)).toBe(cents));
   it("vazio vira sem preço e texto vira inválido", () => {
     expect(parsePrice("")).toBeNull();
@@ -62,5 +62,20 @@ describe("formulário", () => {
   it("recusa links inválidos quando informados", () => {
     expect(itemFormSchema.safeParse({ ...base, url: "javascript:alert(1)" }).success).toBe(false);
     expect(itemFormSchema.safeParse({ ...base, url: "loja.com/p" }).success).toBe(false);
+  });
+});
+
+describe("máscara de dinheiro", () => {
+  it.each([
+    ["60", "60"], ["1234", "1.234"], ["1234,5", "1.234,5"], ["1234,567", "1.234,56"], ["60.5", "60,5"], ["60.50", "60,50"],
+    ["1.234", "1.234"], ["R$ 129,90", "129,90"], ["abc", ""], [",5", "0,5"], ["0060", "60"], ["12,3,4", "12,34"],
+  ])("%s → %s", (input, out) => expect(maskMoney(input)).toBe(out));
+  it("o que a máscara mostra é lido com o valor certo", () => {
+    for (const [typed, cents] of [["60", 6000], ["1234", 123400], ["1234,5", 123450], ["60.5", 6050]] as const)
+      expect(parsePrice(maskMoney(typed))).toBe(cents);
+  });
+  it("centavos voltam para o campo formatados", () => {
+    expect(centsToMoneyInput(123450)).toBe("1.234,50");
+    expect(centsToMoneyInput(null)).toBe("");
   });
 });

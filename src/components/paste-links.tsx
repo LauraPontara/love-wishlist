@@ -3,11 +3,12 @@
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useRef, useState, useTransition } from "react";
 import { createItems, type Draft } from "@/app/actions/items";
-import { CATEGORIES, CATEGORY_EMOJI, type Category } from "@/lib/items/domain";
+import { CATEGORIES, CATEGORY_EMOJI, centsToMoneyInput, type Category } from "@/lib/items/domain";
 import { extractUrls } from "@/lib/scrape/parse";
 import { bunnyCheer } from "./bunnies";
 import { CopyIcon, IconButton, TrashIcon } from "./icons";
 import type { ScrapeResult } from "@/lib/scrape/scrape";
+import { MoneyInput } from "./money-input";
 
 type Card = Draft & { key: string; errors?: Record<string, string> };
 
@@ -26,7 +27,7 @@ const TONE = {
 
 const toDraft = (r: ScrapeResult): Card => ({
   key: crypto.randomUUID(),
-  url: r.url, title: r.title ?? "", price: r.priceCents != null ? (r.priceCents / 100).toFixed(2).replace(".", ",") : "",
+  url: r.url, title: r.title ?? "", price: centsToMoneyInput(r.priceCents),
   store: r.store ?? "", category: r.category, kind: r.kind,
   variant: Object.entries(r.variant).map(([k, v]) => `${k}: ${v}`).join("; "),
   notes: "", imageUrl: r.imageUrl ?? "", scrapeStatus: r.status,
@@ -178,7 +179,7 @@ function ReviewCard({ card, onChange, onRemove, onDuplicate }: { card: Card; onC
         <div className="grid grid-cols-2 gap-2 min-w-0">
           <label className="flex flex-col gap-1 min-w-0">
             <span className="text-xs font-bold" style={{ color: "var(--ink-2)" }}>Preço</span>
-            <input className="field !py-2.5 !text-[.95rem]" style={missing(card.price)} inputMode="decimal" value={card.price} onChange={(e) => onChange({ price: e.target.value })} placeholder="R$" />
+            <MoneyInput className="field !py-2.5 !text-[.95rem]" style={missing(card.price)} label="Preço" value={card.price} onChange={(v) => onChange({ price: v })} />
             {err.price && <span className="text-xs font-semibold" style={{ color: "var(--error-ink)" }}>{err.price}</span>}
           </label>
           <label className="flex flex-col gap-1 min-w-0">

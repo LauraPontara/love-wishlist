@@ -83,9 +83,44 @@ export function parsePrice(input: string | null | undefined): number | null | "i
   if (!raw) return null;
   let normalized = raw;
   if (raw.includes(",")) normalized = raw.replace(/\./g, "").replace(",", ".");
-  else if ((raw.match(/\./g) ?? []).length > 1) normalized = raw.replace(/\./g, "");
+  // sem vírgula: "1.234" e "1.234.567" são milhar (jeito brasileiro); "60.5" e "1234.56" são centavos
+  else if (/^\d{1,3}(\.\d{3})+$/.test(raw)) normalized = raw.replace(/\./g, "");
   if (!/^\d+(\.\d{1,2})?$/.test(normalized)) return "invalido";
   return Math.round(Number(normalized) * 100);
+}
+
+/**
+ * Máscara de dinheiro enquanto digita: só números, ponto de milhar automático,
+ * uma vírgula e no máximo 2 centavos. "1234,5" → "1.234,5"; "60.5" → "60,5".
+ */
+export function maskMoney(input: string): string {
+  const s = input.replace(/[^\d.,]/g, "");
+  if (!s) return "";
+  let int: string;
+  let dec: string | null = null;
+  const comma = s.indexOf(",");
+  if (comma >= 0) {
+    int = s.slice(0, comma).replace(/\D/g, "");
+    dec = s.slice(comma + 1).replace(/\D/g, "");
+  } else {
+    const lastDot = s.lastIndexOf(".");
+    const after = lastDot >= 0 ? s.slice(lastDot + 1) : "";
+    // ponto seguido de até 2 dígitos no fim = vírgula digitada num teclado que só tem ponto
+    if (lastDot >= 0 && after.length <= 2 && !/^\d{1,3}(\.\d{3})+$/.test(s)) {
+      int = s.slice(0, lastDot).replace(/\D/g, "");
+      dec = after.replace(/\D/g, "");
+    } else int = s.replace(/\D/g, "");
+  }
+  int = int.replace(/^0+(?=\d)/, "").slice(0, 9);
+  if (!int && dec !== null) int = "0";
+  const grouped = int.replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+  return dec === null ? grouped : grouped + "," + dec.slice(0, 2);
+}
+
+/** Centavos → texto do campo ("6000" → "60,00"; vazio se não tem preço). */
+export function centsToMoneyInput(cents: number | null | undefined): string {
+  if (cents == null) return "";
+  return maskMoney((cents / 100).toFixed(2).replace(".", ","));
 }
 
 export function formatPrice(cents: number | null): string {

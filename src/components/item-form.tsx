@@ -4,11 +4,12 @@ import { useRouter } from "next/navigation";
 import { useActionState, useState, useTransition } from "react";
 import { shouldWaitBeforeOwning } from "@/app/actions/combos";
 import { deleteItem, setOwned, type FormState } from "@/app/actions/items";
-import { CATEGORIES, parsePrice, parseVariant, storeFromUrl, variantToText, type Item, type ItemGroup } from "@/lib/items/domain";
+import { CATEGORIES, centsToMoneyInput, parsePrice, parseVariant, storeFromUrl, variantToText, type Item, type ItemGroup } from "@/lib/items/domain";
 import { useConfirm } from "./confirm";
 import { ExternalIcon, StarIcon } from "./icons";
 import { TagCard } from "./tag-card";
 import { UNDO_KEY } from "./item-browser";
+import { MoneyInput } from "./money-input";
 
 type Action = (state: FormState, formData: FormData) => Promise<FormState>;
 
@@ -21,7 +22,7 @@ export function ItemForm({ action, item, groups = [], groupCandidates = [] }: {
   const [values, setValues] = useState({
     url: item?.url ?? "",
     title: item?.title ?? "",
-    price: item?.priceCents != null ? (item.priceCents / 100).toFixed(2).replace(".", ",") : "",
+    price: centsToMoneyInput(item?.priceCents),
     store: item?.store ?? "",
     category: item?.category ?? "Outros",
     kind: item?.kind ?? "unico",
@@ -68,7 +69,7 @@ export function ItemForm({ action, item, groups = [], groupCandidates = [] }: {
 
         <div className="grid gap-4 sm:grid-cols-2">
           <Field label="Preço" hint="Opcional. Ex.: 129,90" error={err.price}>
-            <input name="price" className="field" inputMode="decimal" placeholder="R$" value={values.price} onChange={set("price")} />
+            <MoneyInput name="price" label="Preço" value={values.price} onChange={(v) => setValues((s) => ({ ...s, price: v }))} />
           </Field>
           <Field label="Loja" hint="Se ficar vazio, usamos o nome do site." error={err.store}>
             <input name="store" className="field" value={values.store} onChange={set("store")} placeholder={storeFromUrl(values.url) ?? ""} maxLength={80} />
@@ -157,7 +158,7 @@ function RefetchPanel({ url, linkChanged, onApply }: { url: string; linkChanged:
     }
   }
 
-  const priceText = (c: number | null) => (c == null ? "" : (c / 100).toFixed(2).replace(".", ","));
+  const priceText = centsToMoneyInput;
   return (
     <div className="-mt-1 flex flex-col gap-2">
       <div className="flex flex-wrap items-center gap-2">

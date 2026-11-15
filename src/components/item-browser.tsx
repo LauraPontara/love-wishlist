@@ -11,6 +11,7 @@ import { useConfirm } from "./confirm";
 import { CheckIcon, CloseIcon, PencilIcon, SelectIcon, StarIcon, TrashIcon } from "./icons";
 import { Swipe } from "./swipe";
 import { TagCard } from "./tag-card";
+import { MoneyInput } from "./money-input";
 
 type Tab = "desejado" | "ja_tenho" | "recebido";
 type Sort = "recentes" | "menor" | "maior" | "nome";
@@ -175,7 +176,8 @@ export function ItemBrowser({ items, mode, ownerName, gifts = {}, purchasedByMe 
   return (
     <div className="flex flex-col gap-4">
       {mode === "mine" && (
-        <div role="tablist" aria-label="Situação dos itens" className="grid grid-cols-3 p-1 rounded-full max-w-[520px]" style={{ background: "var(--surface-sunk)" }}>
+        <div className="flex items-center gap-3">
+        <div role="tablist" aria-label="Situação dos itens" className="grid grid-cols-3 p-1 rounded-full max-w-[520px] flex-1" style={{ background: "var(--surface-sunk)" }}>
           {(Object.keys(TAB_LABEL) as Tab[]).map((t) => (
             <button key={t} role="tab" aria-selected={tab === t} onClick={() => setTab(t)}
               className="rounded-full py-2 text-[.9rem] font-bold transition-colors"
@@ -184,11 +186,13 @@ export function ItemBrowser({ items, mode, ownerName, gifts = {}, purchasedByMe 
             </button>
           ))}
         </div>
-      )}
-      {mode === "mine" && tab === "desejado" && !grouping && (
-        <button type="button" className="chip hidden lg:inline-flex self-start items-center gap-1.5" onClick={() => setGrouping(true)}>
-          <SelectIcon /> Selecionar itens
-        </button>
+        {/* desktop: seleção ao lado das abas (no celular é o toque longo) */}
+        {tab === "desejado" && !grouping && (
+          <button type="button" className="chip hidden lg:inline-flex items-center gap-1.5 shrink-0" onClick={() => setGrouping(true)}>
+            <SelectIcon /> Selecionar itens
+          </button>
+        )}
+        </div>
       )}
       {grouping && (
         <p className="text-sm font-semibold -mb-1" style={{ color: "var(--ink-2)" }} aria-live="polite">
@@ -199,7 +203,7 @@ export function ItemBrowser({ items, mode, ownerName, gifts = {}, purchasedByMe 
       {/* busca + orçamento + ordenação: empilham no celular, ficam em linha a partir do tablet */}
       <div className="grid gap-3 grid-cols-2 md:grid-cols-[1fr_170px_190px]">
         <input type="search" className="field !text-base col-span-2 md:col-span-1" placeholder="Buscar por nome, loja ou cor" value={query} onChange={(e) => setQuery(e.target.value)} aria-label="Buscar" />
-        <input className="field !text-base" inputMode="decimal" placeholder="Até R$" value={budget} onChange={(e) => setBudget(e.target.value)} aria-label="Orçamento máximo em reais" />
+        <MoneyInput className="field !text-base" placeholder="Até" label="Orçamento máximo em reais" value={budget} onChange={setBudget} />
         <select className="field !text-base" value={sort} onChange={(e) => setSort(e.target.value as Sort)} aria-label="Ordenar">
           <option value="recentes">Mais recentes</option>
           <option value="menor">Menor preço</option>
