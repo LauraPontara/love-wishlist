@@ -14,6 +14,8 @@ import { lessonsFor, type Gesture, type Lesson, type Step } from "./lessons";
 
 const SIGNAL = "nw:tour";
 const SEEN_KEY = "nw:tour-seen";
+/** O tutorial pediu para continuar na próxima tela (ex.: Editar presente → tutorial de montar). */
+const CONTINUE_KEY = "nw:tour-continue";
 
 /** As telas avisam o tutorial quando a pessoa faz o gesto ("swipe-open", "grouping-on"...). */
 export function tourSignal(name: string) {
@@ -59,13 +61,17 @@ export function TourScreen({ id }: { id: string }) {
   const start = ctx?.start;
   useEffect(() => register?.(id), [register, id]);
   useEffect(() => {
-    if (!start || readSeen().includes(id)) return;
+    if (!start) return;
+    let cont = false;
+    try { cont = sessionStorage.getItem(CONTINUE_KEY) === id; } catch {}
+    if (!cont && readSeen().includes(id)) return;
     const t = setTimeout(() => {
       const lessons = lessonsFor(id);
       const first = lessons[0]?.[isMouse() ? "mouse" : "touch"][0];
       if (!first?.target || !findVisible(first.target)) return; // lista vazia: espera ter itens
       if (document.querySelector('[role="dialog"]')) return;
       markSeen(id);
+      if (cont) { try { sessionStorage.removeItem(CONTINUE_KEY); } catch {} }
       start(lessons);
     }, 900);
     return () => clearTimeout(t);
@@ -156,15 +162,18 @@ function TourRunner({ lessons, onEnd }: { lessons: Lesson[]; onEnd: () => void }
   const el = useRef<Element | null>(null);
   const textRef = useRef<HTMLDivElement>(null);
   const startPath = useRef(typeof window === "undefined" ? "" : window.location.pathname);
-  const { step, lesson } = steps[index] ?? {};
-  const waits = Boolean(step?.wait || step?.waitClick);
+  // desvio: um botão tocado leva a um passo próprio (ex.: Excluir → explica a confirmação e termina)
+  const [branch, setBranch] = useState<Step | null>(null);
+  const { step: baseStep, lesson } = steps[index] ?? {};
+  const step = branch ?? baseStep;
+  const waits = Boolean(step?.wait || step?.waitClick || step?.waitGone);
   const reduced = useMemo(() => typeof window !== "undefined" && window.matchMedia("(prefers-reduced-motion: reduce)").matches, []);
 
   const next = useCallback(() => {
-    if (index + 1 >= steps.length) { onEnd(); return; }
+    if (branch || index + 1 >= steps.length) { onEnd(); return; }
     setPhase("show");
     setIndex(index + 1);
-  }, [index, steps.length, onEnd]);
+  }, [index, steps.length, onEnd, branch]);
 
   // acompanha o alvo (rolagem, abrir de diálogo, troca de layout) quadro a quadro
   useEffect(() => {
@@ -211,12 +220,38 @@ function TourRunner({ lessons, onEnd }: { lessons: Lesson[]; onEnd: () => void }
     return () => { window.removeEventListener(SIGNAL, onSignal); document.removeEventListener("click", onClick, true); };
   }, [step, waits, phase]);
 
+  // passo que espera algo sumir da tela (ex.: o pop-up de confirmação fechar)
+  useEffect(() => {
+    if (!step?.waitGone || !step.target || phase === "done") return;
+    let appeared = false;
+    const t = setInterval(() => {
+      if (findVisible(step.target!)) appeared = true;
+      else if (appeared) setPhase("done");
+    }, 200);
+    return () => clearInterval(t);
+  }, [step, phase]);
+
+  // botões que mudam o rumo do tutorial
+  useEffect(() => {
+    if (!step?.branches) return;
+    const onClick = (e: MouseEvent) => {
+      for (const b of step.branches!) {
+        if (!(e.target as Element).closest?.(b.click)) continue;
+        if (b.continueOn) { try { sessionStorage.setItem(CONTINUE_KEY, b.continueOn); } catch {} }
+        if (b.step) { setBranch(b.step); setPhase("show"); }
+        return;
+      }
+    };
+    document.addEventListener("click", onClick, true);
+    return () => document.removeEventListener("click", onClick, true);
+  }, [step]);
+
   // "Isso!" fica um instante e segue
   useEffect(() => {
     if (phase !== "done") return;
-    const t = setTimeout(next, index === steps.length - 1 ? 2000 : 1100); // no fim, comemora um pouco mais e fecha sozinho
+    const t = setTimeout(next, branch || index === steps.length - 1 ? 2000 : 1100); // no fim, comemora um pouco mais e fecha sozinho
     return () => clearTimeout(t);
-  }, [phase, next, index, steps.length]);
+  }, [phase, next, index, steps.length, branch]);
 
   // depois de duas demonstrações, é a vez da pessoa
   useEffect(() => {
@@ -255,7 +290,7 @@ function TourRunner({ lessons, onEnd }: { lessons: Lesson[]; onEnd: () => void }
 
   if (!step || !vp.w) return <div ref={textRef} hidden />;
 
-  const isLast = index === steps.length - 1;
+  const isLast = Boolean(branch) || index === steps.length - 1;
   const text = phase === "done" ? (step.doneText ?? (isLast ? "Isso! Você aprendeu 🎉" : "Isso! ✓")) : phase === "try" && step.doText ? step.doText : step.text;
   const pad = 10;
   const hole = rect && { x: rect.left - pad, y: rect.top - pad, w: rect.width + pad * 2, h: rect.height + pad * 2 };
@@ -276,7 +311,7 @@ function TourRunner({ lessons, onEnd }: { lessons: Lesson[]; onEnd: () => void }
   // a frase fica em cima do alvo (no desktop, não no meio da tela)
   const textW = Math.min(420, vp.w - 16);
   const textLeft = rect ? Math.max(8, Math.min(vp.w - textW - 8, rect.left + rect.width / 2 - textW / 2)) : (vp.w - textW) / 2;
-  const last = index === steps.length - 1;
+  const last = isLast;
   const seed = index * 7 + 3;
 
   return (

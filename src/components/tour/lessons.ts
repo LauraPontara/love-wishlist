@@ -21,6 +21,10 @@ export type Step = {
   waitClick?: boolean;
   /** frase de comemoração quando a pessoa faz o gesto (no último passo, o tutorial fecha sozinho depois dela) */
   doneText?: string;
+  /** espera o alvo sumir (ex.: pop-up fechado) */
+  waitGone?: boolean;
+  /** botões que mudam o rumo: um passo próprio (e o tutorial termina depois dele) e/ou continuar em outra tela */
+  branches?: Array<{ click: string; step?: Step; continueOn?: string }>;
   /** se o alvo não estiver na tela, o passo é pulado */
   optional?: boolean;
   /** abre o primeiro cartão deslizante dentro deste seletor (se a pessoa pulou o gesto) */
@@ -52,7 +56,7 @@ export const LESSONS: Lesson[] = [
     id: "mine-swipe", title: "Editar ou excluir itens", screen: "mine",
     touch: [
       { target: CARD, gesture: "swipe", demo: "swipe", text: "Deslize o item para a esquerda…", doText: "Agora você: deslize um item!", wait: "swipe-open" },
-      { target: OPEN_ACTIONS(CARD), open: CARD, text: "Editar muda o item. Excluir tira da lista, e dá pra desfazer logo depois." },
+      { target: OPEN_ACTIONS(CARD), open: CARD, text: "Editar muda o item. Excluir tira da lista, e dá pra desfazer logo depois.", branches: [{ click: `${OPEN_ACTIONS(CARD)} button:last-child`, step: { target: '[role="alertdialog"]', text: "Confirme para excluir. Se mudar de ideia, dá pra desfazer logo depois.", waitGone: true, doneText: "Prontinho! Agora você já sabe 🎉" } }] },
       { target: CARD, gesture: "tap", text: "Um toque no item abre o site da loja." },
       { target: OWNED, text: "Comprou por conta própria? Toque em “Já tenho”." },
     ],
@@ -81,7 +85,7 @@ export const LESSONS: Lesson[] = [
     id: "combos-swipe", title: "Editar ou excluir presentes", screen: "combos",
     touch: [
       { target: COMBO, gesture: "swipe", demo: "swipe", text: "Deslize o presente para a esquerda…", doText: "Agora você: deslize um presente!", wait: "swipe-open" },
-      { target: OPEN_ACTIONS(COMBO), open: COMBO, text: "Editar volta a montar o presente. Excluir apaga só o presente: os itens continuam na lista." },
+      { target: OPEN_ACTIONS(COMBO), open: COMBO, text: "Editar volta a montar o presente. Excluir apaga só o presente: os itens continuam na lista.", branches: [{ click: `${OPEN_ACTIONS(COMBO)} button:last-child`, step: { target: '[role="alertdialog"]', text: "Confirme para apagar o presente. Os itens continuam na lista.", waitGone: true, doneText: "Prontinho! Agora você já sabe 🎉" } }, { click: `${OPEN_ACTIONS(COMBO)} button:first-child`, continueOn: "build" }] },
       { target: COMBO, gesture: "tap", text: "Um toque abre o presente inteiro." },
     ],
     mouse: [
