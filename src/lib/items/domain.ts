@@ -4,13 +4,13 @@ import { z } from "zod";
 
 export const CATEGORIES = [
   "Beleza", "Cuidados pessoais", "Comida & doces", "Roupas", "Acessórios",
-  "Tecnologia", "Casa", "Livros & papelaria", "Experiências", "Outros",
+  "Tecnologia", "Casa", "Livros & papelaria", "Música", "Experiências", "Outros",
 ] as const;
 export type Category = (typeof CATEGORIES)[number];
 
 export const CATEGORY_EMOJI: Record<Category, string> = {
   "Beleza": "💄", "Cuidados pessoais": "🧼", "Comida & doces": "🍫", "Roupas": "👗", "Acessórios": "🧢",
-  "Tecnologia": "🎧", "Casa": "🪴", "Livros & papelaria": "📚", "Experiências": "🎟️", "Outros": "🎁",
+  "Tecnologia": "🎧", "Casa": "🪴", "Livros & papelaria": "📚", "Música": "🎵", "Experiências": "🎟️", "Outros": "🎁",
 };
 
 export type Kind = "unico" | "sempre";

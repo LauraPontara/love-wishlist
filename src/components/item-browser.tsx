@@ -12,6 +12,7 @@ import { CATEGORIES, CATEGORY_EMOJI, formatPrice, matchesSearch, parsePrice, typ
 import { useConfirm } from "./confirm";
 import { CheckIcon, CloseIcon, PencilIcon, PlusIcon, SelectIcon, StarIcon, TrashIcon } from "./icons";
 import { Swipe } from "./swipe";
+import { ItemDetails } from "./item-details";
 import { TagCard } from "./tag-card";
 import { TourScreen, tourSignal } from "./tour/tour";
 import { MoneyInput } from "./money-input";
@@ -71,6 +72,7 @@ export function ItemBrowser({ items, mode, ownerName, gifts = {}, purchasedByMe 
   const [budget, setBudget] = useState("");
   const [sort, setSort] = useState<Sort>("recentes");
   const [pending, startTransition] = useTransition();
+  const [detail, setDetail] = useState<Item | null>(null);
   const [toast, setToast] = useState<{ text: string; undo?: () => void } | null>(null);
 
   // "Desfazer" depois de excluir na tela de edição (RF13)
@@ -197,7 +199,8 @@ export function ItemBrowser({ items, mode, ownerName, gifts = {}, purchasedByMe 
   // na lista do outro, itens do mesmo grupo viram um card só
   type Entry = { type: "item"; item: Item } | { type: "group"; id: string; name: string; items: Item[] };
   const entries = useMemo<Entry[]>(() => {
-    if (mode !== "partner") return visible.map((item) => ({ type: "item", item }));
+    // itens do mesmo grupo viram um card só: na lista do outro e nos meus Desejos (fora do modo de seleção)
+    if (mode !== "partner" && (tab !== "desejado" || grouping)) return visible.map((item) => ({ type: "item", item }));
     const out: Entry[] = [];
     const byGroup = new Map<string, Entry & { type: "group" }>();
     for (const item of visible) {
@@ -208,7 +211,7 @@ export function ItemBrowser({ items, mode, ownerName, gifts = {}, purchasedByMe 
     }
     for (const g of byGroup.values()) g.items.sort((a, b) => Number(Boolean(b.group?.preferred)) - Number(Boolean(a.group?.preferred)));
     return out;
-  }, [visible, mode]);
+  }, [visible, mode, tab, grouping]);
 
   // rolagem infinita: começa com 20 cards e desenha mais quando o fim se aproxima
   const listSig = `${tab}|${query}|${category}|${kind}|${budget}|${sort}`;
@@ -292,7 +295,8 @@ export function ItemBrowser({ items, mode, ownerName, gifts = {}, purchasedByMe 
             if (entry.type === "group") {
               return (
                 <motion.li key={entry.id} className="md:col-span-2 2xl:col-span-3" {...cardMotion(idx)}>
-                  <GroupCard name={entry.name} items={entry.items} inCombos={inCombos} purchased={purchased} pending={pending}
+                  <GroupCard mode={mode} name={entry.name} items={entry.items} inCombos={inCombos} purchased={purchased} pending={pending}
+                    onOpen={mode === "partner" ? setDetail : (i) => router.push(`/item/${i.id}`)} onOwned={askOwned}
                     onGive={(id) => startTransition(async () => { await giveThis(id); })} />
                 </motion.li>
               );
@@ -338,7 +342,7 @@ export function ItemBrowser({ items, mode, ownerName, gifts = {}, purchasedByMe 
                   )} />
                 </Swipe>
               ) : (
-                <TagCard item={item} href={item.url} external dim={purchased.has(item.id) && item.kind === "unico"}
+                <TagCard item={item} onOpen={() => setDetail(item)} dim={purchased.has(item.id) && item.kind === "unico"}
                   badge={purchased.has(item.id)
                     ? <span className="badge">Você já comprou</span>
                     : item.kind === "sempre" ? <span className="badge sempre">Sempre bem-vindo</span> : undefined}
@@ -390,6 +394,12 @@ export function ItemBrowser({ items, mode, ownerName, gifts = {}, purchasedByMe 
         </div>
       )}
 
+      {detail && (
+        <ItemDetails item={detail} ownerName={ownerName} bought={purchased.has(detail.id)} inMyGift={inCombos.has(detail.id)} pending={pending}
+          onClose={() => setDetail(null)}
+          onGive={() => { const id = detail.id; setDetail(null); startTransition(async () => { await giveThis(id); }); }} />
+      )}
+
       {toast && (
         <div role="status" className="fixed left-1/2 -translate-x-1/2 bottom-[100px] lg:bottom-8 z-50 flex items-center gap-3 rounded-2xl px-4 py-3 font-semibold shadow-lg max-w-[calc(100vw-32px)]"
           style={{ background: "var(--ink)", color: "var(--bg)" }}>
@@ -423,16 +433,19 @@ function Badges({ children }: { children: React.ReactNode }) {
 }
 
 /** Lista do outro: "quero um desses", com o preferido (⭐) em primeiro. */
-function GroupCard({ name, items, inCombos, purchased, pending, onGive }: {
-  name: string; items: Item[]; inCombos: Set<string>; purchased: Set<string>; pending: boolean; onGive: (itemId: string) => void;
+function GroupCard({ mode, name, items, inCombos, purchased, pending, onGive, onOpen, onOwned }: {
+  mode: "mine" | "partner"; name: string; items: Item[]; inCombos: Set<string>; purchased: Set<string>; pending: boolean;
+  onGive: (itemId: string) => void; onOpen: (item: Item) => void; onOwned: (item: Item) => void;
 }) {
+  const mine = mode === "mine";
   const chosen = items.find((i) => inCombos.has(i.id));
   return (
     <section className="rounded-[20px] border-2 p-4 flex flex-col gap-3" style={{ background: "var(--surface)", borderColor: "var(--line)" }} aria-label={`Quero um desses: ${name}`} data-tour="group-card">
       <div>
         <p className="text-xs font-bold" style={{ color: "var(--ink-2)" }}>Quero um desses</p>
         <h3 className="text-lg font-extrabold leading-tight" style={{ fontVariationSettings: "'wdth' 85" }}>{name}</h3>
-        {chosen && <p className="text-sm font-semibold mt-1" style={{ color: "var(--secondary)" }}>No seu presente: {chosen.title}</p>}
+        {!mine && chosen && <p className="text-sm font-semibold mt-1" style={{ color: "var(--secondary)" }}>No seu presente: {chosen.title}</p>}
+        {mine && <p className="text-sm mt-1" style={{ color: "var(--ink-2)" }}>Quem for te dar escolhe uma destas opções.</p>}
       </div>
       <ul className="grid gap-2 md:grid-cols-2 2xl:grid-cols-3">
         {items.map((i) => {
@@ -440,19 +453,21 @@ function GroupCard({ name, items, inCombos, purchased, pending, onGive }: {
           return (
             <li key={i.id} className="relative flex items-center gap-3 rounded-xl p-2 border-2"
               style={{ background: "var(--bg)", borderColor: i.group?.preferred ? "var(--ribbon)" : "transparent" }}>
-              {i.url && <a href={i.url} target="_blank" rel="noopener noreferrer" className="absolute inset-0 z-[1] rounded-xl" aria-label={`${i.title} (abre na loja)`} />}
+              <button type="button" onClick={() => onOpen(i)} className="absolute inset-0 z-[1] rounded-xl cursor-pointer" aria-label={mine ? `Editar ${i.title}` : `Ver detalhes de ${i.title}`} />
               <div className="w-12 h-12 rounded-lg overflow-hidden grid place-items-center text-xl shrink-0" style={{ background: "var(--surface)" }}>
                 {i.imageUrl ? <img src={i.imageUrl} alt="" className="w-full h-full object-cover" referrerPolicy="no-referrer" /> : CATEGORY_EMOJI[i.category]}
               </div>
               <div className="min-w-0 flex-1">
                 <p className="font-bold text-sm leading-tight line-clamp-2">{i.title}</p>
                 <p className="text-xs truncate" style={{ color: i.group?.preferred ? "var(--ink)" : "var(--ink-2)" }}>
-                  {i.group?.preferred ? <span className="inline-flex items-center gap-1"><StarIcon filled size={14} /> Preferido</span> : bought ? "Você já comprou" : inCombos.has(i.id) ? "No seu presente" : (i.store ?? i.category)}
+                  {i.group?.preferred ? <span className="inline-flex items-center gap-1"><StarIcon filled size={14} /> Preferido</span> : !mine && bought ? "Você já comprou" : !mine && inCombos.has(i.id) ? "No seu presente" : (i.store ?? i.category)}
                 </p>
               </div>
               <div className="flex flex-col items-end gap-1">
                 <span className="text-sm font-extrabold whitespace-nowrap">{formatPrice(i.priceCents)}</span>
-                {!bought && <button type="button" className="btn btn-primary btn-sm relative z-10 !min-h-0 !py-1.5" disabled={pending} onClick={() => onGive(i.id)}>Dar este</button>}
+                {mine
+                  ? <button type="button" className="btn btn-ghost btn-sm relative z-10 !min-h-0 !py-1.5" disabled={pending} onClick={() => onOwned(i)}>Já tenho</button>
+                  : !bought && <button type="button" className="btn btn-primary btn-sm relative z-10 !min-h-0 !py-1.5" disabled={pending} onClick={() => onGive(i.id)}>Dar este</button>}
               </div>
             </li>
           );

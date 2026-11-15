@@ -131,14 +131,16 @@ export const LESSONS: Lesson[] = [
     id: "partner", title: "Como usar esta lista", screen: "partner",
     touch: [
       { target: '[data-tour="give"]', gesture: "tap", text: "“Dar este” cria um presente com o item e abre para você montar. Só você vê." },
-      { target: '[data-tour="partner-card"]', gesture: "tap", text: "Um toque no item abre o site da loja." },
+      { target: '[data-tour="partner-card"]', gesture: "tap", waitClick: true, text: "Toque num item para ver os detalhes." },
+      { target: '[data-tour="item-details"]', ensure: '[data-tour="partner-card"] .tag-link', waitGone: true, text: "Aqui ficam o preço, a opção (cor, tamanho), a loja e as observações. Dá para abrir a loja ou dar o presente. Feche para continuar." },
       { target: '[data-tour="group-card"]', optional: true, text: "“Quero um desses”: são opções parecidas, basta dar uma. A estrela marca a preferida." },
       { target: '[data-tour="filters"]', text: "Busque pelo nome, loja ou cor. Em “Até R$” você vê só o que cabe no bolso, e ao lado escolhe a ordem." },
       { target: '[data-tour="chips"]', text: "Filtre por tipo ou categoria. “Sempre bem-vindos” são coisas que podem ser dadas mais de uma vez; “Únicos”, só uma." },
     ],
     mouse: [
       { target: '[data-tour="give"]', gesture: "tap", text: "“Dar este” cria um presente com o item e abre para você montar. Só você vê." },
-      { target: '[data-tour="partner-card"]', gesture: "tap", text: "Um clique no item abre o site da loja." },
+      { target: '[data-tour="partner-card"]', gesture: "tap", waitClick: true, text: "Clique num item para ver os detalhes." },
+      { target: '[data-tour="item-details"]', ensure: '[data-tour="partner-card"] .tag-link', waitGone: true, text: "Aqui ficam o preço, a opção (cor, tamanho), a loja e as observações. Dá para abrir a loja ou dar o presente. Feche para continuar." },
       { target: '[data-tour="group-card"]', optional: true, text: "“Quero um desses”: são opções parecidas, basta dar uma. A estrela marca a preferida." },
       { target: '[data-tour="filters"]', text: "Busque pelo nome, loja ou cor. Em “Até R$” você vê só o que cabe no bolso, e ao lado escolhe a ordem." },
       { target: '[data-tour="chips"]', text: "Filtre por tipo ou categoria. “Sempre bem-vindos” são coisas que podem ser dadas mais de uma vez; “Únicos”, só uma." },

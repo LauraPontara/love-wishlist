@@ -2,8 +2,10 @@ import type { ReactNode } from "react";
 import { CATEGORY_EMOJI, formatPrice, type Item } from "@/lib/items/domain";
 
 /** Item como etiqueta de presente (design-system §5). */
-export function TagCard({ item, href, external, badge, action, dim, desktopHref }: {
+export function TagCard({ item, href, external, badge, action, dim, desktopHref, onOpen }: {
   item: Item; href?: string; external?: boolean; badge?: ReactNode; action?: ReactNode; dim?: boolean;
+  /** tocar no cartão abre os detalhes (em vez de um link) */
+  onOpen?: () => void;
   /** no desktop (lg+) o cartão leva aqui e só a foto abre o link da loja */
   desktopHref?: string;
 }) {
@@ -38,7 +40,10 @@ export function TagCard({ item, href, external, badge, action, dim, desktopHref 
 
   // O link cobre o cartão inteiro; botões de ação ficam por cima (z-10), sem aninhar botão dentro de link.
   return (
-    <div className={`${className} ${href ? "linked" : ""}`}>
+    <div className={`${className} ${href || onOpen ? "linked" : ""}`}>
+      {onOpen && (
+        <button type="button" onClick={onOpen} className="absolute inset-0 z-[1] tag-link w-full cursor-pointer" aria-label={`Ver detalhes de ${item.title}`} />
+      )}
       {desktopHref && (
         <a href={desktopHref} className="hidden lg:block absolute inset-0 z-[1] tag-link" aria-label={`Editar ${item.title}`} />
       )}

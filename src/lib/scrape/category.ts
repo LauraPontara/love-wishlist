@@ -2,6 +2,7 @@ import { fold, type Category } from "@/lib/items/domain";
 
 // Sugestão de categoria por palavras-chave (sem IA). A pessoa confirma na revisão.
 const RULES: Array<[Category, RegExp]> = [
+  ["Música", /\b(vinil|disco de vinil|lp|cd|album|discografia|violao|guitarra|ukulele|cavaquinho|contrabaixo|baixo eletrico|bateria eletronica|pedal de efeito|palheta|amplificador|partitura|songbook|cifra|instrumento musical)\b/],
   ["Tecnologia", /\b(fone|headphone|earbud|bluetooth|celular|smartphone|iphone|galaxy|notebook|tablet|ipad|kindle|carregador|cabo usb|mouse|teclado|monitor|smartwatch|relogio inteligente|caixa de som|jbl|xiaomi|camera|console|playstation|xbox|nintendo|ssd|pendrive|power ?bank)\b/],
   ["Beleza", /\b(batom|base liquida|maquiagem|paleta|sombra|rimel|mascara de cilios|blush|perfume|eau de (parfum|toilette)|colonia|esmalte|delineador|corretivo|primer|iluminador|gloss|skincare|serum)\b/],
   ["Cuidados pessoais", /\b(sabonete|shampoo|condicionador|hidratante|creme|locao|desodorante|protetor solar|oleo corporal|mascara capilar|escova de dente|creme dental|body splash|esfoliante|nativa spa|ekos)\b/],

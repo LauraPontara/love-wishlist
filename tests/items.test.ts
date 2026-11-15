@@ -79,3 +79,14 @@ describe("máscara de dinheiro", () => {
     expect(centsToMoneyInput(null)).toBe("");
   });
 });
+
+describe("categoria Música", async () => {
+  const { suggestCategory } = await import("@/lib/scrape/category");
+  it.each([
+    ["Disco de Vinil Pink Floyd - The Wall", "Música"],
+    ["CD Tool - 10,000 Days", "Música"],
+    ["Violão Giannini Acústico", "Música"],
+    ["Mouse Gamer Sem Fio Redragon", "Tecnologia"],
+    ["Episódio especial de podcast", "Outros"],
+  ])("%s → %s", (title, cat) => expect(suggestCategory(title)).toBe(cat));
+});
