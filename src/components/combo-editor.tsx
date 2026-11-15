@@ -61,7 +61,7 @@ export function ComboEditor({ combo, available, purchasedElsewhere, occasions, r
   return (
     <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_minmax(320px,420px)] items-start">
       <div className="flex flex-col gap-5 min-w-0">
-        <MetaEditor combo={combo} occasions={occasions} disabled={!editable} onSave={(m) => run(() => updateComboMeta(combo.id, m))} />
+        <MetaEditor combo={combo} occasions={occasions} disabled={combo.status === "dado"} onSave={(m) => run(() => updateComboMeta(combo.id, m))} />
 
         {combo.occasionDate && (
           <p className="text-sm -mt-2" style={{ color: "var(--ink-2)" }}>{formatDayMonth(combo.occasionDate)}, {countdownLabel(days!)}</p>
